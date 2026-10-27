@@ -1,0 +1,101 @@
+# Credentials and local environment files
+.env
+.env.*
+!.env.example
+!**/.env.example
+*.pem
+*.key
+*.pfx
+*.p12
+
+# Python environments, caches and package builds
+.venv/
+.venv-*/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+/build/
+/dist/
+
+# Frontend dependencies, production/dev builds and TypeScript cache
+node_modules/
+.next*/
+*.tsbuildinfo
+
+# Project databases, media, model downloads, logs and test evidence
+data/
+*.db
+*.db-journal
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+*.log
+*.gguf
+*.safetensors
+*.ckpt
+*.onnx
+*.pth
+
+# Test coverage
+.coverage
+.coverage.*
+coverage.xml
+coverage/
+htmlcov/
+
+# Local design references, demo workspaces and session handoffs
+/assets/
+/demo/
+/recast/
+/docs/ui-review/
+# Screenshots, browser traces and personal exports stay local wherever created.
+screenshots/
+test-results/
+playwright-report/
+recordings/
+backups/
+/exports/
+/uploads/
+/outputs/
+/logs/
+*.har
+*.dmp
+*.heapsnapshot
+/*HANDOFF*.md
+/CURRENT_STATUS.md
+/scripts/check-*.cjs
+/scripts/check-*.py
+/scripts/report-fibo-*.cjs
+/scripts/render-fibo-layout-guide.cjs
+/scripts/build-refinement-gallery.cjs
+/scripts/capture-canvas-browser-review.cjs
+/scripts/capture-pages.cjs
+
+# Runtime workflow contracts: ship only reviewed, project-independent examples
+/workflows/definitions/*.json
+!/workflows/definitions/krea2-turbo-text-to-image.json
+!/workflows/definitions/minimax-h3-seamless-core.json
+!/workflows/definitions/qwen-image-2-1-text-to-image.json
+/workflows/definitions/graphs/*
+!/workflows/definitions/graphs/darius_qwen_image_2_1_t2i.json
+
+# Machine-specific LAN trust artifacts (the Caddy template remains source)
+/apps/web/public/darius-lan-ca.cer
+/apps/web/public/darius-lan-info.json
+
+# Temporary/editor/OS files and unfinished downloads
+.tmp/
+*.tmp
+*.bak
+*.crdownload
+*.part
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+Desktop.ini

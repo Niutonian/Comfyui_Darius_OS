@@ -1,0 +1,62 @@
+[
+  {
+    "node": "9",
+    "field": "filename_prefix",
+    "before": "image_flux3_klein_base_t2i",
+    "after": "darius/canvas/pending"
+  },
+  {
+    "node": "18:5",
+    "field": "text",
+    "before": "",
+    "after": "out of frame head"
+  },
+  {
+    "node": "18:11",
+    "field": "sampling_mode.seed",
+    "before": 0,
+    "after": 435434070238520
+  },
+  {
+    "node": "25",
+    "operation": "remove-authoring-branch"
+  },
+  {
+    "node": "26",
+    "operation": "remove-authoring-branch"
+  },
+  {
+    "node": "27",
+    "operation": "remove-authoring-branch"
+  },
+  {
+    "node": "18:7",
+    "field": "cfg",
+    "before": 1,
+    "after": 3.5
+  },
+  {
+    "node": "18:7",
+    "field": "seed",
+    "before": 3,
+    "after": 435434070238520
+  },
+  {
+    "node": "18:7",
+    "field": "steps",
+    "before": 15,
+    "after": 50
+  },
+  {
+    "node": "18:7",
+    "field": "sampler_name",
+    "before": "er_sde",
+    "after": "euler"
+  },
+  {
+    "node": "18:16",
+    "field": "switch",
+    "before": false,
+    "after": true
+  }
+]

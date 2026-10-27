@@ -1,0 +1,30 @@
+import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { useEffect, useState } from "react";
+import { expect, it, vi } from "vitest";
+import { useDariusStore } from "@/lib/store";
+import { SettingsView } from "./settings-view";
+vi.mock("@/lib/queries", () => ({ useHealth: () => ({ data: { components: {} } }) }));
+vi.mock("./trusted-workflows", () => ({ TrustedWorkflows: ({ scope }: { scope?: string }) => <div>{scope === "global" ? "Global workflow defaults fixture" : "Project overrides fixture"}</div> }));
+vi.mock("./llm-setting", () => ({ LlmSetting: ({ onStateChange }: { onStateChange?: (value: { dirty: boolean; error: string }) => void }) => {
+  const [text, setText] = useState("");
+  useEffect(() => onStateChange?.({ dirty: Boolean(text), error: "" }), [text, onStateChange]);
+  return <input aria-label="Unsaved model" value={text} onChange={event => setText(event.target.value)} />;
+} }));
+vi.mock("./local-render-setting", () => ({ LocalRenderSetting: () => <span>Project execution fixture</span> }));
+vi.mock("./transcription-setting", () => ({ TranscriptionSetting: () => <span>Transcription fixture</span> }));
+vi.mock("./voice-preferences", () => ({ VoicePreferences: () => <span>Voice preference fixture</span> }));
+it("shows focused categories, explicit scopes and preserves unsaved fields during category changes", async () => {
+  const user = userEvent.setup(); useDariusStore.setState({ activeProjectId: "p", projects: [] });
+  render(<SettingsView />);
+  expect(screen.getByText("Global workflow defaults fixture")).toBeVisible();
+  expect(screen.getByText("Project overrides fixture")).toBeVisible();
+  await user.click(screen.getByRole("button", { name: /^AI model Darius server/ }));
+  await user.type(screen.getByLabelText("Unsaved model"), "Keep selection");
+  await user.click(screen.getByRole("button", { name: /^Appearance This browser/ }));
+  expect(screen.getByRole("radiogroup", { name: "Theme" })).toBeVisible();
+  expect(screen.getByRole("button", { name: "AI model: unsaved changes" })).toBeVisible();
+  expect(screen.queryByRole("textbox", { name: "Unsaved model" })).not.toBeInTheDocument();
+  await user.click(screen.getByRole("button", { name: "AI model: unsaved changes" }));
+  expect(screen.getByLabelText("Unsaved model")).toHaveValue("Keep selection");
+});

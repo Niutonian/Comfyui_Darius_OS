@@ -1,0 +1,42 @@
+[build-system]
+requires = ["setuptools==80.9.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "darius-api"
+version = "0.1.0"
+description = "Local-first Darius creative-production API"
+license = "0BSD"
+license-files = ["LICENSE", "THIRD_PARTY_NOTICES.md"]
+requires-python = ">=3.12,<3.13"
+dependencies = [
+  "alembic==1.16.5",
+  "fastapi==0.162.0",
+  "hassil==3.12.1",
+  "jsonschema==4.26.0",
+  "langgraph==1.2.11",
+  "langgraph-checkpoint-sqlite==3.1.1",
+  "pydantic==2.11.7",
+  "psutil==7.2.2",
+  "python-multipart==0.0.32",
+  "requests==2.34.2",
+  "SQLAlchemy==2.0.43",
+  "uvicorn==0.35.0",
+]
+
+[project.optional-dependencies]
+test = [
+  "httpx==0.28.1",
+  "pytest==8.4.1",
+]
+
+[tool.setuptools.packages.find]
+where = ["apps/api"]
+
+[tool.setuptools.package-data]
+darius_api = ["bfl-schema.json", "command_intents/*.yaml"]
+
+[tool.pytest.ini_options]
+pythonpath = ["apps/api"]
+testpaths = ["tests"]
+addopts = "-q"

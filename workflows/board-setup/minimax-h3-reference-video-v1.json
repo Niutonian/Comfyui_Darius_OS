@@ -1,0 +1,242 @@
+{
+  "schemaVersion": 1,
+  "profile": "minimax-h3-reference-video-v1",
+  "graphDigest": "2f6e6025b3fc6f96fcc0ff58f39dc99d41b72cc6574f00da5717e8914158efaa",
+  "manifest": {
+    "name": "minimax-h3-reference-video-v1",
+    "workflows": [
+      {
+        "name": "default",
+        "file": "workflow.api.json"
+      }
+    ],
+    "nodes": [
+      {
+        "name": "ComfyUI-Easy-Use",
+        "git_url": "https://github.com/yolain/ComfyUI-Easy-Use",
+        "commit": "8730ffd14044ee9392db3b192646266576bc67df",
+        "class_types": [
+          "easy float"
+        ]
+      },
+      {
+        "name": "Comfyui_Minimax_h3_latent_Upscaler-Plus",
+        "git_url": "https://github.com/xmarre/Comfyui_Minimax_h3_latent_Upscaler-Plus",
+        "commit": "1ddcc33e9b674aaabbccc3808fe36e1a47bdd36d",
+        "class_types": [
+          "MinimaxH3LatentUpscaler3D"
+        ]
+      },
+      {
+        "name": "comfyui-kjnodes",
+        "git_url": "https://github.com/kijai/ComfyUI-KJNodes",
+        "commit": "d3cfe21625e5170126ce06fbfcfe1d88108688c3",
+        "class_types": [
+          "MiniMaxH3MemoryEfficientSageAttentionPatch"
+        ]
+      },
+      {
+        "name": "comfyui-videohelpersuite",
+        "git_url": "https://github.com/Kosinkadink/ComfyUI-VideoHelperSuite",
+        "commit": "4ee72c065db22c9d96c2427954dc69e7b908444b",
+        "class_types": [
+          "VHS_VideoCombine"
+        ]
+      },
+      {
+        "name": "rgthree-comfy",
+        "git_url": "https://github.com/rgthree/rgthree-comfy",
+        "commit": "27b4f4cdcf3b127c29d5d8135ac1536ecbd4c383",
+        "class_types": [
+          "Lora Loader Stack (rgthree)"
+        ]
+      }
+    ],
+    "models": [
+      {
+        "filename": "qwen3vl_32b_minimax_h3_nvfp4_awq.safetensors",
+        "folder": "text_encoders",
+        "url": "https://huggingface.co/Comfy-Org/MiniMax-H3/resolve/e5eb578a89295337b8ff433a035929ce0279e0b6/text_encoders/qwen3vl_32b_minimax_h3_nvfp4_awq.safetensors",
+        "auth": null,
+        "size_bytes": 15687142551,
+        "sha256": "35a88d51044231fe332301d7a62aa81e3f2cba62febeb446e2c1e3e0ef76f2c6"
+      },
+      {
+        "filename": "minimax_h3_video_vae_int8_convrot.safetensors",
+        "folder": "vae",
+        "url": null,
+        "auth": null,
+        "size_bytes": 3171670912,
+        "sha256": "9bb2d96f218c76babd85e0611b85ca8fb330a90546c01a0005e8a58a59593410"
+      },
+      {
+        "filename": "minimax_h3_audio_vae_fp32.safetensors",
+        "folder": "vae",
+        "url": "https://huggingface.co/Comfy-Org/MiniMax-H3/resolve/e5eb578a89295337b8ff433a035929ce0279e0b6/vae/minimax_h3_audio_vae_fp32.safetensors",
+        "auth": null,
+        "size_bytes": 605254808,
+        "sha256": "8e505d95dd1561d47abd43d4238fd40d9bb1ae9e147ed0a4cba778d76ae4db48"
+      },
+      {
+        "filename": "minimax_h3_ref2v_turbo_4step_v0.1_comfyui_bf16.safetensors",
+        "folder": "loras",
+        "url": "https://huggingface.co/Comfy-Org/MiniMax-H3/resolve/e5eb578a89295337b8ff433a035929ce0279e0b6/loras/minimax_h3_ref2v_turbo_4step_v0.1_comfyui_bf16.safetensors",
+        "auth": null,
+        "size_bytes": 1956193000,
+        "sha256": "5b9ab5ade15d0775676d01a907268a69a1468dc6033b3b0d3ded5502f3ebb84c"
+      },
+      {
+        "filename": "Minimax-h3_Singularity_ref2va_Pruned_v1.3_int8.safetensors",
+        "folder": "diffusion_models",
+        "url": "https://huggingface.co/WarmBloodAban/Minimax-h3_Singularity/resolve/1259cf16cd0b655ba691a32fb46a409142762972/Minimax-h3_Singularity_ref2va_Pruned_v1.3_int8.safetensors",
+        "auth": null,
+        "size_bytes": 20967647456,
+        "sha256": "412a7b126595a958964193f3b42513d7cf2df4196ef04223a0f05e3622949cce"
+      },
+      {
+        "filename": "minimax_h3_latent_upscaler_3d_conv_v1_fp16.safetensors",
+        "folder": "latent_upscale_models",
+        "url": "https://huggingface.co/LBH-123-AI/Minimax_h3_latent_Upscaler/resolve/3f941d5d182014dd5c0a5e16330420ee2d4aa0c6/minimax_h3_latent_upscaler_3d_conv_v1/minimax_h3_latent_upscaler_3d_conv_v1_fp16.safetensors",
+        "auth": null,
+        "size_bytes": 690592672,
+        "sha256": "043e5a48e161610ef6c3ea974645220354d06fa618abca15f76d084812eb55c2"
+      }
+    ],
+    "inputs": [
+      {
+        "node_id": "49",
+        "class_type": "LoadImage",
+        "key": "image",
+        "extensions": [
+          ".png",
+          ".jpg",
+          ".jpeg",
+          ".webp",
+          ".bmp",
+          ".gif"
+        ],
+        "name": "image_0"
+      },
+      {
+        "node_id": "50",
+        "class_type": "LoadImage",
+        "key": "image",
+        "extensions": [
+          ".png",
+          ".jpg",
+          ".jpeg",
+          ".webp",
+          ".bmp",
+          ".gif"
+        ],
+        "name": "image_1"
+      },
+      {
+        "node_id": "51",
+        "class_type": "LoadImage",
+        "key": "image",
+        "extensions": [
+          ".png",
+          ".jpg",
+          ".jpeg",
+          ".webp",
+          ".bmp",
+          ".gif"
+        ],
+        "name": "image_2"
+      }
+    ],
+    "outputs": [
+      {
+        "node_id": "214",
+        "class_type": "VHS_VideoCombine",
+        "name": "video_0"
+      },
+      {
+        "node_id": "264",
+        "class_type": "VHS_VideoCombine",
+        "name": "video_1"
+      }
+    ],
+    "output": {
+      "node_id": "214",
+      "class_type": "VHS_VideoCombine"
+    },
+    "parameters": [],
+    "repair": {
+      "comfy_not_found": [
+        "ask_path"
+      ],
+      "host_mismatch": [
+        "ask_path"
+      ],
+      "missing_node": [
+        "install_pinned"
+      ],
+      "missing_python_dependency": [
+        "ask"
+      ],
+      "node_version_conflict": [
+        "ask"
+      ],
+      "missing_model": [
+        "download_verified",
+        "ask"
+      ],
+      "missing_source": [
+        "ask"
+      ],
+      "auth_required": [
+        "ask"
+      ],
+      "approval_required": [
+        "ask"
+      ],
+      "restart_required": [
+        "ask"
+      ],
+      "download_failed": [
+        "retry",
+        "ask"
+      ],
+      "install_failed": [
+        "ask"
+      ],
+      "disk_full": [
+        "ask"
+      ],
+      "hash_mismatch": [
+        "stop"
+      ],
+      "stale_contract": [
+        "prepare"
+      ],
+      "oom": [
+        "skip"
+      ],
+      "bad_input": [
+        "skip"
+      ],
+      "unclassified": [
+        "show",
+        "skip"
+      ],
+      "port_busy": [
+        "ask"
+      ]
+    },
+    "input": {
+      "node_id": "49",
+      "class_type": "LoadImage",
+      "key": "image",
+      "extensions": [
+        ".png",
+        ".jpg",
+        ".jpeg",
+        ".webp",
+        ".bmp",
+        ".gif"
+      ]
+    }
+  }
+}

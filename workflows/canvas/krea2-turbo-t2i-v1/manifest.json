@@ -1,0 +1,97 @@
+{
+  "profileId": "krea2-turbo-t2i-v1",
+  "sourceUiDigest": "948ba7beea16ef2936a31ecc9d423b2cac169d26ed701c6711e65232dd326cc4",
+  "sourceGraphDigest": "a603dabe307d25dac1100fff3a29838501753094deb879411b8d99aa682d7730",
+  "templateDigest": "c4eb24e805f77db83234a1254ae40521290dede23d23f55ea72d68fc3eb9d39e",
+  "sampler": "30:3",
+  "outputNode": "29",
+  "outputs": {
+    "29": "final"
+  },
+  "selector": "49",
+  "conditioningReceipt": "30:20",
+  "promotedBindings": {
+    "value": [
+      [
+        "30:19",
+        "value"
+      ]
+    ],
+    "value_1": [
+      [
+        "30:24",
+        "value"
+      ]
+    ],
+    "thinking": [
+      [
+        "30:16",
+        "thinking"
+      ]
+    ],
+    "max_length_1": [
+      [
+        "30:16",
+        "max_length"
+      ]
+    ],
+    "seed_1": [
+      [
+        "30:3",
+        "seed"
+      ]
+    ],
+    "value_3": [
+      [
+        "30:23",
+        "value"
+      ]
+    ],
+    "lora_name_1": [
+      [
+        "30:15",
+        "lora_name"
+      ]
+    ],
+    "strength_model_1": [
+      [
+        "30:15",
+        "strength_model"
+      ]
+    ],
+    "string_b_1": [
+      [
+        "30:27",
+        "string_b"
+      ]
+    ],
+    "unet_name": [
+      [
+        "30:10",
+        "unet_name"
+      ]
+    ],
+    "clip_name": [
+      [
+        "30:11",
+        "clip_name"
+      ]
+    ],
+    "vae_name": [
+      [
+        "30:12",
+        "vae_name"
+      ]
+    ]
+  },
+  "changes": [
+    "Restore promoted named instance values via definition input link IDs and target socket names, preserving connected width/height routes."
+  ],
+  "defaults": {
+    "steps": 8,
+    "cfg": 1,
+    "negativePrompt": "",
+    "preset": "square",
+    "enhance": true
+  }
+}

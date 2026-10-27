@@ -1,0 +1,16 @@
+.cloud-generation { min-width: 0; max-width: 100%; }
+.cloud-generation-body { display: grid; gap: 16px; padding: clamp(14px, 3vw, 26px); min-width: 0; }
+.cloud-generation-body p { margin: 0; line-height: 1.55; }
+.cloud-generation-body > small { color: var(--muted); line-height: 1.5; }
+.cloud-generation .input-stack, .cloud-generation .proposal-card { min-width: 0; }
+.cloud-generation textarea, .cloud-generation select { max-width: 100%; box-sizing: border-box; }
+.cloud-reference-list { display: grid; gap: 9px; max-height: 240px; overflow: auto; border: 1px solid var(--line); border-radius: 12px; min-width: 0; padding: 12px; }
+.cloud-reference-list .cloud-reference-card { display: grid; grid-template-columns: 18px 64px minmax(0, 1fr); align-items: center; gap: 10px; min-width: 0; padding: 5px; border-radius: 9px; cursor: pointer; }
+.cloud-reference-list .cloud-reference-card:has(input:checked) { background: color-mix(in srgb, var(--accent, #8db45a) 14%, transparent); }
+.cloud-reference-thumbnail { display: grid; width: 64px; height: 54px; overflow: hidden; border-radius: 7px; background: var(--surface, #eef1e9); }
+.cloud-reference-thumbnail .media-preview { width: 100%; height: 100%; object-fit: cover; }
+.cloud-reference-copy { display: grid; gap: 3px; min-width: 0; }
+.cloud-reference-copy strong { overflow-wrap: anywhere; font-size: .9rem; }
+.cloud-reference-copy small { color: var(--muted); }
+.cloud-reference-list input[type="checkbox"] { flex: 0 0 auto; width: 16px; }
+@media (max-width: 480px) { .cloud-generation .os-chrome { flex-wrap: wrap; height: auto; gap: 8px; padding-block: 10px; } }

@@ -1,0 +1,3 @@
+[submodule "vendor/Confucius4-R2T2"]
+	path = vendor/Confucius4-R2T2
+	url = https://github.com/netease-youdao/Confucius4-R2T2.git

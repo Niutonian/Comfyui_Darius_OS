@@ -1,0 +1,1410 @@
+{
+  "id": "22b4549b-68f3-4e50-86c5-f676ac929070",
+  "revision": 0,
+  "last_node_id": 42,
+  "last_link_id": 29,
+  "nodes": [
+    {
+      "id": 2,
+      "type": "VAEDecodeAudio",
+      "pos": [
+        3001.9322265625,
+        130
+      ],
+      "size": [
+        164.2388671875,
+        46
+      ],
+      "flags": {},
+      "order": 20,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "samples",
+          "type": "LATENT",
+          "link": 1
+        },
+        {
+          "name": "vae",
+          "type": "VAE",
+          "link": 2
+        }
+      ],
+      "outputs": [
+        {
+          "name": "AUDIO",
+          "type": "AUDIO",
+          "links": [
+            24
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.41.2",
+        "Node name for S&R": "VAEDecodeAudio"
+      }
+    },
+    {
+      "id": 4,
+      "type": "SaveVideo",
+      "pos": [
+        3741.9322265625,
+        130
+      ],
+      "size": [
+        270,
+        106
+      ],
+      "flags": {},
+      "order": 23,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "video",
+          "type": "VIDEO",
+          "link": 3
+        }
+      ],
+      "outputs": [
+        {
+          "name": "video",
+          "type": "VIDEO",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.41.2",
+        "Node name for S&R": "SaveVideo"
+      },
+      "widgets_values": [
+        "video/neo_tokyo_continuity_from04/06_neural_upgrade",
+        "auto",
+        "auto",
+        "auto"
+      ],
+      "widgets_values_named": {
+        "filename_prefix": "video/neo_tokyo_continuity_from04/06_neural_upgrade",
+        "format": "auto",
+        "format.codec": "auto",
+        "codec": "auto"
+      }
+    },
+    {
+      "id": 7,
+      "type": "VAELoader",
+      "pos": [
+        100,
+        130
+      ],
+      "size": [
+        270,
+        58
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "VAE",
+          "type": "VAE",
+          "links": [
+            11,
+            29
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.41.2",
+        "Node name for S&R": "VAELoader"
+      },
+      "widgets_values": [
+        "minimax_h3_video_vae_fp16.safetensors"
+      ],
+      "widgets_values_named": {
+        "vae_name": "minimax_h3_video_vae_fp16.safetensors"
+      }
+    },
+    {
+      "id": 8,
+      "type": "BasicScheduler",
+      "pos": [
+        600,
+        740
+      ],
+      "size": [
+        270,
+        106
+      ],
+      "flags": {},
+      "order": 12,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "MODEL",
+          "link": 4
+        }
+      ],
+      "outputs": [
+        {
+          "name": "SIGMAS",
+          "type": "SIGMAS",
+          "links": [
+            19
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.41.2",
+        "Node name for S&R": "BasicScheduler"
+      },
+      "widgets_values": [
+        "simple",
+        4,
+        1
+      ],
+      "widgets_values_named": {
+        "scheduler": "simple",
+        "steps": 4,
+        "denoise": 1
+      }
+    },
+    {
+      "id": 13,
+      "type": "VAELoader",
+      "pos": [
+        100,
+        318
+      ],
+      "size": [
+        270,
+        58
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "VAE",
+          "type": "VAE",
+          "links": [
+            2
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.41.2",
+        "Node name for S&R": "VAELoader"
+      },
+      "widgets_values": [
+        "minimax_h3_audio_vae_fp32.safetensors"
+      ],
+      "widgets_values_named": {
+        "vae_name": "minimax_h3_audio_vae_fp32.safetensors"
+      }
+    },
+    {
+      "id": 14,
+      "type": "PrimitiveStringMultiline",
+      "pos": [
+        100,
+        506
+      ],
+      "size": [
+        400,
+        200
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": [
+            6
+          ]
+        }
+      ],
+      "title": "提示词",
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.41.2",
+        "Node name for S&R": "PrimitiveStringMultiline"
+      },
+      "widgets_values": [
+        "For the target video, at 0.00 seconds into the target video, <Picture 1> (from [Shot 1]) is fully referenced.\n\nintegrated_multimodal_description: [Shot 1] 0.00-10.00 seconds. CONTINUITY LOCK, throughout every frame: The single glowing cyan payment bracelet is fastened ONLY to his anatomical RIGHT wrist, the same arm as his right hand. His anatomical LEFT wrist is bare, unlit, with no bracelet. In a straight rear view the glowing band is on the RIGHT side of the image. Never mirror or swap his wrists. The board is the original thin dark futuristic MAGNETIC HOVERBOARD with a smooth cyan illuminated underside, entirely wheel-free, truck-free, axle-free. Its rigid smooth underside floats visibly twenty centimeters ABOVE the ground with a clear air gap and cyan light beneath it; it never rolls on or touches the pavement. Preserve this exact single board whether carried or ridden. Both shoes stand on this one floating board when riding. Any existing neural socket stays behind the anatomical RIGHT ear; the new upgrade module is attached only in scene 06, never before. Preserve the original rounded dark board with a continuous cyan rim and a smooth underside in every pose, especially while lifted and carried. Continue the reference image as the first frame, preserving EXACTLY the same single teenage male protagonist and the same hand-drawn 2D cyberpunk anime visual style. Same narrow lanky build, shaved gray sides of head, spiky cyan-and-magenta luminous punk crest, mustard-yellow oversized bomber jacket with the small blinking illuminated EXE patch on the back, huge loose dark-purple cargo trousers, chunky sneakers, glowing cyan right-wrist payment band, subtle cybernetic neck socket behind the right ear. Keep his silhouette, hair, clothing, colors and proportions constant. Rear and rear-three-quarter views predominate; the camera stays with him. Rich 1980s Japanese city-pop palette: saturated cyan, electric pink and violet, warm amber shop windows, deep midnight blue shadows, crisp ink lines, elegant cel-shaded animation, detailed painted backgrounds, wet neon reflections, light grain and soft analog bloom. Dense spectacular Neo-Tokyo with layered buildings, overhead cables, elevated trains, luminous vending machines, distant hover traffic, animated crowds and vapor. Real movement of feet, clothes, hair, vehicles and scenery, clear spatial progression and parallax. The environment moves naturally rather than being a frozen poster. One coherent continuous tracking shot with a simple readable action, no montage within this clip. Only scene-native shop signage and the existing EXE jacket patch; clean full-frame cinematography without titles, captions, subtitles, watermarks or editorial overlays. No dialogue. Continue EXACTLY the accepted shop-counter reference for one uninterrupted ten-second shot. Keep the camera locked in the same rear-RIGHT three-quarter position and keep the boy at the counter throughout. Same slender anime teenager, same cyan-magenta crest, same yellow jacket and SMALL BLACK rectangular neon EXE display, same purple cargo trousers. His near RIGHT arm is the one with the little red upper-sleeve patch; ONE luminous CYAN bracelet remains fastened to this anatomical RIGHT wrist throughout. His far LEFT wrist is bare throughout. 0-2 seconds: he places the black tray with the one tiny silver-cyan module on the glass counter. Both hands rest LOW and relaxed on the counter, his near RIGHT wrist bracelet visible and his far LEFT wrist bare. He keeps the same head orientation as the reference, with the near RIGHT ear visible. 2-6 seconds: the single older female vendor takes the tiny module and gently clips it to the external socket just behind his near anatomical RIGHT ear, on the same side as his bracelet arm. Only the vendor raises a hand toward his ear; the boy keeps both forearms low and still. Tiny accessory smaller than his ear, intact skin, simple magnetic attachment. 6-8 seconds: the vendor withdraws her hands and stays behind her original counter. The attached RIGHT-ear module gives one subtle cyan pulse. 8-10 seconds: the boy gives a small satisfied nod while remaining at the SAME counter, both hands still resting low, single RIGHT-wrist bracelet and bare LEFT wrist visible. The original compact smooth cyan-rimmed anti-gravity platform stays parked beside him exactly as in the reference, undisturbed for the whole scene. No one retrieves or rides it in this shot. The vendor remains one person behind the counter. The shop stays fixed in space, with the same glass displays, no exit, no camera orbit, no transition or dissolve. End at the counter with the finished tiny RIGHT-side module, ready to leave in the next scene. Clean city-pop anime frame, no overlays.\n\noverall_soundscape: A delicate magnetic click, soft electronic activation tones, jacket rustle, shop chime, renewed distant street ambience.\n\nnon_diegetic_music: Quiet original instrumental Japanese city-pop, warm electric piano, mellow analog synth bass, airy synth pads, gentle drum machine at a steady moderate tempo. Dreamy late-night mood, below the natural sound effects, no singing."
+      ],
+      "widgets_values_named": {
+        "value": "For the target video, at 0.00 seconds into the target video, <Picture 1> (from [Shot 1]) is fully referenced.\n\nintegrated_multimodal_description: [Shot 1] 0.00-10.00 seconds. CONTINUITY LOCK, throughout every frame: The single glowing cyan payment bracelet is fastened ONLY to his anatomical RIGHT wrist, the same arm as his right hand. His anatomical LEFT wrist is bare, unlit, with no bracelet. In a straight rear view the glowing band is on the RIGHT side of the image. Never mirror or swap his wrists. The board is the original thin dark futuristic MAGNETIC HOVERBOARD with a smooth cyan illuminated underside, entirely wheel-free, truck-free, axle-free. Its rigid smooth underside floats visibly twenty centimeters ABOVE the ground with a clear air gap and cyan light beneath it; it never rolls on or touches the pavement. Preserve this exact single board whether carried or ridden. Both shoes stand on this one floating board when riding. Any existing neural socket stays behind the anatomical RIGHT ear; the new upgrade module is attached only in scene 06, never before. Preserve the original rounded dark board with a continuous cyan rim and a smooth underside in every pose, especially while lifted and carried. Continue the reference image as the first frame, preserving EXACTLY the same single teenage male protagonist and the same hand-drawn 2D cyberpunk anime visual style. Same narrow lanky build, shaved gray sides of head, spiky cyan-and-magenta luminous punk crest, mustard-yellow oversized bomber jacket with the small blinking illuminated EXE patch on the back, huge loose dark-purple cargo trousers, chunky sneakers, glowing cyan right-wrist payment band, subtle cybernetic neck socket behind the right ear. Keep his silhouette, hair, clothing, colors and proportions constant. Rear and rear-three-quarter views predominate; the camera stays with him. Rich 1980s Japanese city-pop palette: saturated cyan, electric pink and violet, warm amber shop windows, deep midnight blue shadows, crisp ink lines, elegant cel-shaded animation, detailed painted backgrounds, wet neon reflections, light grain and soft analog bloom. Dense spectacular Neo-Tokyo with layered buildings, overhead cables, elevated trains, luminous vending machines, distant hover traffic, animated crowds and vapor. Real movement of feet, clothes, hair, vehicles and scenery, clear spatial progression and parallax. The environment moves naturally rather than being a frozen poster. One coherent continuous tracking shot with a simple readable action, no montage within this clip. Only scene-native shop signage and the existing EXE jacket patch; clean full-frame cinematography without titles, captions, subtitles, watermarks or editorial overlays. No dialogue. Continue EXACTLY the accepted shop-counter reference for one uninterrupted ten-second shot. Keep the camera locked in the same rear-RIGHT three-quarter position and keep the boy at the counter throughout. Same slender anime teenager, same cyan-magenta crest, same yellow jacket and SMALL BLACK rectangular neon EXE display, same purple cargo trousers. His near RIGHT arm is the one with the little red upper-sleeve patch; ONE luminous CYAN bracelet remains fastened to this anatomical RIGHT wrist throughout. His far LEFT wrist is bare throughout. 0-2 seconds: he places the black tray with the one tiny silver-cyan module on the glass counter. Both hands rest LOW and relaxed on the counter, his near RIGHT wrist bracelet visible and his far LEFT wrist bare. He keeps the same head orientation as the reference, with the near RIGHT ear visible. 2-6 seconds: the single older female vendor takes the tiny module and gently clips it to the external socket just behind his near anatomical RIGHT ear, on the same side as his bracelet arm. Only the vendor raises a hand toward his ear; the boy keeps both forearms low and still. Tiny accessory smaller than his ear, intact skin, simple magnetic attachment. 6-8 seconds: the vendor withdraws her hands and stays behind her original counter. The attached RIGHT-ear module gives one subtle cyan pulse. 8-10 seconds: the boy gives a small satisfied nod while remaining at the SAME counter, both hands still resting low, single RIGHT-wrist bracelet and bare LEFT wrist visible. The original compact smooth cyan-rimmed anti-gravity platform stays parked beside him exactly as in the reference, undisturbed for the whole scene. No one retrieves or rides it in this shot. The vendor remains one person behind the counter. The shop stays fixed in space, with the same glass displays, no exit, no camera orbit, no transition or dissolve. End at the counter with the finished tiny RIGHT-side module, ready to leave in the next scene. Clean city-pop anime frame, no overlays.\n\noverall_soundscape: A delicate magnetic click, soft electronic activation tones, jacket rustle, shop chime, renewed distant street ambience.\n\nnon_diegetic_music: Quiet original instrumental Japanese city-pop, warm electric piano, mellow analog synth bass, airy synth pads, gentle drum machine at a steady moderate tempo. Dreamy late-night mood, below the natural sound effects, no singing."
+      }
+    },
+    {
+      "id": 15,
+      "type": "ResolutionSelector",
+      "pos": [
+        600,
+        460
+      ],
+      "size": [
+        270,
+        150
+      ],
+      "flags": {},
+      "order": 11,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "megapixels",
+          "type": "FLOAT",
+          "widget": {
+            "name": "megapixels"
+          },
+          "link": 5
+        }
+      ],
+      "outputs": [
+        {
+          "name": "width",
+          "type": "INT",
+          "links": [
+            7
+          ]
+        },
+        {
+          "name": "height",
+          "type": "INT",
+          "links": [
+            8
+          ]
+        }
+      ],
+      "title": "Resolution Selector (Size)",
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.41.2",
+        "Node name for S&R": "ResolutionSelector"
+      },
+      "widgets_values": [
+        "16:9 (Widescreen)",
+        1,
+        32
+      ],
+      "widgets_values_named": {
+        "aspect_ratio": "16:9 (Widescreen)",
+        "megapixels": 1,
+        "multiple": 32
+      }
+    },
+    {
+      "id": 16,
+      "type": "MiniMaxH3ImageToVideo",
+      "pos": [
+        1100,
+        130
+      ],
+      "size": [
+        400,
+        220
+      ],
+      "flags": {},
+      "order": 14,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "clip",
+          "type": "CLIP",
+          "link": 10
+        },
+        {
+          "name": "vae",
+          "type": "VAE",
+          "link": 11
+        },
+        {
+          "name": "first_frame",
+          "shape": 7,
+          "type": "IMAGE",
+          "link": 12
+        },
+        {
+          "name": "last_frame",
+          "shape": 7,
+          "type": "IMAGE",
+          "link": null
+        },
+        {
+          "name": "prompt",
+          "type": "STRING",
+          "widget": {
+            "name": "prompt"
+          },
+          "link": 6
+        },
+        {
+          "name": "width",
+          "type": "INT",
+          "widget": {
+            "name": "width"
+          },
+          "link": 7
+        },
+        {
+          "name": "height",
+          "type": "INT",
+          "widget": {
+            "name": "height"
+          },
+          "link": 8
+        },
+        {
+          "name": "length",
+          "type": "INT",
+          "widget": {
+            "name": "length"
+          },
+          "link": 9
+        }
+      ],
+      "outputs": [
+        {
+          "name": "positive",
+          "type": "CONDITIONING",
+          "links": [
+            22
+          ]
+        },
+        {
+          "name": "LATENT",
+          "type": "LATENT",
+          "links": [
+            20
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.41.2",
+        "Node name for S&R": "MiniMaxH3ImageToVideo"
+      },
+      "widgets_values": [
+        "",
+        1344,
+        768,
+        124
+      ],
+      "widgets_values_named": {
+        "prompt": "",
+        "width": 1344,
+        "height": 768,
+        "length": 124
+      }
+    },
+    {
+      "id": 17,
+      "type": "ModelPreviewOverrideKJ",
+      "pos": [
+        1970,
+        130
+      ],
+      "size": [
+        360,
+        480
+      ],
+      "flags": {},
+      "order": 17,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "MODEL",
+          "link": 14
+        },
+        {
+          "name": "vae",
+          "shape": 7,
+          "type": "VAE",
+          "link": null
+        },
+        {
+          "name": "audio_vae",
+          "shape": 7,
+          "type": "VAE",
+          "link": null
+        },
+        {
+          "name": "preview_frames",
+          "type": "INT",
+          "widget": {
+            "name": "preview_frames"
+          },
+          "link": 13
+        }
+      ],
+      "outputs": [
+        {
+          "name": "MODEL",
+          "type": "MODEL",
+          "links": [
+            21
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-kjnodes",
+        "ver": "d3cfe21625e5170126ce06fbfcfe1d88108688c3",
+        "Node name for S&R": "ModelPreviewOverrideKJ"
+      },
+      "widgets_values": [
+        1024,
+        80,
+        true,
+        1,
+        12,
+        "taeh3.safetensors",
+        ""
+      ],
+      "widgets_values_named": {
+        "max_resolution": 1024,
+        "jpeg_quality": 80,
+        "suppress_default_preview": true,
+        "preview_frames": 1,
+        "preview_fps": 12,
+        "tiny_vae": "taeh3.safetensors",
+        "preview": ""
+      }
+    },
+    {
+      "id": 20,
+      "type": "PrimitiveFloat",
+      "pos": [
+        100,
+        836
+      ],
+      "size": [
+        270,
+        58
+      ],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "FLOAT",
+          "type": "FLOAT",
+          "links": [
+            15
+          ]
+        }
+      ],
+      "title": "Float (Duration)",
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.41.2",
+        "Node name for S&R": "PrimitiveFloat"
+      },
+      "widgets_values": [
+        10
+      ],
+      "widgets_values_named": {
+        "value": 10
+      }
+    },
+    {
+      "id": 21,
+      "type": "CLIPLoader",
+      "pos": [
+        100,
+        1024
+      ],
+      "size": [
+        270,
+        106
+      ],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "CLIP",
+          "type": "CLIP",
+          "links": [
+            10
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.41.2",
+        "Node name for S&R": "CLIPLoader"
+      },
+      "widgets_values": [
+        "qwen3vl_32b_minimax_h3_nvfp4_awq.safetensors",
+        "minimax",
+        "default"
+      ],
+      "widgets_values_named": {
+        "clip_name": "qwen3vl_32b_minimax_h3_nvfp4_awq.safetensors",
+        "type": "minimax",
+        "device": "default"
+      }
+    },
+    {
+      "id": 23,
+      "type": "ComfyMathExpression",
+      "pos": [
+        600,
+        130
+      ],
+      "size": [
+        400,
+        200
+      ],
+      "flags": {},
+      "order": 10,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "values.a",
+          "type": "FLOAT,INT,BOOLEAN",
+          "link": 15
+        },
+        {
+          "name": "values.b",
+          "shape": 7,
+          "type": "FLOAT,INT,BOOLEAN",
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "name": "FLOAT",
+          "type": "FLOAT",
+          "links": null
+        },
+        {
+          "name": "INT",
+          "type": "INT",
+          "links": [
+            9,
+            13
+          ]
+        },
+        {
+          "name": "BOOL",
+          "type": "BOOLEAN",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.41.2",
+        "Node name for S&R": "ComfyMathExpression"
+      },
+      "widgets_values": [
+        "max(5, round(a * 24)) + (5 - (max(5, round(a * 24)) % 17)) % 17"
+      ],
+      "widgets_values_named": {
+        "expression": "max(5, round(a * 24)) + (5 - (max(5, round(a * 24)) % 17)) % 17"
+      }
+    },
+    {
+      "id": 26,
+      "type": "SamplerCustomAdvanced",
+      "pos": [
+        2689.568359375,
+        130
+      ],
+      "size": [
+        212.3638671875,
+        106
+      ],
+      "flags": {},
+      "order": 19,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "noise",
+          "type": "NOISE",
+          "link": 16
+        },
+        {
+          "name": "guider",
+          "type": "GUIDER",
+          "link": 17
+        },
+        {
+          "name": "sampler",
+          "type": "SAMPLER",
+          "link": 18
+        },
+        {
+          "name": "sigmas",
+          "type": "SIGMAS",
+          "link": 19
+        },
+        {
+          "name": "latent_image",
+          "type": "LATENT",
+          "link": 20
+        }
+      ],
+      "outputs": [
+        {
+          "name": "output",
+          "type": "LATENT",
+          "links": null
+        },
+        {
+          "name": "denoised_output",
+          "type": "LATENT",
+          "links": [
+            1,
+            28
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.41.2",
+        "Node name for S&R": "SamplerCustomAdvanced"
+      }
+    },
+    {
+      "id": 27,
+      "type": "PrimitiveFloat",
+      "pos": [
+        100,
+        1260
+      ],
+      "size": [
+        270,
+        58
+      ],
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "FLOAT",
+          "type": "FLOAT",
+          "links": [
+            5
+          ]
+        }
+      ],
+      "title": "target_megapixels(放大的像素数)",
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.41.2",
+        "Node name for S&R": "PrimitiveFloat"
+      },
+      "widgets_values": [
+        1
+      ],
+      "widgets_values_named": {
+        "value": 1
+      }
+    },
+    {
+      "id": 29,
+      "type": "KSamplerSelect",
+      "pos": [
+        100,
+        1448
+      ],
+      "size": [
+        270,
+        58
+      ],
+      "flags": {},
+      "order": 6,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "SAMPLER",
+          "type": "SAMPLER",
+          "links": [
+            18
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.41.2",
+        "Node name for S&R": "KSamplerSelect"
+      },
+      "widgets_values": [
+        "euler"
+      ],
+      "widgets_values_named": {
+        "sampler_name": "euler"
+      }
+    },
+    {
+      "id": 33,
+      "type": "BasicGuider",
+      "pos": [
+        2430,
+        130
+      ],
+      "size": [
+        159.568359375,
+        46
+      ],
+      "flags": {},
+      "order": 18,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "MODEL",
+          "link": 21
+        },
+        {
+          "name": "conditioning",
+          "type": "CONDITIONING",
+          "link": 22
+        }
+      ],
+      "outputs": [
+        {
+          "name": "GUIDER",
+          "type": "GUIDER",
+          "links": [
+            17
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.41.2",
+        "Node name for S&R": "BasicGuider"
+      }
+    },
+    {
+      "id": 34,
+      "type": "UNETLoader",
+      "pos": [
+        100,
+        1636
+      ],
+      "size": [
+        270,
+        82
+      ],
+      "flags": {},
+      "order": 7,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "MODEL",
+          "type": "MODEL",
+          "links": [
+            4,
+            26
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.41.2",
+        "Node name for S&R": "UNETLoader"
+      },
+      "widgets_values": [
+        "minimax_h3_fl2va_pruned_int8_convrot.safetensors",
+        "default"
+      ],
+      "widgets_values_named": {
+        "unet_name": "minimax_h3_fl2va_pruned_int8_convrot.safetensors",
+        "weight_dtype": "default"
+      }
+    },
+    {
+      "id": 36,
+      "type": "CreateVideo",
+      "pos": [
+        3371.9322265625,
+        130
+      ],
+      "size": [
+        270,
+        150
+      ],
+      "flags": {},
+      "order": 22,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 23
+        },
+        {
+          "name": "audio",
+          "shape": 7,
+          "type": "AUDIO",
+          "link": 24
+        }
+      ],
+      "outputs": [
+        {
+          "name": "VIDEO",
+          "type": "VIDEO",
+          "links": [
+            3
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.41.2",
+        "Node name for S&R": "CreateVideo"
+      },
+      "widgets_values": [
+        24,
+        8,
+        "sRGB",
+        "none"
+      ],
+      "widgets_values_named": {
+        "fps": 24,
+        "bit_depth": 8,
+        "color_space": "sRGB",
+        "codec": "none"
+      }
+    },
+    {
+      "id": 37,
+      "type": "RandomNoise",
+      "pos": [
+        100,
+        1848
+      ],
+      "size": [
+        270,
+        82
+      ],
+      "flags": {},
+      "order": 8,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "NOISE",
+          "type": "NOISE",
+          "links": [
+            16
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.41.2",
+        "Node name for S&R": "RandomNoise"
+      },
+      "widgets_values": [
+        624867938323180,
+        "randomize"
+      ],
+      "widgets_values_named": {
+        "noise_seed": 624867938323180,
+        "control_after_generate": "randomize"
+      }
+    },
+    {
+      "id": 40,
+      "type": "ModelAttentionBackend",
+      "pos": [
+        1600,
+        130
+      ],
+      "size": [
+        270,
+        58
+      ],
+      "flags": {},
+      "order": 16,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "MODEL",
+          "link": 25
+        }
+      ],
+      "outputs": [
+        {
+          "name": "model",
+          "type": "MODEL",
+          "links": [
+            14
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.41.2",
+        "Node name for S&R": "ModelAttentionBackend"
+      },
+      "widgets_values": [
+        "comfy kitchen attention"
+      ],
+      "widgets_values_named": {
+        "attention": "comfy kitchen attention"
+      }
+    },
+    {
+      "id": 41,
+      "type": "LoraLoaderModelOnly",
+      "pos": [
+        600,
+        976
+      ],
+      "size": [
+        270,
+        82
+      ],
+      "flags": {},
+      "order": 13,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "MODEL",
+          "link": 26
+        }
+      ],
+      "outputs": [
+        {
+          "name": "MODEL",
+          "type": "MODEL",
+          "links": [
+            27
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.41.2",
+        "Node name for S&R": "LoraLoaderModelOnly"
+      },
+      "widgets_values": [
+        "minimax_h3_fl2v_lightx2v_turbo_4step_v0.1_comfy.safetensors",
+        1
+      ],
+      "widgets_values_named": {
+        "lora_name": "minimax_h3_fl2v_lightx2v_turbo_4step_v0.1_comfy.safetensors",
+        "strength_model": 1
+      }
+    },
+    {
+      "id": 42,
+      "type": "MiniMaxH3SigmaShift",
+      "pos": [
+        1100,
+        480
+      ],
+      "size": [
+        277.2857421875,
+        82
+      ],
+      "flags": {},
+      "order": 15,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "MODEL",
+          "link": 27
+        }
+      ],
+      "outputs": [
+        {
+          "name": "MODEL",
+          "type": "MODEL",
+          "links": [
+            25
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.41.2",
+        "Node name for S&R": "MiniMaxH3SigmaShift"
+      },
+      "widgets_values": [
+        12,
+        3
+      ],
+      "widgets_values_named": {
+        "shift_video": 12,
+        "shift_audio": 3
+      }
+    },
+    {
+      "id": "reference",
+      "type": "LoadImage",
+      "pos": [
+        100,
+        2060
+      ],
+      "size": [
+        282.798828125,
+        102
+      ],
+      "flags": {},
+      "order": 9,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            12
+          ]
+        },
+        {
+          "name": "MASK",
+          "type": "MASK",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.41.2",
+        "Node name for S&R": "LoadImage",
+        "guhaiImageValue": "06_neural_upgrade_reference (2).png"
+      },
+      "widgets_values": [
+        "06_neural_upgrade_reference (2).png",
+        "image"
+      ],
+      "widgets_values_named": {
+        "image": "06_neural_upgrade_reference (2).png",
+        "upload": "image"
+      }
+    },
+    {
+      "id": "native_decode",
+      "type": "VAEDecodeTiled",
+      "pos": [
+        3001.9322265625,
+        306
+      ],
+      "size": [
+        270,
+        150
+      ],
+      "flags": {},
+      "order": 21,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "samples",
+          "type": "LATENT",
+          "link": 28
+        },
+        {
+          "name": "vae",
+          "type": "VAE",
+          "link": 29
+        }
+      ],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            23
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.41.2",
+        "Node name for S&R": "VAEDecodeTiled"
+      },
+      "widgets_values": [
+        512,
+        64,
+        64,
+        8
+      ],
+      "widgets_values_named": {
+        "tile_size": 512,
+        "overlap": 64,
+        "temporal_size": 64,
+        "temporal_overlap": 8
+      }
+    }
+  ],
+  "links": [
+    [
+      1,
+      26,
+      1,
+      2,
+      0,
+      "LATENT"
+    ],
+    [
+      2,
+      13,
+      0,
+      2,
+      1,
+      "VAE"
+    ],
+    [
+      3,
+      36,
+      0,
+      4,
+      0,
+      "VIDEO"
+    ],
+    [
+      4,
+      34,
+      0,
+      8,
+      0,
+      "MODEL"
+    ],
+    [
+      5,
+      27,
+      0,
+      15,
+      0,
+      "FLOAT"
+    ],
+    [
+      6,
+      14,
+      0,
+      16,
+      4,
+      "STRING"
+    ],
+    [
+      7,
+      15,
+      0,
+      16,
+      5,
+      "INT"
+    ],
+    [
+      8,
+      15,
+      1,
+      16,
+      6,
+      "INT"
+    ],
+    [
+      9,
+      23,
+      1,
+      16,
+      7,
+      "INT"
+    ],
+    [
+      10,
+      21,
+      0,
+      16,
+      0,
+      "CLIP"
+    ],
+    [
+      11,
+      7,
+      0,
+      16,
+      1,
+      "VAE"
+    ],
+    [
+      12,
+      "reference",
+      0,
+      16,
+      2,
+      "IMAGE"
+    ],
+    [
+      13,
+      23,
+      1,
+      17,
+      3,
+      "INT"
+    ],
+    [
+      14,
+      40,
+      0,
+      17,
+      0,
+      "MODEL"
+    ],
+    [
+      15,
+      20,
+      0,
+      23,
+      0,
+      "FLOAT"
+    ],
+    [
+      16,
+      37,
+      0,
+      26,
+      0,
+      "NOISE"
+    ],
+    [
+      17,
+      33,
+      0,
+      26,
+      1,
+      "GUIDER"
+    ],
+    [
+      18,
+      29,
+      0,
+      26,
+      2,
+      "SAMPLER"
+    ],
+    [
+      19,
+      8,
+      0,
+      26,
+      3,
+      "SIGMAS"
+    ],
+    [
+      20,
+      16,
+      1,
+      26,
+      4,
+      "LATENT"
+    ],
+    [
+      21,
+      17,
+      0,
+      33,
+      0,
+      "MODEL"
+    ],
+    [
+      22,
+      16,
+      0,
+      33,
+      1,
+      "CONDITIONING"
+    ],
+    [
+      23,
+      "native_decode",
+      0,
+      36,
+      0,
+      "IMAGE"
+    ],
+    [
+      24,
+      2,
+      0,
+      36,
+      1,
+      "AUDIO"
+    ],
+    [
+      25,
+      42,
+      0,
+      40,
+      0,
+      "MODEL"
+    ],
+    [
+      26,
+      34,
+      0,
+      41,
+      0,
+      "MODEL"
+    ],
+    [
+      27,
+      41,
+      0,
+      42,
+      0,
+      "MODEL"
+    ],
+    [
+      28,
+      26,
+      1,
+      "native_decode",
+      0,
+      "LATENT"
+    ],
+    [
+      29,
+      7,
+      0,
+      "native_decode",
+      1,
+      "VAE"
+    ]
+  ],
+  "groups": [],
+  "config": {},
+  "extra": {
+    "ds": {
+      "scale": 0.3352330464813857,
+      "offset": [
+        1209.2022521687818,
+        615.3169656227399
+      ]
+    },
+    "frontendVersion": "1.55.17",
+    "VHS_latentpreview": false,
+    "VHS_latentpreviewrate": 0,
+    "VHS_MetadataImage": true,
+    "VHS_KeepIntermediate": true
+  },
+  "version": 0.4,
+  "seed_widgets": {
+    "37": 0
+  }
+}

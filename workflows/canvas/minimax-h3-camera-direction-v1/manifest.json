@@ -1,0 +1,51 @@
+{
+  "profileId": "minimax-h3-camera-direction-v1",
+  "sourceUiDigest": "af2f80c9f698390b0e7fc9fd5c729072589b6c0495e67e19813f5a17e9cc1a87",
+  "exportDigest": "61665b198b9b9b58783de78f8c8adf6672d4517f84442d4cdb8d5018d66895d1",
+  "templateDigest": "38a94c35f37a7f52bb2e35643fcf3a267486258e430e5abe295099aa43a19291",
+  "changes": [
+    "Restore promoted instance values via named bindings and subgraph input link IDs; Turbo true/8 steps, instance seed/models/strength.",
+    "Resolve timing-only camera editor to its 124-frame/24fps constants; retain written node-193 prompt, omit authoring text displays. No trajectory-conditioning claim."
+  ],
+  "promotedBindings": {
+    "noise_seed": [
+      "105:15",
+      "noise_seed"
+    ],
+    "unet_name": [
+      "105:6",
+      "unet_name"
+    ],
+    "clip_name": [
+      "105:13",
+      "clip_name"
+    ],
+    "vae_name": [
+      "105:11",
+      "vae_name"
+    ],
+    "vae_name_1": [
+      "105:24",
+      "vae_name"
+    ],
+    "value": [
+      "105:126",
+      "value"
+    ],
+    "lora_name": [
+      "105:121",
+      "lora_name"
+    ],
+    "strength_model_1": [
+      "105:121",
+      "strength_model"
+    ],
+    "value_2": [
+      "105:125",
+      "value"
+    ]
+  },
+  "outputs": {
+    "92": "final"
+  }
+}

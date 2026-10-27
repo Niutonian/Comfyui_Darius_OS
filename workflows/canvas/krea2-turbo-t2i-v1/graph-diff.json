@@ -1,0 +1,26 @@
+[
+  {
+    "node": "30:16",
+    "field": "thinking",
+    "before": true,
+    "after": false
+  },
+  {
+    "node": "30:19",
+    "field": "value",
+    "before": "A high-resolution, surreal digital illustration showing a human hand holding a martini glass. The image is overlaid with whimsical, expressive ink-style doodles, including a cartoon figure inside the glass, a drawn citrus wedge on the rim, and various abstract sketches and faces surrounding the glass against a clean, white background. The style seamlessly blends a realistic, lit photograph with loose, hand-drawn marker artistry, creating a playful and artistic juxtaposition.",
+    "after": ""
+  },
+  {
+    "node": "29",
+    "field": "filename_prefix",
+    "before": "Krea2_turbo",
+    "after": "darius/canvas/pending"
+  },
+  {
+    "node": "30:3",
+    "field": "seed",
+    "before": 735915477938686,
+    "after": 142168432176530
+  }
+]

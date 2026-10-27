@@ -1,0 +1,351 @@
+{
+  "2": {
+    "inputs": {
+      "samples": [
+        "26",
+        1
+      ],
+      "vae": [
+        "13",
+        0
+      ]
+    },
+    "class_type": "VAEDecodeAudio",
+    "_meta": {
+      "title": "VAE Decode Audio"
+    }
+  },
+  "4": {
+    "inputs": {
+      "filename_prefix": "video/neo_tokyo_continuity_from04/06_neural_upgrade",
+      "format": "auto",
+      "codec": "auto",
+      "video": [
+        "36",
+        0
+      ],
+      "format.codec": "auto"
+    },
+    "class_type": "SaveVideo",
+    "_meta": {
+      "title": "Save Video"
+    }
+  },
+  "7": {
+    "inputs": {
+      "vae_name": "minimax_h3_video_vae_fp16.safetensors"
+    },
+    "class_type": "VAELoader",
+    "_meta": {
+      "title": "Load VAE"
+    }
+  },
+  "8": {
+    "inputs": {
+      "scheduler": "simple",
+      "steps": 4,
+      "denoise": 1,
+      "model": [
+        "34",
+        0
+      ]
+    },
+    "class_type": "BasicScheduler",
+    "_meta": {
+      "title": "BasicScheduler"
+    }
+  },
+  "13": {
+    "inputs": {
+      "vae_name": "minimax_h3_audio_vae_fp32.safetensors"
+    },
+    "class_type": "VAELoader",
+    "_meta": {
+      "title": "Load VAE"
+    }
+  },
+  "14": {
+    "inputs": {
+      "value": "For the target video, at 0.00 seconds into the target video, <Picture 1> (from [Shot 1]) is fully referenced.\n\nintegrated_multimodal_description: [Shot 1] 0.00-10.00 seconds. CONTINUITY LOCK, throughout every frame: The single glowing cyan payment bracelet is fastened ONLY to his anatomical RIGHT wrist, the same arm as his right hand. His anatomical LEFT wrist is bare, unlit, with no bracelet. In a straight rear view the glowing band is on the RIGHT side of the image. Never mirror or swap his wrists. The board is the original thin dark futuristic MAGNETIC HOVERBOARD with a smooth cyan illuminated underside, entirely wheel-free, truck-free, axle-free. Its rigid smooth underside floats visibly twenty centimeters ABOVE the ground with a clear air gap and cyan light beneath it; it never rolls on or touches the pavement. Preserve this exact single board whether carried or ridden. Both shoes stand on this one floating board when riding. Any existing neural socket stays behind the anatomical RIGHT ear; the new upgrade module is attached only in scene 06, never before. Preserve the original rounded dark board with a continuous cyan rim and a smooth underside in every pose, especially while lifted and carried. Continue the reference image as the first frame, preserving EXACTLY the same single teenage male protagonist and the same hand-drawn 2D cyberpunk anime visual style. Same narrow lanky build, shaved gray sides of head, spiky cyan-and-magenta luminous punk crest, mustard-yellow oversized bomber jacket with the small blinking illuminated EXE patch on the back, huge loose dark-purple cargo trousers, chunky sneakers, glowing cyan right-wrist payment band, subtle cybernetic neck socket behind the right ear. Keep his silhouette, hair, clothing, colors and proportions constant. Rear and rear-three-quarter views predominate; the camera stays with him. Rich 1980s Japanese city-pop palette: saturated cyan, electric pink and violet, warm amber shop windows, deep midnight blue shadows, crisp ink lines, elegant cel-shaded animation, detailed painted backgrounds, wet neon reflections, light grain and soft analog bloom. Dense spectacular Neo-Tokyo with layered buildings, overhead cables, elevated trains, luminous vending machines, distant hover traffic, animated crowds and vapor. Real movement of feet, clothes, hair, vehicles and scenery, clear spatial progression and parallax. The environment moves naturally rather than being a frozen poster. One coherent continuous tracking shot with a simple readable action, no montage within this clip. Only scene-native shop signage and the existing EXE jacket patch; clean full-frame cinematography without titles, captions, subtitles, watermarks or editorial overlays. No dialogue. Continue EXACTLY the accepted shop-counter reference for one uninterrupted ten-second shot. Keep the camera locked in the same rear-RIGHT three-quarter position and keep the boy at the counter throughout. Same slender anime teenager, same cyan-magenta crest, same yellow jacket and SMALL BLACK rectangular neon EXE display, same purple cargo trousers. His near RIGHT arm is the one with the little red upper-sleeve patch; ONE luminous CYAN bracelet remains fastened to this anatomical RIGHT wrist throughout. His far LEFT wrist is bare throughout. 0-2 seconds: he places the black tray with the one tiny silver-cyan module on the glass counter. Both hands rest LOW and relaxed on the counter, his near RIGHT wrist bracelet visible and his far LEFT wrist bare. He keeps the same head orientation as the reference, with the near RIGHT ear visible. 2-6 seconds: the single older female vendor takes the tiny module and gently clips it to the external socket just behind his near anatomical RIGHT ear, on the same side as his bracelet arm. Only the vendor raises a hand toward his ear; the boy keeps both forearms low and still. Tiny accessory smaller than his ear, intact skin, simple magnetic attachment. 6-8 seconds: the vendor withdraws her hands and stays behind her original counter. The attached RIGHT-ear module gives one subtle cyan pulse. 8-10 seconds: the boy gives a small satisfied nod while remaining at the SAME counter, both hands still resting low, single RIGHT-wrist bracelet and bare LEFT wrist visible. The original compact smooth cyan-rimmed anti-gravity platform stays parked beside him exactly as in the reference, undisturbed for the whole scene. No one retrieves or rides it in this shot. The vendor remains one person behind the counter. The shop stays fixed in space, with the same glass displays, no exit, no camera orbit, no transition or dissolve. End at the counter with the finished tiny RIGHT-side module, ready to leave in the next scene. Clean city-pop anime frame, no overlays.\n\noverall_soundscape: A delicate magnetic click, soft electronic activation tones, jacket rustle, shop chime, renewed distant street ambience.\n\nnon_diegetic_music: Quiet original instrumental Japanese city-pop, warm electric piano, mellow analog synth bass, airy synth pads, gentle drum machine at a steady moderate tempo. Dreamy late-night mood, below the natural sound effects, no singing."
+    },
+    "class_type": "PrimitiveStringMultiline",
+    "_meta": {
+      "title": "\u63d0\u793a\u8bcd"
+    }
+  },
+  "15": {
+    "inputs": {
+      "aspect_ratio": "16:9 (Widescreen)",
+      "multiple": 32,
+      "megapixels": [
+        "27",
+        0
+      ]
+    },
+    "class_type": "ResolutionSelector",
+    "_meta": {
+      "title": "Resolution Selector (Size)"
+    }
+  },
+  "16": {
+    "inputs": {
+      "clip": [
+        "21",
+        0
+      ],
+      "vae": [
+        "7",
+        0
+      ],
+      "prompt": [
+        "14",
+        0
+      ],
+      "width": [
+        "15",
+        0
+      ],
+      "height": [
+        "15",
+        1
+      ],
+      "length": [
+        "23",
+        1
+      ],
+      "first_frame": [
+        "reference",
+        0
+      ]
+    },
+    "class_type": "MiniMaxH3ImageToVideo",
+    "_meta": {
+      "title": "MiniMax H3 Image to Video"
+    }
+  },
+  "17": {
+    "inputs": {
+      "max_resolution": 1024,
+      "jpeg_quality": 80,
+      "suppress_default_preview": true,
+      "preview_fps": 12,
+      "tiny_vae": "taeh3.safetensors",
+      "model": [
+        "40",
+        0
+      ],
+      "preview_frames": [
+        "23",
+        1
+      ]
+    },
+    "class_type": "ModelPreviewOverrideKJ",
+    "_meta": {
+      "title": "Model Preview Override"
+    }
+  },
+  "20": {
+    "inputs": {
+      "value": 10
+    },
+    "class_type": "PrimitiveFloat",
+    "_meta": {
+      "title": "Float (Duration)"
+    }
+  },
+  "21": {
+    "inputs": {
+      "clip_name": "qwen3vl_32b_minimax_h3_nvfp4_awq.safetensors",
+      "type": "minimax",
+      "device": "default"
+    },
+    "class_type": "CLIPLoader",
+    "_meta": {
+      "title": "Load CLIP"
+    }
+  },
+  "23": {
+    "inputs": {
+      "expression": "max(5, round(a * 24)) + (5 - (max(5, round(a * 24)) % 17)) % 17",
+      "values.a": [
+        "20",
+        0
+      ]
+    },
+    "class_type": "ComfyMathExpression",
+    "_meta": {
+      "title": "Math Expression"
+    }
+  },
+  "26": {
+    "inputs": {
+      "noise": [
+        "37",
+        0
+      ],
+      "guider": [
+        "33",
+        0
+      ],
+      "sampler": [
+        "29",
+        0
+      ],
+      "sigmas": [
+        "8",
+        0
+      ],
+      "latent_image": [
+        "16",
+        1
+      ]
+    },
+    "class_type": "SamplerCustomAdvanced",
+    "_meta": {
+      "title": "SamplerCustomAdvanced"
+    }
+  },
+  "27": {
+    "inputs": {
+      "value": 1
+    },
+    "class_type": "PrimitiveFloat",
+    "_meta": {
+      "title": "target_megapixels(\u653e\u5927\u7684\u50cf\u7d20\u6570)"
+    }
+  },
+  "29": {
+    "inputs": {
+      "sampler_name": "euler"
+    },
+    "class_type": "KSamplerSelect",
+    "_meta": {
+      "title": "KSamplerSelect"
+    }
+  },
+  "33": {
+    "inputs": {
+      "model": [
+        "17",
+        0
+      ],
+      "conditioning": [
+        "16",
+        0
+      ]
+    },
+    "class_type": "BasicGuider",
+    "_meta": {
+      "title": "Basic Guider"
+    }
+  },
+  "34": {
+    "inputs": {
+      "unet_name": "minimax_h3_fl2va_pruned_int8_convrot.safetensors",
+      "weight_dtype": "default"
+    },
+    "class_type": "UNETLoader",
+    "_meta": {
+      "title": "Load Diffusion Model"
+    }
+  },
+  "36": {
+    "inputs": {
+      "fps": 24,
+      "bit_depth": 8,
+      "color_space": "sRGB",
+      "codec": "none",
+      "images": [
+        "native_decode",
+        0
+      ],
+      "audio": [
+        "2",
+        0
+      ]
+    },
+    "class_type": "CreateVideo",
+    "_meta": {
+      "title": "Create Video"
+    }
+  },
+  "37": {
+    "inputs": {
+      "noise_seed": 624867938323180
+    },
+    "class_type": "RandomNoise",
+    "_meta": {
+      "title": "RandomNoise"
+    }
+  },
+  "40": {
+    "inputs": {
+      "attention": "comfy kitchen attention",
+      "model": [
+        "42",
+        0
+      ]
+    },
+    "class_type": "ModelAttentionBackend",
+    "_meta": {
+      "title": "Model Attention Backend"
+    }
+  },
+  "41": {
+    "inputs": {
+      "lora_name": "minimax_h3_fl2v_lightx2v_turbo_4step_v0.1_comfy.safetensors",
+      "strength_model": 1,
+      "model": [
+        "34",
+        0
+      ]
+    },
+    "class_type": "LoraLoaderModelOnly",
+    "_meta": {
+      "title": "Load LoRA"
+    }
+  },
+  "42": {
+    "inputs": {
+      "shift_video": 12,
+      "shift_audio": 3,
+      "model": [
+        "41",
+        0
+      ]
+    },
+    "class_type": "MiniMaxH3SigmaShift",
+    "_meta": {
+      "title": "ModelSamplingMiniMaxH3"
+    }
+  },
+  "reference": {
+    "inputs": {
+      "image": "06_neural_upgrade_reference (2).png"
+    },
+    "class_type": "LoadImage",
+    "_meta": {
+      "title": "Load Image"
+    }
+  },
+  "native_decode": {
+    "inputs": {
+      "tile_size": 512,
+      "overlap": 64,
+      "temporal_size": 64,
+      "temporal_overlap": 8,
+      "samples": [
+        "26",
+        1
+      ],
+      "vae": [
+        "7",
+        0
+      ]
+    },
+    "class_type": "VAEDecodeTiled",
+    "_meta": {
+      "title": "VAE Decode (Tiled)"
+    }
+  }
+}

@@ -1,0 +1,32 @@
+[
+  {
+    "node": "461",
+    "field": "filename_prefix",
+    "before": "Qwen_image_2.1",
+    "after": "darius/canvas/pending"
+  },
+  {
+    "node": "470",
+    "field": "image",
+    "before": "ChatGPT Image Apr 23, 2026, 11_49_06 AM.png",
+    "after": "__DARIUS_PINNED_INPUT_REQUIRED__"
+  },
+  {
+    "node": "459:474",
+    "field": "resolution",
+    "before": 1024,
+    "after": 0
+  },
+  {
+    "node": "459:458",
+    "field": "seed",
+    "before": 0,
+    "after": 749423901478055
+  },
+  {
+    "node": "475",
+    "field": "image",
+    "before": "generation-dd5c7c4c-3251-4d3d-8927-7d64b7580088.png",
+    "after": "__DARIUS_PINNED_INPUT_REQUIRED__"
+  }
+]

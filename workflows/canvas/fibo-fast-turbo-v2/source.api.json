@@ -1,0 +1,190 @@
+{
+  "1": {
+    "inputs": {
+      "unet_name": "fibo2_dev_int8_convrot.safetensors",
+      "weight_dtype": "default"
+    },
+    "class_type": "UNETLoader",
+    "_meta": {
+      "title": "Fibo 2 Dev • text-to-image model"
+    }
+  },
+  "2": {
+    "inputs": {
+      "clip_name": "qwen3vl_4b_bf16.safetensors",
+      "type": "fibo2",
+      "device": "default"
+    },
+    "class_type": "CLIPLoader",
+    "_meta": {
+      "title": "Load CLIP"
+    }
+  },
+  "3": {
+    "inputs": {
+      "vae_name": "flux2-vae.safetensors"
+    },
+    "class_type": "VAELoader",
+    "_meta": {
+      "title": "Load VAE"
+    }
+  },
+  "4": {
+    "inputs": {
+      "negative_prompt": "",
+      "width": 1024,
+      "height": 1024,
+      "batch_size": 1,
+      "clip": [
+        "2",
+        0
+      ],
+      "prompt": [
+        "20",
+        0
+      ]
+    },
+    "class_type": "TextEncodeFibo2",
+    "_meta": {
+      "title": "3. Fibo • text-only layout conditioning"
+    }
+  },
+  "17": {
+    "inputs": {
+      "width": 1024,
+      "height": 1024,
+      "editor_state": {
+        "__value__": []
+      },
+      "last_incoming": {
+        "__value__": []
+      }
+    },
+    "class_type": "CreateBoundingBoxes",
+    "_meta": {
+      "title": "1. Draw layout boxes and describe each object"
+    }
+  },
+  "18": {
+    "inputs": {
+      "prefix": "",
+      "suffix": "",
+      "input": [
+        "17",
+        2
+      ]
+    },
+    "class_type": "SomethingToString",
+    "_meta": {
+      "title": "Box descriptions + exact layout coordinates"
+    }
+  },
+  "19": {
+    "inputs": {
+      "string": "Generate a new image from the scene description and layout elements below.\nCreate each object according to its desc field. Use the bounding boxes as composition guidance for its position and size. Elements are ordered background first, foreground last.\nCoordinate format is [top, left, bottom, right], on a 0 to 1000 grid. The origin is the upper-left corner. 1000 is the bottom or right edge of the image.\nUnify the objects into a beautiful, believable scene with consistent perspective, scale, contact shadows, light direction, materials, and harmonious colors.\nDo not draw bounding rectangles, diagram annotations, coordinate labels, or palette swatches. Only render lettering when explicitly requested by an element of type text; use its text field as the exact wording.\n\nSCENE / STYLE: A sophisticated interior still-life photograph, a walnut sideboard against a warm plaster wall, soft daylight from a window on the left, subtle natural shadows, refined editorial composition, realistic material detail, warm neutral palette.\n\nLAYOUT ELEMENTS (in drawing order):\n",
+      "strip_newlines": false
+    },
+    "class_type": "StringConstantMultiline",
+    "_meta": {
+      "title": "2. Describe the scene / style"
+    }
+  },
+  "20": {
+    "inputs": {
+      "delimiter": "\n",
+      "string1": [
+        "19",
+        0
+      ],
+      "string2": [
+        "18",
+        0
+      ]
+    },
+    "class_type": "JoinStrings",
+    "_meta": {
+      "title": "Assemble Fibo instruction"
+    }
+  },
+  "21": {
+    "inputs": {
+      "images": [
+        "17",
+        0
+      ]
+    },
+    "class_type": "PreviewImage",
+    "_meta": {
+      "title": "Layout preview (guidance only)"
+    }
+  },
+  "23": {
+    "inputs": {
+      "seed": 64,
+      "steps": 4,
+      "cfg": 1,
+      "sampler_name": "euler",
+      "scheduler": "simple",
+      "denoise": 1,
+      "model": [
+        "26",
+        0
+      ],
+      "positive": [
+        "4",
+        0
+      ],
+      "negative": [
+        "4",
+        1
+      ],
+      "latent_image": [
+        "4",
+        2
+      ]
+    },
+    "class_type": "KSampler",
+    "_meta": {
+      "title": "Generate • 30 steps / CFG 5"
+    }
+  },
+  "24": {
+    "inputs": {
+      "filename_prefix": "Fibo2_t2i_layout/generated",
+      "images": [
+        "25",
+        0
+      ]
+    },
+    "class_type": "SaveImage",
+    "_meta": {
+      "title": "Save Image"
+    }
+  },
+  "25": {
+    "inputs": {
+      "samples": [
+        "23",
+        0
+      ],
+      "vae": [
+        "3",
+        0
+      ]
+    },
+    "class_type": "VAEDecode",
+    "_meta": {
+      "title": "VAE Decode"
+    }
+  },
+  "26": {
+    "inputs": {
+      "unet_name": "fibo2_dev_int8_convrot.safetensors",
+      "weight_dtype": "default"
+    },
+    "class_type": "UNETLoader",
+    "_meta": {
+      "title": "Fibo 2 Dev • text-to-image model"
+    }
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "id": "krea2-turbo-text-to-image",
+  "name": "Krea 2 Turbo Text to Image",
+  "version": "1.0.0",
+  "capability": "text-to-image",
+  "execution_provider": "local-comfyui",
+  "workflow_reference": "MCP_image_krea2_turbo_t2i.json",
+  "required_inputs": [
+    {
+      "key": "prompt",
+      "type": "string",
+      "required": true,
+      "description": "Describe the image to generate.",
+      "maps_to": { "slot": "30/19.value" }
+    },
+    {
+      "key": "refine_prompt",
+      "type": "boolean",
+      "required": false,
+      "default": true,
+      "description": "Let the local workflow expand the prompt before generation.",
+      "maps_to": { "slot": "30/24.value" }
+    },
+    {
+      "key": "aspect_ratio",
+      "type": "string",
+      "required": false,
+      "default": "1:1 (Square)",
+      "description": "ComfyUI ratio label, for example 1:1 (Square) or 16:9 (Widescreen).",
+      "maps_to": { "slot": "49.aspect_ratio" }
+    }
+  ],
+  "output": { "kind": "image", "count": 1 },
+  "runtime_mapping": {
+    "filename_prefix_slot": "29.filename_prefix",
+    "format_slot": null,
+    "format": null
+  },
+  "model_dependencies": [],
+  "estimated_vram_gb": null,
+  "requires_approval": true,
+  "enabled": true
+}

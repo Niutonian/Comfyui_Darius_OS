@@ -1,0 +1,82 @@
+/* Shared interaction rules: use theme tokens and size to the available panel. */
+.os-desktop :is(.settings-note, .compact-form, .structure-editor-grid, .input-stack, .assistant-context) label {
+  min-width: 0;
+}
+.os-desktop :is(.settings-note, .assistant-context) label:not(.wake-word-setting) {
+  display: grid; gap: 6px;
+}
+.os-desktop :is(.settings-note, .compact-form, .structure-editor-grid, .assistant-context) :is(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]), select, textarea) {
+  width: 100%; min-width: 0; max-width: 100%; background: var(--control-bg);
+  color: var(--text); border-color: var(--control-border);
+  font-size: 13px; text-transform: none; letter-spacing: normal;
+}
+.os-desktop :is(input[type="checkbox"], input[type="radio"]) { width: 16px; height: 16px; flex: 0 0 16px; accent-color: var(--active); }
+.os-desktop .settings-note label:has(input[type="checkbox"]) { display: flex; flex-direction: row; align-items: center; gap: 8px; }
+.os-desktop .structure-panel { container-type: inline-size; }
+.os-desktop .structure-heading { flex-wrap: wrap; }
+.os-desktop .structure-heading > * { min-width: 0; max-width: 100%; }
+.os-desktop .structure-columns { grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); }
+.os-desktop .form-pair { grid-template-columns: repeat(auto-fit, minmax(min(100%, 120px), 1fr)); }
+.os-desktop .structure-editor-grid { grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); }
+.os-desktop .structure-list { background: var(--surface-subtle); }
+.os-desktop .metadata-details pre { background: var(--surface-subtle); color: var(--text); }
+.os-desktop :is(.structure-editor-actions, .form-actions, .control-row, .task-controls) { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+.os-desktop .task-controls { padding: 12px; border: 1px solid var(--line); border-radius: var(--radius-control); background: var(--surface-subtle); }
+.os-desktop .task-controls > span { flex: 1 1 100%; color: var(--muted); }
+.os-desktop .assistant-context { max-width: 850px; margin: 4px auto 14px; padding: 10px 12px; border: 1px solid var(--line); border-radius: var(--radius-control); background: var(--surface-subtle); }
+.os-desktop .assistant-context summary { cursor: pointer; padding: 3px; font-weight: 600; }
+.os-desktop .assistant-context fieldset { min-width: 0; margin: 0; padding: 0; border: 0; display: grid; gap: 12px; }
+.os-desktop .assistant-context .context-records { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 160px), 1fr)); gap: 10px; }
+.os-desktop .assistant-context textarea { resize: vertical; }
+.os-desktop .assistant-context p, .os-desktop .voice-diagnostics p { color: var(--muted); font-size: 12px; line-height: 1.5; overflow-wrap: anywhere; }
+.os-desktop .assistant-context p:empty, .os-desktop .task-controls span:empty { display: none; }
+.os-desktop .voice-diagnostics { padding-top: 14px; margin-top: 14px; border-top: 1px solid var(--line); display: grid; gap: 10px; }
+.os-desktop .voice-diagnostics meter { width: 100%; height: 12px; accent-color: var(--active); }
+.os-desktop :is(button, summary, a, [tabindex]):focus-visible { outline: 2px solid var(--active); outline-offset: 3px; }
+.os-desktop :is(.talk-stream, .app-window-body, .job-tray, .project-list, .inspector) { scrollbar-color: var(--line-light) transparent; scrollbar-width: thin; overscroll-behavior: contain; }
+.os-desktop .form-error { color: var(--danger); overflow-wrap: anywhere; }
+.composer-voice-controls { display: none; }
+.os-desktop .theme-option { background: var(--surface-subtle); color: var(--text); }
+/* Text-only choices have no preview icon: do not confine them to its column. */
+.os-desktop .theme-option > span:only-child {
+  grid-column: 1 / -1;
+  min-width: 0;
+  width: 100%;
+  white-space: normal;
+  overflow-wrap: break-word;
+}
+.os-desktop .theme-option > span:only-child small { line-height: 1.5; }
+.os-desktop .llm-model-heading { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; }
+.os-desktop .llm-model-heading > label { color: var(--muted); font-size: 11px; }
+.os-desktop .llm-model-heading > button { display: inline-flex; align-items: center; gap: 6px; }
+.os-desktop .theme-option:is(:hover, .selected) { background: var(--active-soft); border-color: var(--active); }
+.os-desktop .service-status > strong { color: var(--text); }
+/* The generic label-span rule must not turn the active dock backdrop into a flex item. */
+.os-desktop .mode-nav button > .dock-active { position: absolute; inset: 0; z-index: -1; }
+.os-desktop .create-main { min-width: 0; padding-bottom: 160px; }
+.os-desktop :is(.create-view, .settings-view, .edit-view) { scroll-padding-block: 60px 180px; }
+.os-desktop :is(.settings-view, .edit-view) { padding-bottom: 160px; }
+.os-desktop .voice-controls > button { background: var(--surface); color: var(--text); }
+.os-desktop .voice-controls > .primary-button { background: var(--active); color: var(--text-on-active); }
+@media (max-width: 1000px) {
+  .os-desktop .inspector { top: 132px; }
+  .os-desktop .job-tray.open { z-index: 72; }
+  .os-desktop .voice-controls-host { display: none; }
+  .os-desktop .composer-voice-controls { display: block; padding: 6px; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; margin-bottom: 6px; }
+  .os-desktop .composer-voice-controls .voice-controls { display: flex; flex-wrap: wrap; justify-content: space-between; }
+  .os-desktop .composer-voice-controls .voice-controls > button { position: static; min-height: 36px; box-shadow: none; }
+  .os-desktop .composer-voice-controls .voice-controls > label { display: flex; align-items: center; gap: 6px; font-size: 12px; }
+  .os-desktop .composer-voice-controls .voice-phase { position: static; flex-basis: 100%; font-size: 11px; }
+  .os-desktop .composer-voice-controls .voice-phase:empty { display: none; }
+  .os-desktop.space-talk { --compact-composer-reserve: 220px; }
+  .os-desktop .space-label { display: none; }
+}
+@media (min-width: 761px) and (max-width: 1000px) {
+  .os-desktop .job-tray { top: 82px; bottom: auto; left: 16px; right: 16px; width: auto; z-index: 68; }
+  .os-desktop .workspace, .os-desktop.space-home .workspace { padding-top: 138px; }
+  .os-desktop .main-stage.desktop-surface, .os-desktop.space-home .main-stage.desktop-surface { height: calc(100dvh - 227px); }
+}
+@media (max-width: 600px) {
+  .os-desktop .control-row > button, .os-desktop .task-controls > button { flex: 1 1 140px; white-space: normal; min-height: 40px; }
+  .os-desktop :is(.settings-note, .compact-form, .structure-editor-grid, .assistant-context) :is(input, select, textarea) { font-size: 16px; }
+}

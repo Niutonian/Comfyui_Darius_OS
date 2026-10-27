@@ -1,0 +1,846 @@
+{
+  "id": "8b4a2f19-fc89-49ee-9c29-7cd301c8af87",
+  "revision": 0,
+  "last_node_id": 26,
+  "last_link_id": 22,
+  "nodes": [
+    {
+      "id": 1,
+      "type": "UNETLoader",
+      "pos": [
+        -1100,
+        -20
+      ],
+      "size": [
+        340,
+        82
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "MODEL",
+          "type": "MODEL",
+          "links": []
+        }
+      ],
+      "title": "Fibo 2 Dev • text-to-image model",
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.42.0",
+        "Node name for S&R": "UNETLoader"
+      },
+      "widgets_values": [
+        "fibo2_dev_int8_convrot.safetensors",
+        "default"
+      ],
+      "widgets_values_named": {
+        "unet_name": "fibo2_dev_int8_convrot.safetensors",
+        "weight_dtype": "default"
+      }
+    },
+    {
+      "id": 2,
+      "type": "CLIPLoader",
+      "pos": [
+        -1100,
+        150
+      ],
+      "size": [
+        340,
+        106
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "CLIP",
+          "type": "CLIP",
+          "links": [
+            2
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.42.0",
+        "Node name for S&R": "CLIPLoader"
+      },
+      "widgets_values": [
+        "qwen3vl_4b_bf16.safetensors",
+        "fibo2",
+        "default"
+      ],
+      "widgets_values_named": {
+        "clip_name": "qwen3vl_4b_bf16.safetensors",
+        "type": "fibo2",
+        "device": "default"
+      }
+    },
+    {
+      "id": 3,
+      "type": "VAELoader",
+      "pos": [
+        -1100,
+        350
+      ],
+      "size": [
+        340,
+        58
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "VAE",
+          "type": "VAE",
+          "links": [
+            20
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.42.0",
+        "Node name for S&R": "VAELoader"
+      },
+      "widgets_values": [
+        "flux2-vae.safetensors"
+      ],
+      "widgets_values_named": {
+        "vae_name": "flux2-vae.safetensors"
+      }
+    },
+    {
+      "id": 4,
+      "type": "TextEncodeFibo2",
+      "pos": [
+        840,
+        80
+      ],
+      "size": [
+        450,
+        480
+      ],
+      "flags": {},
+      "order": 10,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "clip",
+          "type": "CLIP",
+          "link": 2
+        },
+        {
+          "name": "images.image_1",
+          "shape": 7,
+          "type": "IMAGE",
+          "link": null
+        },
+        {
+          "name": "vae",
+          "shape": 7,
+          "type": "VAE",
+          "link": null
+        },
+        {
+          "name": "prompt",
+          "type": "STRING",
+          "widget": {
+            "name": "prompt"
+          },
+          "link": 8
+        }
+      ],
+      "outputs": [
+        {
+          "name": "positive",
+          "type": "CONDITIONING",
+          "links": [
+            15
+          ]
+        },
+        {
+          "name": "negative",
+          "type": "CONDITIONING",
+          "links": [
+            16
+          ]
+        },
+        {
+          "name": "latent",
+          "type": "LATENT",
+          "links": [
+            17
+          ]
+        }
+      ],
+      "title": "3. Fibo • text-only layout conditioning",
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.42.0",
+        "Node name for S&R": "TextEncodeFibo2"
+      },
+      "widgets_values": [
+        "",
+        "",
+        1024,
+        1024,
+        1
+      ],
+      "widgets_values_named": {
+        "prompt": "",
+        "negative_prompt": "",
+        "width": 1024,
+        "height": 1024,
+        "batch_size": 1
+      }
+    },
+    {
+      "id": 17,
+      "type": "CreateBoundingBoxes",
+      "pos": [
+        -320,
+        80
+      ],
+      "size": [
+        500,
+        700
+      ],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "background",
+          "shape": 7,
+          "type": "IMAGE",
+          "link": null
+        },
+        {
+          "name": "bboxes",
+          "shape": 7,
+          "type": "BOUNDING_BOX,ARRAY,STRING",
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "name": "preview",
+          "type": "IMAGE",
+          "links": [
+            4
+          ]
+        },
+        {
+          "name": "bboxes",
+          "type": "BOUNDING_BOX",
+          "links": []
+        },
+        {
+          "name": "elements",
+          "type": "ARRAY",
+          "links": [
+            5
+          ]
+        }
+      ],
+      "title": "1. Draw layout boxes and describe each object",
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.42.0",
+        "Node name for S&R": "CreateBoundingBoxes"
+      },
+      "widgets_values": [
+        1024,
+        1024,
+        [
+          {
+            "x": 256,
+            "y": 256,
+            "width": 288,
+            "height": 448,
+            "metadata": {
+              "type": "obj",
+              "text": "",
+              "desc": "human like monster without eyes, nose and mouth",
+              "palette": [
+                "#d4a574"
+              ]
+            }
+          },
+          {
+            "x": 576,
+            "y": 256,
+            "width": 300,
+            "height": 360,
+            "metadata": {
+              "type": "obj",
+              "text": "",
+              "desc": "A small arrangement of green plants in textured terracotta pots, resting naturally on the same sideboard",
+              "palette": [
+                "#6b8e6b"
+              ]
+            }
+          }
+        ],
+        []
+      ],
+      "widgets_values_named": {
+        "width": 1024,
+        "height": 1024,
+        "editor_state": [
+          {
+            "x": 256,
+            "y": 256,
+            "width": 288,
+            "height": 448,
+            "metadata": {
+              "type": "obj",
+              "text": "",
+              "desc": "human like monster without eyes, nose and mouth",
+              "palette": [
+                "#d4a574"
+              ]
+            }
+          },
+          {
+            "x": 576,
+            "y": 256,
+            "width": 300,
+            "height": 360,
+            "metadata": {
+              "type": "obj",
+              "text": "",
+              "desc": "A small arrangement of green plants in textured terracotta pots, resting naturally on the same sideboard",
+              "palette": [
+                "#6b8e6b"
+              ]
+            }
+          }
+        ],
+        "last_incoming": []
+      }
+    },
+    {
+      "id": 18,
+      "type": "SomethingToString",
+      "pos": [
+        260,
+        660
+      ],
+      "size": [
+        328.991796875,
+        120
+      ],
+      "flags": {},
+      "order": 8,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "input",
+          "type": "*",
+          "link": 5
+        }
+      ],
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": [
+            7
+          ]
+        }
+      ],
+      "title": "Box descriptions + exact layout coordinates",
+      "properties": {
+        "cnr_id": "comfyui-kjnodes",
+        "ver": "d3cfe21625e5170126ce06fbfcfe1d88108688c3",
+        "Node name for S&R": "SomethingToString"
+      },
+      "widgets_values": [
+        "",
+        ""
+      ],
+      "widgets_values_named": {
+        "prefix": "",
+        "suffix": ""
+      }
+    },
+    {
+      "id": 19,
+      "type": "StringConstantMultiline",
+      "pos": [
+        250,
+        80
+      ],
+      "size": [
+        510,
+        480
+      ],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": [
+            6
+          ]
+        }
+      ],
+      "title": "2. Describe the scene / style",
+      "properties": {
+        "cnr_id": "comfyui-kjnodes",
+        "ver": "d3cfe21625e5170126ce06fbfcfe1d88108688c3",
+        "Node name for S&R": "StringConstantMultiline"
+      },
+      "widgets_values": [
+        "Generate a new image from the scene description and layout elements below.\nCreate each object according to its desc field. Use the bounding boxes as composition guidance for its position and size. Elements are ordered background first, foreground last.\nCoordinate format is [top, left, bottom, right], on a 0 to 1000 grid. The origin is the upper-left corner. 1000 is the bottom or right edge of the image.\nUnify the objects into a beautiful, believable scene with consistent perspective, scale, contact shadows, light direction, materials, and harmonious colors.\nDo not draw bounding rectangles, diagram annotations, coordinate labels, or palette swatches. Only render lettering when explicitly requested by an element of type text; use its text field as the exact wording.\n\nSCENE / STYLE: A sophisticated interior still-life photograph, a walnut sideboard against a warm plaster wall, soft daylight from a window on the left, subtle natural shadows, refined editorial composition, realistic material detail, warm neutral palette.\n\nLAYOUT ELEMENTS (in drawing order):\n",
+        false
+      ],
+      "widgets_values_named": {
+        "string": "Generate a new image from the scene description and layout elements below.\nCreate each object according to its desc field. Use the bounding boxes as composition guidance for its position and size. Elements are ordered background first, foreground last.\nCoordinate format is [top, left, bottom, right], on a 0 to 1000 grid. The origin is the upper-left corner. 1000 is the bottom or right edge of the image.\nUnify the objects into a beautiful, believable scene with consistent perspective, scale, contact shadows, light direction, materials, and harmonious colors.\nDo not draw bounding rectangles, diagram annotations, coordinate labels, or palette swatches. Only render lettering when explicitly requested by an element of type text; use its text field as the exact wording.\n\nSCENE / STYLE: A sophisticated interior still-life photograph, a walnut sideboard against a warm plaster wall, soft daylight from a window on the left, subtle natural shadows, refined editorial composition, realistic material detail, warm neutral palette.\n\nLAYOUT ELEMENTS (in drawing order):\n",
+        "strip_newlines": false
+      }
+    },
+    {
+      "id": 20,
+      "type": "JoinStrings",
+      "pos": [
+        840,
+        660
+      ],
+      "size": [
+        280,
+        100
+      ],
+      "flags": {},
+      "order": 9,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "string1",
+          "shape": 7,
+          "type": "STRING",
+          "link": 6
+        },
+        {
+          "name": "string2",
+          "shape": 7,
+          "type": "STRING",
+          "link": 7
+        }
+      ],
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": [
+            8
+          ]
+        }
+      ],
+      "title": "Assemble Fibo instruction",
+      "properties": {
+        "cnr_id": "comfyui-kjnodes",
+        "ver": "d3cfe21625e5170126ce06fbfcfe1d88108688c3",
+        "Node name for S&R": "JoinStrings"
+      },
+      "widgets_values": [
+        "\n"
+      ],
+      "widgets_values_named": {
+        "delimiter": "\n"
+      }
+    },
+    {
+      "id": 21,
+      "type": "PreviewImage",
+      "pos": [
+        -305.9523446219307,
+        999.0476553780692
+      ],
+      "size": [
+        460,
+        420
+      ],
+      "flags": {},
+      "order": 7,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 4
+        }
+      ],
+      "outputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "links": []
+        }
+      ],
+      "title": "Layout preview (guidance only)",
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.42.0",
+        "Node name for S&R": "PreviewImage"
+      }
+    },
+    {
+      "id": 22,
+      "type": "MarkdownNote",
+      "pos": [
+        -1100,
+        -440
+      ],
+      "size": [
+        810,
+        380
+      ],
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [],
+      "title": "START HERE",
+      "properties": {
+        "Node name for S&R": "MarkdownNote"
+      },
+      "widgets_values": [
+        "# Fibo 2 Dev • pure text-to-image with boxes\n1. Draw/move/resize boxes in **Create Bounding Boxes**, then describe each object. Two example objects are provided. Draw background first, foreground last.\n2. Change **SCENE / STYLE** in the large text node to describe the overall setting and appearance. Use type **text** only for lettering you want rendered.\n3. Run. The Dev model uses 30 steps and CFG 5; results are saved under `Fibo2_t2i_layout/`.\n\nNo source image is needed. Only the box descriptions and coordinates enter Fibo; the layout image is a preview for you and is not passed to the model. Positioning is prompt guidance, not a hard regional constraint.\n\nCanvas and output are 1024 × 1024. If changing aspect ratio, change width/height in both Create Bounding Boxes and Fibo. Enable Nodes 2.0 if the canvas editor appears as a placeholder. To preview boxes without generating, temporarily mute Save Image."
+      ],
+      "widgets_values_named": {
+        "text": "# Fibo 2 Dev • pure text-to-image with boxes\n1. Draw/move/resize boxes in **Create Bounding Boxes**, then describe each object. Two example objects are provided. Draw background first, foreground last.\n2. Change **SCENE / STYLE** in the large text node to describe the overall setting and appearance. Use type **text** only for lettering you want rendered.\n3. Run. The Dev model uses 30 steps and CFG 5; results are saved under `Fibo2_t2i_layout/`.\n\nNo source image is needed. Only the box descriptions and coordinates enter Fibo; the layout image is a preview for you and is not passed to the model. Positioning is prompt guidance, not a hard regional constraint.\n\nCanvas and output are 1024 × 1024. If changing aspect ratio, change width/height in both Create Bounding Boxes and Fibo. Enable Nodes 2.0 if the canvas editor appears as a placeholder. To preview boxes without generating, temporarily mute Save Image."
+      },
+      "color": "#432",
+      "bgcolor": "#653"
+    },
+    {
+      "id": 23,
+      "type": "KSampler",
+      "pos": [
+        1413.3497293717512,
+        41.4165964120981
+      ],
+      "size": [
+        300,
+        556
+      ],
+      "flags": {},
+      "order": 11,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "MODEL",
+          "link": 21
+        },
+        {
+          "name": "positive",
+          "type": "CONDITIONING",
+          "link": 15
+        },
+        {
+          "name": "negative",
+          "type": "CONDITIONING",
+          "link": 16
+        },
+        {
+          "name": "latent_image",
+          "type": "LATENT",
+          "link": 17
+        }
+      ],
+      "outputs": [
+        {
+          "name": "LATENT",
+          "type": "LATENT",
+          "links": [
+            19
+          ]
+        }
+      ],
+      "title": "Generate • 30 steps / CFG 5",
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.42.0",
+        "Node name for S&R": "KSampler"
+      },
+      "widgets_values": [
+        64,
+        "fixed",
+        4,
+        1,
+        "euler",
+        "simple",
+        1
+      ],
+      "widgets_values_named": {
+        "seed": 64,
+        "control_after_generate": "fixed",
+        "steps": 4,
+        "cfg": 1,
+        "sampler_name": "euler",
+        "scheduler": "simple",
+        "denoise": 1
+      }
+    },
+    {
+      "id": 24,
+      "type": "SaveImage",
+      "pos": [
+        1809.4608255631576,
+        37.749952124988795
+      ],
+      "size": [
+        622.0084061349493,
+        670.7970995468233
+      ],
+      "flags": {},
+      "order": 13,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 18
+        }
+      ],
+      "outputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "links": []
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.42.0",
+        "Node name for S&R": "SaveImage"
+      },
+      "widgets_values": [
+        "Fibo2_t2i_layout/generated"
+      ],
+      "widgets_values_named": {
+        "filename_prefix": "Fibo2_t2i_layout/generated"
+      }
+    },
+    {
+      "id": 25,
+      "type": "VAEDecode",
+      "pos": [
+        1419.4608255631576,
+        687.7499521249889
+      ],
+      "size": [
+        210,
+        46
+      ],
+      "flags": {},
+      "order": 12,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "samples",
+          "type": "LATENT",
+          "link": 19
+        },
+        {
+          "name": "vae",
+          "type": "VAE",
+          "link": 20
+        }
+      ],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            18
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.42.0",
+        "Node name for S&R": "VAEDecode"
+      }
+    },
+    {
+      "id": 26,
+      "type": "UNETLoader",
+      "pos": [
+        -1011.7410819131599,
+        692.0834511568232
+      ],
+      "size": [
+        340,
+        82
+      ],
+      "flags": {},
+      "order": 6,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "MODEL",
+          "type": "MODEL",
+          "links": [
+            21
+          ]
+        }
+      ],
+      "title": "Fibo 2 Dev • text-to-image model",
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.42.0",
+        "Node name for S&R": "UNETLoader"
+      },
+      "widgets_values": [
+        "fibo2_dev_int8_convrot.safetensors",
+        "default"
+      ],
+      "widgets_values_named": {
+        "unet_name": "fibo2_dev_int8_convrot.safetensors",
+        "weight_dtype": "default"
+      }
+    }
+  ],
+  "links": [
+    [
+      2,
+      2,
+      0,
+      4,
+      0,
+      "CLIP"
+    ],
+    [
+      4,
+      17,
+      0,
+      21,
+      0,
+      "IMAGE"
+    ],
+    [
+      5,
+      17,
+      2,
+      18,
+      0,
+      "ARRAY"
+    ],
+    [
+      6,
+      19,
+      0,
+      20,
+      0,
+      "STRING"
+    ],
+    [
+      7,
+      18,
+      0,
+      20,
+      1,
+      "STRING"
+    ],
+    [
+      8,
+      20,
+      0,
+      4,
+      3,
+      "STRING"
+    ],
+    [
+      15,
+      4,
+      0,
+      23,
+      1,
+      "CONDITIONING"
+    ],
+    [
+      16,
+      4,
+      1,
+      23,
+      2,
+      "CONDITIONING"
+    ],
+    [
+      17,
+      4,
+      2,
+      23,
+      3,
+      "LATENT"
+    ],
+    [
+      18,
+      25,
+      0,
+      24,
+      0,
+      "IMAGE"
+    ],
+    [
+      19,
+      23,
+      0,
+      25,
+      0,
+      "LATENT"
+    ],
+    [
+      20,
+      3,
+      0,
+      25,
+      1,
+      "VAE"
+    ],
+    [
+      21,
+      26,
+      0,
+      23,
+      0,
+      "MODEL"
+    ]
+  ],
+  "groups": [],
+  "config": {},
+  "extra": {
+    "ds": {
+      "scale": 0.5131581182307069,
+      "offset": [
+        201.242038900878,
+        639.356094277281
+      ]
+    },
+    "frontendVersion": "1.57.1",
+    "VHS_latentpreview": false,
+    "VHS_latentpreviewrate": 0,
+    "VHS_MetadataImage": true,
+    "VHS_KeepIntermediate": true
+  },
+  "version": 0.4,
+  "seed_widgets": {
+    "23": 0
+  }
+}

@@ -1,0 +1,39 @@
+.trusted-workflows { min-width: 0; padding: 18px; }
+.trusted-workflows h2 { margin: 0 0 10px; }
+.trusted-workflows p, .trusted-workflows small { color: var(--muted); }
+.trusted-workflows fieldset { min-width: 0; border: 0; padding: 0; display: grid; gap: 12px; }
+.trusted-workflow-switch { display: flex; align-items: center; gap: 10px; font-weight: 600; }
+.trusted-workflow-search { display: grid; gap: 6px; }
+.trusted-workflow-search input { width: 100%; }
+.trusted-workflow-search select { width: 100%; min-width: 0; }
+.trusted-workflow-folder { overflow-wrap: anywhere; font-size: 12px; }
+.trusted-workflow-list { max-height: 460px; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: var(--line-light) transparent; }
+.trusted-workflow-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px; padding: 14px 8px; border-bottom: 1px solid var(--line); overflow-wrap: anywhere; }
+.trusted-workflow-row.selected { background: var(--accent-soft); }
+.trusted-workflow-choice { display: flex; align-items: start; gap: 10px; flex: 1; min-width: min(220px, 100%); }
+.trusted-workflow-choice span { min-width: 0; display: grid; gap: 5px; }
+.trusted-workflow-choice input { flex-shrink: 0; margin-top: 3px; }
+.trusted-workflow-options { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
+.trusted-workflow-options label { display: flex; gap: 8px; align-items: center; }
+.trusted-workflow-options select { max-width: 200px; }
+.trusted-workflow-action-note { flex-basis: 100%; max-width: 440px; line-height: 1.5; }
+.trusted-workflow-inheritance { display: grid; gap: 8px; margin: 12px 0; padding: 12px; background: var(--accent-soft); border: 1px solid var(--line); border-radius: 12px; overflow-wrap: anywhere; }
+.trusted-workflow-inheritance p, .trusted-workflow-inheritance ul { margin: 0; }
+.trusted-workflow-inheritance ul { padding-left: 20px; font-size: 12px; line-height: 1.6; }
+.recipe-registration { flex-basis: 100%; min-width: 0; display: grid; gap: 8px; }
+.recipe-registration-heading { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }
+.recipe-registration-fields { display: grid; gap: 10px; padding: 12px; border: 1px solid var(--line); border-radius: 12px; }
+.recipe-registration-fields p { margin: 0; font-size: 12px; line-height: 1.5; }
+.recipe-registration-field { min-width: 0; display: grid; gap: 6px; padding-block: 8px; border-bottom: 1px solid var(--line); }
+.recipe-registration-field code { font-weight: normal; overflow-wrap: anywhere; }
+.recipe-registration-field label { display: grid; gap: 6px; }
+.recipe-registration-field select { width: 100%; min-width: 0; }
+.recipe-field-value { white-space: pre-wrap; overflow-wrap: anywhere; max-height: 92px; overflow-y: auto; }
+.trusted-workflows fieldset > .primary-button { justify-self: start; }
+.settings-trusted-workflows { grid-column: 1 / -1; }
+.block-party-controls { display: grid; gap: 8px; min-width: 0; margin-block: 12px; overflow-wrap: anywhere; }
+.block-party-controls > button { justify-self: start; max-width: 100%; white-space: normal; }
+.block-party-controls p { margin: 0; font-size: 12px; line-height: 1.6; }
+.block-party-report { display: grid; gap: 8px; padding: 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface-subtle); }
+.block-party-report ul { margin: 0; padding-left: 18px; font-size: 12px; line-height: 1.6; }
+@media (max-width: 600px) { .trusted-workflows { padding: 12px; } .trusted-workflow-options { width: 100%; } }

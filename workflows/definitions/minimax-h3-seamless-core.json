@@ -1,0 +1,51 @@
+{
+  "id": "minimax-h3-seamless-core",
+  "name": "MiniMax H3 Seamless Chain Core",
+  "version": "1.0.0",
+  "capability": "text-to-video",
+  "execution_provider": "local-comfyui",
+  "workflow_reference": "MCP_Minimax_H3_Seamless_Chain_CORE.json",
+  "required_inputs": [
+    {
+      "key": "script",
+      "type": "string",
+      "required": true,
+      "description": "One or more shot descriptions separated by a line containing ---.",
+      "maps_to": { "slot": "8.script" }
+    },
+    {
+      "key": "frames_per_shot",
+      "type": "integer",
+      "required": false,
+      "default": 192,
+      "minimum": 48,
+      "maximum": 384,
+      "maps_to": { "slot": "2.frames_per_shot" }
+    },
+    {
+      "key": "steps",
+      "type": "integer",
+      "required": false,
+      "default": 14,
+      "minimum": 1,
+      "maximum": 30,
+      "maps_to": { "slot": "2.steps" }
+    }
+  ],
+  "output": { "kind": "video", "count": 1 },
+  "runtime_mapping": {
+    "filename_prefix_slot": "11.filename_prefix",
+    "format_slot": "11.format",
+    "format": "mp4"
+  },
+  "model_dependencies": [
+    "MiniMax-H3-ref2va-Q4_0.gguf",
+    "MiniMax-H3-encoder-Q4_K_M.gguf",
+    "h3-realism-people-t2v-i2v-r2v.safetensors",
+    "minimax_h3_video_vae_fp16.safetensors",
+    "minimax_h3_audio_vae_fp32.safetensors"
+  ],
+  "estimated_vram_gb": 16.0,
+  "requires_approval": true,
+  "enabled": true
+}

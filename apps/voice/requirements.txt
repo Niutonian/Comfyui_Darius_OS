@@ -1,0 +1,10 @@
+omnivoice==0.2.1
+torch==2.8.0
+torchaudio==2.8.0
+transformers==5.3.0
+vosk==0.3.45
+faster-whisper==1.2.1
+fastapi==0.162.0
+uvicorn==0.35.0
+websockets==15.0.1
+httpx==0.28.1

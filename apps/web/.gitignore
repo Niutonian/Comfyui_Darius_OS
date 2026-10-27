@@ -1,0 +1,6 @@
+# Shared dependency/build/secret rules are in the repository .gitignore.
+node_modules/
+.next*/
+coverage/
+.env*.local
+*.tsbuildinfo

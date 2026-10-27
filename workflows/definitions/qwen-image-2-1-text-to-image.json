@@ -1,0 +1,69 @@
+{
+  "id": "qwen-image-2-1-text-to-image",
+  "name": "Qwen Image 2.1 Text to Image",
+  "version": "1.0.0",
+  "capability": "text-to-image",
+  "execution_provider": "local-comfyui",
+  "workflow_reference": "graphs/darius_qwen_image_2_1_t2i.json",
+  "required_inputs": [
+    {
+      "key": "prompt",
+      "type": "string",
+      "required": true,
+      "description": "Describe the image to generate.",
+      "maps_to": { "slot": "459:452.prompt" }
+    },
+    {
+      "key": "aspect_ratio",
+      "type": "string",
+      "required": false,
+      "default": "1:1 (Square)",
+      "description": "ComfyUI ratio label, for example 1:1 (Square) or 16:9 (Widescreen).",
+      "maps_to": { "slot": "13.aspect_ratio" }
+    },
+    {
+      "key": "steps",
+      "type": "integer",
+      "required": false,
+      "default": 25,
+      "minimum": 1,
+      "maximum": 100,
+      "description": "Sampling steps.",
+      "maps_to": { "slot": "459:458.steps" }
+    },
+    {
+      "key": "cfg",
+      "type": "number",
+      "required": false,
+      "default": 1,
+      "minimum": 0,
+      "maximum": 30,
+      "description": "Guidance strength.",
+      "maps_to": { "slot": "459:458.cfg" }
+    },
+    {
+      "key": "seed",
+      "type": "integer",
+      "required": false,
+      "default": 0,
+      "minimum": 0,
+      "maximum": 4294967295,
+      "description": "Seed for reproducible output.",
+      "maps_to": { "slot": "459:458.seed" }
+    }
+  ],
+  "output": { "kind": "image", "count": 1 },
+  "runtime_mapping": {
+    "filename_prefix_slot": "461.filename_prefix",
+    "api_format": true,
+    "format_slot": "461.format",
+    "format": "png"
+  },
+  "model_dependencies": [
+    "qwen_image_2.1_int8_convrot.safetensors",
+    "qwen3vl_8b_int8_convrot.safetensors",
+    "qwen_image_2.1_vae_bf16.safetensors"
+  ],
+  "requires_approval": true,
+  "enabled": true
+}

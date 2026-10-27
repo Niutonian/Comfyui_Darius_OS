@@ -1,0 +1,102 @@
+{
+  "profileId": "flux3-klein-t2i-v1",
+  "sourceUiDigest": "76f4f6d66f92660c9c23a3d374b48c01195a6a19cf4bc46d445337561a494622",
+  "sourceGraphDigest": "032e43c217701765786838870975e4c5c4246d5e0d2bbf33573dbe2888c93a79",
+  "templateDigest": "4c6624ae8957aa2ad002a0ecc639fb7bd17106be6969c53ce584df99ac810c36",
+  "sampler": "18:7",
+  "outputNode": "9",
+  "outputs": {
+    "9": "final"
+  },
+  "selector": "19",
+  "conditioningReceipt": "18:13",
+  "promotedBindings": {
+    "value": [
+      [
+        "18:17",
+        "value"
+      ]
+    ],
+    "switch": [
+      [
+        "18:16",
+        "switch"
+      ]
+    ],
+    "text": [
+      [
+        "18:5",
+        "text"
+      ]
+    ],
+    "seed": [
+      [
+        "18:7",
+        "seed"
+      ],
+      [
+        "18:11",
+        "sampling_mode.seed"
+      ]
+    ],
+    "cfg": [
+      [
+        "18:7",
+        "cfg"
+      ]
+    ],
+    "steps": [
+      [
+        "18:7",
+        "steps"
+      ]
+    ],
+    "sampler_name": [
+      [
+        "18:7",
+        "sampler_name"
+      ]
+    ],
+    "scheduler": [
+      [
+        "18:7",
+        "scheduler"
+      ]
+    ],
+    "unet_name": [
+      [
+        "18:1",
+        "unet_name"
+      ]
+    ],
+    "clip_name": [
+      [
+        "18:2",
+        "clip_name"
+      ]
+    ],
+    "vae_name": [
+      [
+        "18:3",
+        "vae_name"
+      ]
+    ],
+    "clip_name_1": [
+      [
+        "18:12",
+        "clip_name"
+      ]
+    ]
+  },
+  "changes": [
+    "Restore promoted named instance values via definition input link IDs and target socket names, preserving connected width/height routes.",
+    "Remove disconnected bounding-box/authoring-preview branch. Its output was never connected to generation; no region controls are advertised."
+  ],
+  "defaults": {
+    "steps": 50,
+    "cfg": 3.5,
+    "negativePrompt": "out of frame head",
+    "preset": "poster",
+    "enhance": true
+  }
+}

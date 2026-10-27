@@ -1,0 +1,11 @@
+{
+  "profileId": "minimax-h3-animate-image-v1",
+  "sourceUiDigest": "3e57d483ef050f8c2d085d7e3a2ae757ea947289ffc4c4d8bbe2fc422d3ce18c",
+  "exportDigest": "2338f7d2c791164ab8defc96fc0301e5784e9aac0445b38d45077b1424a9ff75",
+  "templateDigest": "09f1bd0e38d99850c85d6ba623b447a8fd23990bbfd92ec03e8b0929a9cfc6e2",
+  "changes": [],
+  "promotedBindings": {},
+  "outputs": {
+    "4": "final"
+  }
+}

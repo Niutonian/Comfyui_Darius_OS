@@ -1,0 +1,23 @@
+{
+  "profileId": "fibo-fast-experimental-v1",
+  "compilerVersion": "fibo-layout-string-v1",
+  "sourceFile": "Fibo2_t2i_layout_boxes_turbo.json",
+  "sourceUiDigest": "3e0dd917af509f3558d3349fd4d84cfcb55dad6b5d21ba5709761745b055daa1",
+  "sourceGraphDigest": "d77ee76154fa6b11fb43d6e118a394c8b60920f41c51f874867b39ffa0f5f250",
+  "templateDigest": "bbe8ee8a677d8219cf0665d58a6eaaeb8801208daa463493ddd9d24bfd1cf3df",
+  "promptTemplateDigest": "e64217fa42df351bab27076ed6033a4dca55714ef04dd4b6aebac86cfbd22706",
+  "loader": "26",
+  "sampler": "23",
+  "outputNode": "24",
+  "changes": [
+    "Removed disconnected UNET loader",
+    "Corrected sampler title",
+    "Added PreviewAny 28 on exact encoder prompt; never collected as artwork"
+  ],
+  "runtimeSources": {
+    "comfy_extras\\nodes_bounding_boxes.py": "fad12d2d30dbee5a4c59219ba8dab59da1bf203fd22d1bb005c43a8419d4f7d3",
+    "comfy_extras\\nodes_fibo2.py": "6ae6ea50f06eecc0996815e2b91ea4ba0906e0175f3aa37519b32797120c3e70",
+    "custom_nodes\\comfyui-kjnodes\\nodes\\nodes.py": "b39ab5f4c493da9ea60531d027eedc6df1bd13e9033220612f57016da23fd038"
+  },
+  "runtimeCommit": "bc5f880dbdd43e426077f42ccec53bb577ffee9f"
+}

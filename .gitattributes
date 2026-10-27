@@ -1,0 +1,7 @@
+# Workflow source checksums and release receipts identify exact file bytes.
+# Preserve those bytes across Windows/Linux checkouts; editors may retain the
+# existing line endings. This does not disable ordinary text diffs.
+* -text
+
+# CRLF is a line ending, not trailing whitespace. Keep normal whitespace checks.
+* whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol

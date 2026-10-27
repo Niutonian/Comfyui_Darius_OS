@@ -1,0 +1,24 @@
+.console-launch { position: relative; }
+.console-launch.has-failure > i { position: absolute; right: 3px; top: 3px; width: 6px; height: 6px; border-radius: 50%; background: var(--danger, #d65f5f); }
+.diagnostic-console { width: min(940px, calc(100vw - 24px)); max-height: calc(100dvh - 32px); margin: auto; padding: 18px; border: 1px solid var(--line); border-radius: 20px; background: var(--panel); color: var(--text); box-shadow: 0 24px 80px #0005; overflow: auto; }
+.diagnostic-console::backdrop { background: #0006; backdrop-filter: blur(5px); }
+.diagnostic-console header, .diagnostic-console header > div, .console-toolbar, .console-toolbar label, .console-tabs, .diagnostic-console footer { display: flex; align-items: center; gap: 10px; }
+.diagnostic-console header { justify-content: space-between; }
+.diagnostic-console h2 { margin: 0; font-size: 16px; }
+.console-toolbar { flex-wrap: wrap; margin: 16px 0 8px; }
+.console-toolbar button, .console-tabs button, .console-unlock button { display: inline-flex; align-items: center; gap: 6px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 9px; background: var(--panel-2); color: var(--text); }
+.console-warning, .diagnostic-console footer, .console-notice { font-size: 11px; color: var(--muted); }
+.console-checks { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 8px; margin: 12px 0; }
+.console-checks > div { display: grid; gap: 4px; padding: 9px; border: 1px solid var(--line); border-radius: 10px; font-size: 12px; }
+.console-checks small { color: var(--muted); }
+.console-checks [data-state="offline"] { border-color: var(--danger, #d65f5f); }
+.console-tabs { flex-wrap: wrap; }
+.console-tabs [aria-selected="true"] { background: color-mix(in srgb, var(--accent) 18%, var(--panel)); border-color: var(--accent); }
+.diagnostic-console pre { min-height: 180px; height: min(42dvh, 390px); overflow: auto; overscroll-behavior: contain; scrollbar-gutter: stable; padding: 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel-2); color: var(--text); font: 11px/1.65 ui-monospace, SFMono-Regular, Consolas, monospace; white-space: pre-wrap; overflow-wrap: anywhere; }
+.diagnostic-console footer { flex-wrap: wrap; justify-content: space-between; }
+.console-unlock { display: grid; gap: 12px; padding-block: 16px; }
+.console-unlock label { display: grid; gap: 6px; }
+.console-unlock input { width: 100%; min-width: 0; padding: 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel-2); color: var(--text); }
+.diagnostic-alert { position: fixed; top: 80px; right: 20px; z-index: 90; display: flex; align-items: center; gap: 8px; max-width: calc(100vw - 24px); padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); color: var(--text); box-shadow: 0 8px 30px #0003; font-size: 12px; }
+.diagnostic-alert button { border: 0; background: transparent; color: var(--text); }
+@media (max-width: 480px) { .diagnostic-console { padding: 12px; } .console-toolbar { gap: 6px; } .console-toolbar button { font-size: 11px; } .diagnostic-console pre { height: 35dvh; } }

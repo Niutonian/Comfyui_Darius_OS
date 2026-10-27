@@ -1,0 +1,46 @@
+{
+	admin off
+	auto_https disable_redirects
+	skip_install_trust
+	storage file_system {
+		root {$DARIUS_HTTPS_DATA}
+	}
+	servers {
+		protocols h1 h2
+	}
+}
+
+https://{$DARIUS_LAN_ADDRESS}:3443, https://localhost:3443, https://127.0.0.1:3443 {
+	bind {$DARIUS_LAN_ADDRESS} 127.0.0.1
+	tls internal
+	@outsideLAN not remote_ip private_ranges
+	@foreignOrigin {
+		header Origin *
+		not {
+			header Origin https://{$DARIUS_LAN_ADDRESS}:3443
+			header Origin https://localhost:3443
+			header Origin https://127.0.0.1:3443
+		}
+	}
+	route {
+		respond @outsideLAN "Darius is LAN-only." 403
+		respond @foreignOrigin "Origin not allowed." 403
+		header Permissions-Policy "microphone=(self), camera=(self)"
+		header X-Content-Type-Options nosniff
+		handle_path /voice/pipecat/* {
+			reverse_proxy 127.0.0.1:8003 {
+				flush_interval -1
+			}
+		}
+		handle_path /voice/classic/* {
+			reverse_proxy 127.0.0.1:8002 {
+				flush_interval -1
+			}
+		}
+		handle {
+			reverse_proxy 127.0.0.1:3000 {
+				flush_interval -1
+			}
+		}
+	}
+}

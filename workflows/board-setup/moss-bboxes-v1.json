@@ -1,0 +1,116 @@
+{
+  "schemaVersion": 1,
+  "profile": "moss-bboxes-v1",
+  "graphDigest": "3e2dc435a1509ad3ac8d31a45a1d7d2ed01e007c5cad0a48c17b2d00f0c09f0b",
+  "manifest": {
+    "name": "moss-bboxes-v1",
+    "workflows": [
+      {
+        "name": "default",
+        "file": "workflow.api.json"
+      }
+    ],
+    "nodes": [],
+    "models": [
+      {
+        "filename": "moss_image_sft_int8_convrot.safetensors",
+        "folder": "diffusion_models",
+        "url": "https://huggingface.co/Comfy-Org/MOSS-Image/resolve/530a4c94f92c35ef6818b1b035a983fe9dcf5f54/diffusion_models/moss_image_sft_int8_convrot.safetensors",
+        "auth": null,
+        "size_bytes": 5413698958,
+        "sha256": "b4d1475bc7eeffd7b809e82ea13a1fba1fb85c4e18365af3813722faa5c0fe4f"
+      },
+      {
+        "filename": "qwen3.5_9b_w4a8_gptq.safetensors",
+        "folder": "text_encoders",
+        "url": "https://huggingface.co/Comfy-Org/MOSS-Image/resolve/530a4c94f92c35ef6818b1b035a983fe9dcf5f54/text_encoders/qwen3.5_9b_w4a8_gptq.safetensors",
+        "auth": null,
+        "size_bytes": 7343591088,
+        "sha256": "4cc6a1543ad2061806da46f35f90cadb4801dcba246c44782cf42ec0feb6407c"
+      },
+      {
+        "filename": "flux2-vae_small.safetensors",
+        "folder": "vae",
+        "url": "https://huggingface.co/Comfy-Org/MOSS-Image/resolve/530a4c94f92c35ef6818b1b035a983fe9dcf5f54/vae/flux2-vae_small.safetensors",
+        "auth": null,
+        "size_bytes": 249521340,
+        "sha256": "d8d52ba036475f5fb07c8b435e176d3d97ebfa82f0d1a1c317f9cc1e25bd013b"
+      }
+    ],
+    "inputs": [],
+    "outputs": [
+      {
+        "node_id": "9",
+        "class_type": "SaveImage",
+        "name": "image_0"
+      }
+    ],
+    "output": {
+      "node_id": "9",
+      "class_type": "SaveImage"
+    },
+    "parameters": [],
+    "repair": {
+      "comfy_not_found": [
+        "ask_path"
+      ],
+      "host_mismatch": [
+        "ask_path"
+      ],
+      "missing_node": [
+        "install_pinned"
+      ],
+      "missing_python_dependency": [
+        "ask"
+      ],
+      "node_version_conflict": [
+        "ask"
+      ],
+      "missing_model": [
+        "download_verified",
+        "ask"
+      ],
+      "missing_source": [
+        "ask"
+      ],
+      "auth_required": [
+        "ask"
+      ],
+      "approval_required": [
+        "ask"
+      ],
+      "restart_required": [
+        "ask"
+      ],
+      "download_failed": [
+        "retry",
+        "ask"
+      ],
+      "install_failed": [
+        "ask"
+      ],
+      "disk_full": [
+        "ask"
+      ],
+      "hash_mismatch": [
+        "stop"
+      ],
+      "stale_contract": [
+        "prepare"
+      ],
+      "oom": [
+        "skip"
+      ],
+      "bad_input": [
+        "skip"
+      ],
+      "unclassified": [
+        "show",
+        "skip"
+      ],
+      "port_busy": [
+        "ask"
+      ]
+    }
+  }
+}

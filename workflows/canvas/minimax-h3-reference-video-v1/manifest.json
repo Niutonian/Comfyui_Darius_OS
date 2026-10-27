@@ -1,0 +1,17 @@
+{
+  "profileId": "minimax-h3-reference-video-v1",
+  "sourceUiDigest": "88ac715aadf2c620ec4a9144d30f7be0689d9677bb08a8bed3ef3c673a9d8510",
+  "exportDigest": "88f727381ba18af61adb6c4cfb967df2f9101073454f0a73a70f8dcbe858de56",
+  "templateDigest": "2f6e6025b3fc6f96fcc0ff58f39dc99d41b72cc6574f00da5717e8914158efaa",
+  "changes": [
+    "Repair positional-widget schema drift using named source values: cuda/fp16; current runtime offload_after_upscale=true corresponds to imported force_unload=true; no temporal chunking. Retain split schedule and both sinks.",
+    "Replace scalar Text helper with core PrimitiveStringMultiline; same literal string, no translation/cloud dependency. Remove frontend-only group controls; exporter resolved Set/Get and bypassed branches."
+  ],
+  "promotedBindings": {},
+  "outputs": {
+    "214": "final",
+    "264": "intermediate"
+  },
+  "sourceUiPrivacyVersion": "workflow-metadata-privacy-v1",
+  "privateOriginalSourceUiDigest": "ca1a666c5535ac75d4cad3620d3e2d135dba1ed59aafae7dddfbd2cddc5edcb2"
+}

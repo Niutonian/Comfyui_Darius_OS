@@ -1,0 +1,7 @@
+{
+  "adapter_version": "moss-bboxes-v1",
+  "source_ui_sha256": "2077e236a84a8518e4614a35f7cb52b2a1b953da226c51eee02246e89f08ca0d",
+  "source_graph_digest": "3e2dc435a1509ad3ac8d31a45a1d7d2ed01e007c5cad0a48c17b2d00f0c09f0b",
+  "source_package_digest": "3d556a16c2c59500e6e3851d6d9ba5100142740d7a94079d042e068be20c6b81",
+  "source_note": "Exact API graph recovered from Darius's compiled import cache. Both graph and package canonical digests were verified against the original Block Party import record; the original ZIP/source API file was unavailable. The supplied UI master is unchanged."
+}

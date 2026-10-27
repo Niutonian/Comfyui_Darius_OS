@@ -1,0 +1,39 @@
+.h3-controls { display: flex; flex-direction: column; gap: 14px; min-width: 0; padding: 16px; }
+.h3-controls label { display: flex; flex-direction: column; gap: 7px; font-size: 12px; color: var(--muted); }
+.h3-controls fieldset { border: 0; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.h3-controls input, .h3-controls select, .h3-controls textarea { width: 100%; min-width: 0; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); color: var(--text); padding: 10px; }
+.h3-controls textarea { resize: vertical; line-height: 1.55; }
+.h3-controls pre { white-space: pre-wrap; overflow-wrap: anywhere; max-height: 260px; overflow-y: auto; font-size: 11px; }
+.h3-input { display: flex; gap: 10px; align-items: center; padding: 8px; border: 1px solid var(--line); border-radius: 12px; }
+.h3-input > img { width: 72px; height: 72px; object-fit: contain; border-radius: 7px; }
+.h3-input > div { min-width: 0; flex: 1; display: flex; flex-direction: column; gap: 5px; }.h3-input small { overflow-wrap: anywhere; color: var(--muted); font-size: 10px; }
+.h3-inputs { display: flex; flex-direction: column; gap: 8px; }
+.h3-asset-picker { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 6px; max-height: 300px; overflow-y: auto; }
+.h3-asset-picker button { min-width: 0; padding: 4px; border: 1px solid var(--line); border-radius: 9px; background: var(--panel); }
+.h3-asset-picker img { width: 100%; aspect-ratio: 1; object-fit: contain; }.h3-asset-picker span { display: block; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: 10px; }
+.h3-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 24px; color: var(--muted); text-align: center; }
+.h3-card-preview { position: relative; }.h3-card-preview video { width: 100%; height: 100%; object-fit: contain; }.h3-card-preview .h3-play { position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%); padding: 12px 20px; border: 1px solid var(--line); border-radius: 24px; background: var(--panel); color: var(--text); }
+.h3-viewer { flex: 1; min-width: 0; min-height: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; padding: 20px; background: var(--bg); }
+.h3-viewer > video, .h3-viewer > img { width: 100%; max-height: calc(100% - 60px); object-fit: contain; min-height: 0; border-radius: 12px; }
+.h3-viewer p { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; font-size: 12px; color: var(--muted); }.h3-viewer a { display: inline-flex; align-items: center; gap: 6px; color: var(--text); }
+.h3-editor .canvas-header > div { display: flex; flex-direction: column; flex: 1; gap: 4px; }.h3-editor .canvas-header small { color: var(--muted); font-size: 11px; }
+.h3-history { padding: 14px; display: flex; flex-direction: column; gap: 16px; }.h3-history article { display: flex; flex-direction: column; gap: 8px; padding-bottom: 16px; border-bottom: 1px solid var(--line); }.h3-history video { width: 100%; border-radius: 9px; }.h3-history small { color: var(--muted); }
+@media (max-width: 767px) { .h3-viewer { padding: 4px; }.h3-editor .canvas-header { flex-wrap: wrap; }.h3-controls { padding: 12px; }.canvas-add-video { white-space: nowrap; } }
+
+.h3-editor .canvas-footer { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; background: var(--panel); color: var(--muted); }
+
+.h3-view-tabs { display: flex; gap: 8px; padding-bottom: 12px; flex-shrink: 0; }.h3-view-tabs button[aria-pressed=true] { background: var(--accent-soft); }
+.h3-input-preview { flex: 1; display: flex; min-height: 0; width: 100%; justify-content: center; align-items: center; overflow: auto; }
+.h3-input-preview figure { margin: 0; min-height: 0; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; }
+.h3-input-preview img { min-height: 0; width: 100%; height: 100%; object-fit: contain; border-radius: 12px; }
+.h3-input-preview.is-multiple { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(220px,100%),1fr)); gap: 12px; align-items: stretch; }.h3-input-preview figcaption { color: var(--muted); font-size: 12px; }
+
+.image-recipe-main { display: flex; flex-direction: column; flex: 1; min-width: 0; min-height: 0; overflow: hidden; background: var(--bg); }
+.image-recipe-stage { display: flex; position: relative; flex: 1; min-height: 160px; min-width: 0; width: 100%; }
+.image-recipe-fit { position: absolute; top: 12px; right: 12px; z-index: 2; }
+.image-recipe-result-actions { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 12px; padding: 8px 12px; font-size: 12px; color: var(--muted); }.image-recipe-result-actions a { color: var(--text); display: inline-flex; gap: 6px; align-items: center; }
+.h3-controls .image-recipe-check { display: flex; flex-direction: row; align-items: center; gap: 8px; }.h3-controls .image-recipe-check input { width: 16px; height: 16px; accent-color: var(--accent); }
+.image-recipe-controls details > label { margin-top: 10px; }.image-recipe-controls small { color: var(--muted); line-height: 1.6; }
+.image-recipe-history-image { padding: 0; border: 0; background: transparent; }.image-recipe-history-image img { width: 100%; max-height: 260px; object-fit: contain; border-radius: 10px; }
+.image-recipe-add { position: relative; }.image-recipe-add summary { list-style: none; cursor: pointer; white-space: nowrap; }.image-recipe-add summary::-webkit-details-marker { display: none; }.image-recipe-add > div { position: absolute; top: calc(100% + 8px); right: 0; min-width: 220px; padding: 6px; border: 1px solid var(--line); border-radius: 14px; background: var(--panel); box-shadow: 0 8px 30px #0002; z-index: 40; }.image-recipe-add button { display: block; width: 100%; text-align: left; border: 0; border-radius: 8px; padding: 10px; background: transparent; color: var(--text); }.image-recipe-add button:hover { background: var(--accent-soft); }
+@media(max-width:767px) { .image-recipe-add > div { right: auto; left: 0; } }

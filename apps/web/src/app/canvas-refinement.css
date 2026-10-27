@@ -1,0 +1,169 @@
+/* Canvas uses the existing OS window and theme; expansion changes presentation only. */
+.app-shell.os-desktop:has(.create-view.is-canvas.is-expanded) { height: var(--darius-viewport-height, 100dvh); min-height: 0; overflow: hidden; }
+.app-shell.os-desktop:has(.create-view.is-canvas.is-expanded) .topbar.system-bar { top: 0; left: 0; width: 100%; height: 52px; min-height: 52px; border-radius: 0; border-width: 0 0 1px; box-shadow: none; padding-inline: 14px; background: var(--surface); }
+.app-shell.os-desktop:has(.create-view.is-canvas.is-expanded) .workspace { height: 100%; min-height: 0; padding: 52px 0 0; box-sizing: border-box; }
+.app-shell.os-desktop:has(.create-view.is-canvas.is-expanded) .main-stage.desktop-surface { display: flex; height: 100%; min-height: 0; padding: 0; }
+.app-shell.os-desktop:has(.create-view.is-canvas.is-expanded) .app-frame.is-app { flex: 1; min-width: 0; width: 100%; height: 100%; margin: 0; grid-template-rows: minmax(0, 1fr); }
+.app-shell.os-desktop:has(.create-view.is-canvas.is-expanded) :is(.app-window-chrome, .app-window-surface, .project-presence, .space-label, .mobile-chat-fab, .inspector-launch) { display: none; }
+.app-shell.os-desktop:has(.create-view.is-canvas.is-expanded) .workspace > .inspector { display: none; }
+.app-shell.os-desktop:has(.create-view.is-canvas.is-expanded) .bottom-controls:not(.mobile-navigation-sheet) { display: none; }
+.app-shell.os-desktop:has(.create-view.is-canvas.is-expanded) .create-view.is-canvas .create-rail { display: none; }
+.app-shell.os-desktop:has(.create-view.is-canvas.is-expanded) .job-tray:not(.open) { display: none; }
+.app-shell.os-desktop:has(.create-view.is-canvas.is-expanded) .mobile-jobs-launch { display: inline-grid; }
+
+/* One compact toolbar and a quiet durable-job status line. */
+.canvas-refined .moss-toolbar { display: flex; flex-wrap: wrap; gap: 10px; padding: 8px 14px; }
+.canvas-refined .moss-toolbar > .moss-project-heading { display: flex; align-items: center; gap: 5px; min-width: 0; font-size: 12px; }
+.moss-project-heading > span { max-width: 170px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.moss-project-heading small { font-size: 11px; color: var(--muted); }
+.canvas-refined .moss-navigation { flex: 1; min-width: 270px; padding: 0; gap: 7px; border: 0; flex-wrap: nowrap; }
+.canvas-refined .moss-navigation label { min-width: 0; }
+.canvas-refined .moss-navigation input { width: 140px; }
+.canvas-refined .moss-navigation select { width: 145px; }
+.canvas-refined .moss-toolbar-actions { gap: 6px; flex-wrap: nowrap; }
+.canvas-refined .moss-toolbar-actions .primary-button { white-space: nowrap; }
+.canvas-refined .moss-toolbar-actions > span { width: 34px; }
+
+/* Board creation actions share one treatment, including the native menu trigger. */
+.canvas-workspace.canvas-refined .moss-toolbar-actions .canvas-add-board { display: inline-flex; align-items: center; justify-content: center; gap: 8px; box-sizing: border-box; flex-shrink: 0; height: 38px; min-height: 38px; margin: 0; padding: 0 14px; border: 1px solid var(--control-border); border-radius: 999px; background: var(--surface-subtle); color: var(--text); font-family: inherit; font-size: 12px; font-weight: 500; line-height: 1; letter-spacing: 0; white-space: nowrap; cursor: pointer; }
+.canvas-workspace.canvas-refined .canvas-add-board > svg { flex: 0 0 auto; width: 16px; height: 16px; }
+.canvas-workspace.canvas-refined .canvas-add-board > .canvas-add-chevron { width: 12px; height: 12px; color: var(--muted); }
+.canvas-workspace.canvas-refined .canvas-add-board:hover:not(:disabled):not([aria-disabled="true"]) { background: var(--active-soft); border-color: var(--active); }
+.canvas-workspace.canvas-refined .canvas-add-board:focus-visible { outline: 2px solid var(--active); outline-offset: 2px; }
+.canvas-workspace.canvas-refined .canvas-add-board:is(:disabled, [aria-disabled="true"]) { opacity: .5; cursor: not-allowed; }
+
+.moss-statusbar, .canvas-editor-status { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 6px 14px; font-size: 10px; color: var(--muted); }
+.moss-statusbar > span, .canvas-editor-status > span { white-space: nowrap; }
+
+/* Card chrome is separate from the artwork, including while a new run is active. */
+.canvas-refined .moss-board { display: flex; }
+.canvas-refined .moss-board > header { position: relative; inset: auto; flex: 0 0 46px; height: 46px; box-sizing: border-box; padding: 7px 10px; color: var(--text); background: var(--surface); border-bottom: 1px solid var(--line); text-shadow: none; }
+.canvas-refined .moss-board header small { color: var(--muted); }
+.canvas-refined .moss-board .moss-board-mark { background: var(--active-soft); color: var(--active); backdrop-filter: none; width: 28px; height: 28px; border-radius: 8px; }
+.canvas-refined .moss-board .moss-status { color: var(--text); background: var(--surface-subtle); text-shadow: none; backdrop-filter: none; }
+.canvas-refined .moss-board .moss-status.state-failed { color: var(--danger); }
+.canvas-refined .moss-board header .moss-fit-artwork { color: var(--muted); background: transparent; backdrop-filter: none; }
+.canvas-refined .moss-board header .moss-fit-artwork:hover { background: var(--active-soft); color: var(--text); }
+.canvas-refined .moss-board header .moss-duplicate { pointer-events: auto; width: 28px; min-height: 28px; height: 28px; cursor: pointer; color: var(--muted); }
+.canvas-refined .moss-board header .moss-duplicate:hover { background: var(--active-soft); color: var(--text); }
+.canvas-refined .moss-board > .moss-preview { position: relative; inset: auto; width: 100%; height: auto; min-height: 0; flex: 1 1 0; }
+.canvas-refined .moss-board > .moss-card-copy { position: relative; inset: auto; padding: 0; height: 0; overflow: hidden; background: transparent; text-shadow: none; }
+.canvas-refined .moss-board > footer { position: relative; inset: auto; flex: 0 0 46px; height: 46px; box-sizing: border-box; padding: 6px 10px; background: var(--surface); border-top: 1px solid var(--line); align-items: center; }
+.canvas-refined .moss-board footer .secondary-button { color: var(--text); background: var(--control-bg); border-color: var(--control-border); backdrop-filter: none; }
+.moss-card-meta { margin-right: auto; font-size: 9px; color: var(--muted); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.canvas-refined .moss-board.selected { outline-width: 1px; outline-offset: 3px; }
+.canvas-refined .moss-board.is-compact > header { flex: 0 0 auto; height: auto; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: calc(4px * var(--board-label-scale)); padding: calc(4px * var(--board-label-scale)); }
+.canvas-refined .moss-board.is-compact header strong { font-size: calc(11px * var(--board-label-scale)); }
+.canvas-refined .moss-board.is-compact .moss-status { justify-self: end; margin-left: 0; max-width: 100%; padding: 0; background: transparent; font-size: calc(9px * var(--board-label-scale)); overflow: hidden; text-overflow: ellipsis; box-sizing: border-box; }
+.canvas-refined .moss-board.is-compact :is(.moss-board-mark, header small, .moss-fit-artwork, .moss-duplicate) { display: none; }
+.canvas-refined .moss-board.is-compact:not(.selected):not(.is-busy):not(.has-error) > footer { display: none; }
+.canvas-refined .moss-board.is-compact > footer { flex-basis: calc(40px * var(--board-label-scale)); height: calc(40px * var(--board-label-scale)); padding: calc(4px * var(--board-label-scale)); gap: calc(5px * var(--board-label-scale)); }
+.canvas-refined .moss-board.is-compact footer button { min-height: calc(32px * var(--board-label-scale)); padding: calc(4px * var(--board-label-scale)) calc(7px * var(--board-label-scale)); font-size: calc(11px * var(--board-label-scale)); }
+.canvas-refined .moss-board.is-compact footer svg { width: calc(14px * var(--board-label-scale)); height: calc(14px * var(--board-label-scale)); flex-shrink: 0; }
+.canvas-refined .moss-board.is-compact .moss-card-meta { display: none; }
+.canvas-refined .moss-board.is-compact.is-tiny footer { justify-content: center; }
+.canvas-refined .moss-board.is-compact.is-tiny footer :is(.secondary-button, .primary-button span) { display: none; }
+.canvas-refined .moss-board .moss-status.state-needs-attention { color: var(--danger); }
+.moss-board-notice { flex: 0 0 auto; max-height: 56px; overflow: auto; padding: 6px 10px; font-size: 11px; line-height: 1.5; color: var(--danger); background: var(--surface); }
+.moss-panel-generate { width: 100%; justify-content: center; }
+
+/* All contextual content shares one reserved slot and one shared conversation. */
+.canvas-utility-panel { flex: 0 0 clamp(320px, 24vw, 380px); width: clamp(320px, 24vw, 380px); min-width: 0; min-height: 0; display: flex; flex-direction: column; background: var(--surface); border-left: 1px solid var(--line); box-sizing: border-box; }
+.canvas-utility-panel[hidden], .canvas-utility-panel [role="tabpanel"][hidden] { display: none !important; }
+.canvas-utility-header { flex: 0 0 auto; display: flex; align-items: center; gap: 4px; padding: 10px; border-bottom: 1px solid var(--line); }
+.canvas-utility-header [role="tablist"] { flex: 1; min-width: 0; display: flex; padding: 3px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface-subtle); }
+.canvas-utility-header [role="tab"] { flex: 1; min-width: 0; display: inline-flex; align-items: center; justify-content: center; gap: 5px; min-height: 34px; padding: 5px; border: 0; border-radius: 7px; color: var(--muted); background: transparent; font: inherit; font-size: 11px; cursor: pointer; }
+.canvas-utility-header [aria-selected="true"] { color: var(--text); background: var(--active-soft); font-weight: 600; }
+.canvas-utility-content { flex: 1; min-height: 0; overflow: auto; padding: 16px; scrollbar-width: thin; overscroll-behavior: contain; }
+.canvas-utility-chat { flex: 1; min-height: 0; display: flex; flex-direction: column; padding: 12px; overflow: hidden; }
+.canvas-chat-target { display: flex; align-items: center; flex: 0 0 auto; gap: 9px; padding-bottom: 12px; font-size: 11px; border-bottom: 1px solid var(--line); }
+.canvas-chat-target > div { display: grid; gap: 5px; min-width: 0; }.canvas-chat-target span { color: var(--muted); overflow-wrap: anywhere; }
+.canvas-utility-panel .canvas-composer-host { flex: 0 0 auto; max-height: min(35dvh, 290px); padding-top: 8px; border-top: 1px solid var(--line); overflow: auto; }
+.canvas-utility-panel .canvas-composer-host .composer { min-width: 0; }
+.canvas-utility-panel .composer-voice-controls { display: block; padding: 5px 0; }
+.canvas-utility-panel .composer-voice-controls .voice-controls { flex-wrap: wrap; gap: 6px; }
+.canvas-utility-panel .composer-voice-controls .voice-controls > button { position: static; min-height: 36px; padding: 6px 9px; font-size: 11px; box-shadow: none; }
+.canvas-utility-panel .composer-voice-controls .voice-phase { position: static; font-size: 10px; flex-basis: 100%; }
+.canvas-panel-empty { display: flex; align-items: center; flex-direction: column; gap: 12px; padding: 36px 12px; text-align: center; color: var(--muted); font-size: 12px; line-height: 1.7; }
+.canvas-panel-empty h3, .canvas-board-history h3 { margin: 0; font-size: 14px; color: var(--text); }
+.canvas-panel-empty p { margin: 0; }
+.canvas-refined .moss-inspector { width: auto; padding: 0; margin: 0; border: 0; overflow: visible; max-height: none; background: transparent; }
+.canvas-refined .moss-inspector > header { flex: 0 0 auto; }.canvas-refined .moss-inspector > header strong { font-size: 18px; }
+.canvas-refined .moss-inspector textarea[readonly] { min-height: 90px; color: var(--text); }
+.canvas-refined .moss-inspector details > summary { cursor: pointer; font-weight: 600; font-size: 12px; color: var(--text); }
+.canvas-refined .moss-inspector :is(.moss-pin,.moss-references) { display: block; }
+.canvas-refined .moss-inspector details[open] > :not(summary) { margin-top: 12px; }
+.canvas-board-settings { border-top: 1px solid var(--line); padding-top: 14px; }.canvas-board-settings[open] { display: grid; gap: 12px; }
+.canvas-composition-summary { display: flex; gap: 18px; color: var(--muted); font-size: 11px; }
+.canvas-refined .moss-inspector > .secondary-button { background: var(--active-soft); color: var(--text); width: 100%; justify-content: center; }
+.canvas-board-history { display: grid; gap: 14px; font-size: 12px; }
+.canvas-draft-entry { display: flex; gap: 10px; align-items: center; border: 1px dashed var(--control-border); background: var(--surface-subtle); padding: 12px; margin-block: 12px; border-radius: 10px; font-size: 11px; }
+.canvas-draft-entry > div { display: grid; gap: 6px; }.canvas-draft-entry small { color: var(--muted); line-height: 1.5; }
+.canvas-utility-panel .canvas-version img { object-fit: contain; }.canvas-utility-panel .canvas-version .moss-note-thumbnail { width: 72px; height: 64px; }
+
+/* Focused editor: rail, measured drawing area, reserved panel. No floating settings. */
+.canvas-add-short { display: none; }
+@media (max-width: 760px) {
+  .canvas-workspace.canvas-refined .moss-toolbar-actions .canvas-add-board { height: 40px; min-height: 40px; min-width: 70px; padding-inline: 10px; font-size: 11px; }
+  .canvas-refined .moss-toolbar-actions > :is(.canvas-add-board, .image-recipe-add) { order: -2; flex-shrink: 0; }
+  .canvas-add-board .canvas-add-full { display: none; }
+  .canvas-add-board .canvas-add-short { display: inline; }
+}
+.canvas-workspace.canvas-editor-refined .canvas-body { display: flex; min-height: 0; }
+.canvas-workspace.canvas-editor-refined .canvas-centre { flex: 1 1 0; min-width: 0; }
+.canvas-workspace.canvas-editor-refined .canvas-tools { position: static; transform: none; display: flex; flex-direction: column; flex: 0 0 58px; width: 58px; box-sizing: border-box; padding: 10px 6px; margin: 0; gap: 7px; border: 0; border-right: 1px solid var(--line); border-radius: 0; box-shadow: none; overflow-y: auto; z-index: auto; }
+.canvas-workspace.canvas-editor-refined .canvas-tools button { min-width: 38px; min-height: 38px; flex: 0 0 38px; width: 38px; }
+.canvas-workspace.canvas-editor-refined .canvas-tools select { width: 46px; padding: 7px 1px; font-size: 9px; }
+.canvas-workspace.canvas-editor-refined .canvas-tools i { width: 30px; height: 1px; flex: 0 0 1px; margin: 2px; }
+.canvas-workspace.canvas-editor-refined .canvas-view-options { padding: 6px 10px; min-height: 38px; box-sizing: border-box; }
+.canvas-workspace.canvas-editor-refined .canvas-view-options button { font-size: 11px; }
+.canvas-workspace.canvas-editor-refined .canvas-utility-panel :is(.canvas-inspector,.canvas-history,.canvas-layers) { position: static; display: flex; flex-direction: column; width: auto; min-width: 0; height: auto; max-height: none; padding: 0; margin: 0; border: 0; box-shadow: none; border-radius: 0; background: transparent; }
+.canvas-editor-refined .canvas-utility-panel .canvas-inspector { overflow: visible; gap: 14px; }
+.canvas-editor-refined .canvas-inspector > header { position: static; padding: 0; }.canvas-editor-refined .canvas-inspector header strong { font-size: 17px; }
+.canvas-editor-refined .canvas-hierarchy { border-top: 1px solid var(--line); padding-top: 12px; font-size: 11px; }
+.canvas-editor-refined .canvas-hierarchy summary { cursor: pointer; margin-bottom: 10px; }
+.canvas-editor-refined .canvas-hierarchy .canvas-layer-list { max-height: 280px; overflow: auto; }
+.canvas-workspace.canvas-editor-refined .canvas-header { padding: 7px 12px; border-bottom: 1px solid var(--line); }
+.canvas-workspace.canvas-editor-refined .canvas-heading input { width: min(260px, 26vw); }
+.canvas-workspace.canvas-editor-refined .canvas-header-actions { flex-wrap: nowrap; }
+.canvas-workspace.canvas-editor-refined .canvas-footer { padding: 5px 12px; }
+.canvas-editor-refined .canvas-result-caption { padding: 6px 10px; font-size: 10px; }
+.canvas-provenance summary { cursor: pointer; }.canvas-provenance p { margin: 8px 0 2px; line-height: 1.6; }
+.canvas-editor-status .text-button { font-size: 10px; padding: 4px 8px; }
+
+@media (max-width: 1250px) and (min-width: 761px) {
+  .canvas-refined .moss-navigation { order: 2; flex: 1 0 100%; }.canvas-refined .moss-toolbar-actions { margin-left: auto; }
+  .canvas-utility-panel { flex-basis: 320px; width: 320px; }
+}
+@media (max-width: 760px), (max-width: 1000px) and (max-height: 500px) {
+  .app-shell.os-desktop:has(.create-view.is-canvas.is-expanded) .topbar.system-bar { grid-template-columns: auto minmax(0,1fr) auto; padding-inline: 8px; }
+  .canvas-refined .moss-toolbar { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 230px); padding: 6px 8px; gap: 5px; }
+  .canvas-refined .moss-toolbar > .moss-project-heading { font-size: 11px; min-width: 0; }.moss-project-heading small { display: none; }
+  .canvas-refined .moss-navigation { grid-row: 2; grid-column: 1 / -1; order: 0; min-width: 0; overflow-x: auto; padding-bottom: 3px; scrollbar-width: thin; }
+  .canvas-refined .moss-navigation input { width: 125px; }.canvas-refined .moss-navigation select { width: 135px; }
+  .canvas-refined .moss-toolbar-actions { min-width: 0; margin: 0; justify-content: flex-start; overflow-x: auto; scrollbar-width: thin; padding-block: 2px; }
+  .canvas-refined .moss-toolbar-actions :is([aria-label="Select boards"],[aria-label="Pan workspace"],[aria-label="Zoom out workspace"],[aria-label="Zoom in workspace"],[aria-label="Fit all boards"]) { display: inline-grid; }
+  .canvas-refined .moss-toolbar-actions > span { display: inline-block; flex: 0 0 34px; }
+  .canvas-refined .moss-toolbar-actions .primary-button { min-width: 44px; height: 40px; padding: 8px; font-size: 0; margin: 0; order: -2; }.canvas-refined .moss-toolbar-actions [aria-label="Open Canvas utilities"] { order: -1; }
+  .canvas-refined .moss-toolbar-actions .icon-button { min-width: 40px; width: 40px; height: 40px; }
+  .canvas-utility-panel { position: absolute; inset: 0; z-index: 30; width: 100%; max-width: none; border: 0; border-radius: 0; }
+  .canvas-utility-header { padding: 7px 8px; }.canvas-utility-header [role="tab"] { min-height: 40px; font-size: 12px; }
+  .canvas-utility-panel .icon-button { min-width: 44px; min-height: 44px; }.canvas-utility-content { padding: 14px; scroll-padding-bottom: 20px; }
+  .canvas-utility-panel :is(input,textarea,select) { font-size: 16px; }.canvas-utility-panel .canvas-composer-host { max-height: 40dvh; }
+  .canvas-refined .moss-mobile-list article > button { min-height: 44px; }.canvas-refined .moss-mobile-list { padding: 10px; gap: 10px; }
+  .moss-statusbar { font-size: 9px; padding: 5px 8px; overflow-x: auto; }.moss-statusbar > span:first-child { display: none; }
+  .canvas-workspace.canvas-editor-refined.is-focus { height: var(--darius-viewport-height, 100dvh); top: var(--darius-viewport-top, 0px); bottom: auto; }
+  .canvas-workspace.canvas-editor-refined .canvas-body { flex-direction: column; }
+  .canvas-workspace.canvas-editor-refined .canvas-tools { flex-direction: row; flex: 0 0 48px; width: 100%; min-height: 48px; padding: 4px 8px; gap: 4px; overflow-x: auto; overflow-y: hidden; border-right: 0; border-bottom: 1px solid var(--line); }
+  .canvas-workspace.canvas-editor-refined .canvas-tools button { min-width: 40px; min-height: 40px; flex-basis: 40px; }
+  .canvas-workspace.canvas-editor-refined .canvas-tools select { width: 74px; flex-shrink: 0; }.canvas-workspace.canvas-editor-refined .canvas-tools i { width: 1px; height: 28px; flex-basis: 1px; margin: 5px; }
+  .canvas-workspace.canvas-editor-refined .canvas-header { padding: 6px 8px; gap: 4px; }
+  .canvas-workspace.canvas-editor-refined .canvas-heading input { width: min(230px, 55vw); }
+  .canvas-workspace.canvas-editor-refined .canvas-header-actions { width: 100%; overflow-x: auto; padding-block: 3px; gap: 4px; }
+  .canvas-workspace.canvas-editor-refined .canvas-header-actions > button { min-height: 40px; flex-shrink: 0; }
+  .canvas-workspace.canvas-editor-refined .canvas-header-actions .canvas-generate { margin-left: auto; }
+  .canvas-workspace.canvas-editor-refined .canvas-header-actions [aria-label="Exit canvas focus mode"] { display: none; }
+  .canvas-workspace.canvas-editor-refined .canvas-view-options { min-height: 40px; padding: 4px 8px; }.canvas-editor-refined .canvas-view-options button { min-height: 32px; }
+  .canvas-editor-refined .canvas-provenance summary { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 9px; }
+  .canvas-editor-status > span:nth-child(2) { display: none; }.canvas-editor-status { font-size: 9px; }
+}

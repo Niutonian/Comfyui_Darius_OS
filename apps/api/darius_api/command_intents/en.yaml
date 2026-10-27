@@ -1,0 +1,107 @@
+# Local UI commands only. These intents never authorize generation or deletion.
+language: en
+expansion_rules:
+  open: "(open|show|display|load|view|bring up)"
+  select: "(open|show|select|choose) [me] [the]"
+  item: "(image|photo|picture|video|clip|item|asset|result|one)"
+  size: "[in|at|as] (full size|fullsize|full screen|fullscreen)"
+  gallery: "[the|my|our|project] gallery"
+  media: "[the|this|that] [current] (video|clip|audio|playback|it)"
+  selection: "[{item_kind}] [number] {gallery_number} [<item>]"
+  ordinal_selection: "[{item_kind}] [number] {ordinal_number:gallery_number} [<item>]"
+lists:
+  item_kind:
+    values: [image, photo, picture, video, clip, item, asset, result, number]
+  gallery_number:
+    range: {from: 0, to: 99}
+  ordinal_number:
+    values: [] # Literal ordinal aliases are populated by the adapter.
+  seconds:
+    range: {from: 0, to: 600}
+  kind:
+    values:
+      - {in: "(image[s]|photo[s]|picture[s])", out: image}
+      - {in: "(video[s]|clip[s])", out: video}
+  playback:
+    values:
+      - {in: "(play|resume|continue [playing]|start playing)", out: play}
+      - {in: "pause [playing]", out: pause}
+      - {in: "stop [playing]", out: stop}
+      - {in: "(restart|start over)", out: restart}
+      - mute
+      - unmute
+  direction:
+    values:
+      - {in: "(next|following)", out: next}
+      - {in: "(previous|preceding)", out: previous}
+  target:
+    wildcard: true
+  name:
+    wildcard: true
+intents:
+  OpenGallery:
+    data:
+      - sentences:
+          - "(open|show|display|browse|load|bring up) [me] <gallery>"
+          - "(open|show|display|browse|load|bring up) [me] [the|my|our|project] media gallery"
+      - sentences:
+          - "(open|show|display|browse|load|bring up) [me] [the|my|our|project] {kind} gallery"
+          - "(open|show|display|browse|load|bring up) [me] <gallery> [of] {kind}"
+  ReturnGallery:
+    data:
+      - sentences:
+          - "[go|take me] back to [the] gallery"
+          - "<open> <gallery> again"
+  CloseViewer:
+    data:
+      - sentences:
+          - "(close|dismiss|hide|exit) [the|this|that] (gallery|preview|viewer|image|picture|video|asset|it)"
+          - "(close|dismiss|hide|exit) [the|this|that] (full size|fullsize|full screen|fullscreen) [view|preview]"
+  SelectNumber:
+    data:
+      - sentences:
+          - "<select> <selection> [<size>]"
+          - "<select> <ordinal_selection> [<size>]"
+  PlayNumber:
+    data:
+      - sentences:
+          - "play [me] [the] <selection> [<size>]"
+          - "play [me] [the] <ordinal_selection> [<size>]"
+          - "<select> <selection> [<size>] and play [it]"
+          - "<select> <ordinal_selection> [<size>] and play [it]"
+  Playback:
+    data:
+      - sentences:
+          - "{playback} <media> [<size>]"
+  BarePlayback:
+    data:
+      - sentences: ["{playback}"]
+  SeekForward:
+    data:
+      - sentences:
+          - "(skip|seek|jump) [the video] (forward|ahead) [by] {seconds} second[s]"
+          - "fast forward [the video] [by] {seconds} second[s]"
+  SeekBackward:
+    data:
+      - sentences:
+          - "(skip|seek|jump) [the video] (back|backward|backwards) [by] {seconds} second[s]"
+          - "rewind [the video] [by] {seconds} second[s]"
+          - "go back [by] {seconds} second[s]"
+  NavigateViewer:
+    data:
+      - sentences:
+          - "[show|open|go to] [the] {direction} [<item>]"
+  SelectName:
+    data:
+      - sentences:
+          - "(select|choose) [the] [{item_kind}] [named|called] {name}"
+  OpenTarget:
+    data:
+      - sentences:
+          - "<open> {target}"
+          - "(enlarge|zoom [in] [on]) {target}"
+  PlayTarget:
+    data:
+      - sentences:
+          - "play {target}"
+          - "<open> {target} and play [it]"

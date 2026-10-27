@@ -1,0 +1,85 @@
+{
+  "profileId": "qwen21-t2i-v1",
+  "sourceUiDigest": "488ff350ff45979f53c185d6dfb81f41e49be23295f348f100f5d2f34a714a2e",
+  "sourceGraphDigest": "ee6b64d6f33a1509c4216412b5bcf9275b7d02774c0d427e03baf827dc0eaf4d",
+  "templateDigest": "d775ee0850ee88eb5477026f4ef9d73fd5c302f31555bbf3a9eea405df167f04",
+  "sampler": "459:458",
+  "outputNode": "461",
+  "outputs": {
+    "461": "final"
+  },
+  "selector": "13",
+  "conditioningReceipt": null,
+  "promotedBindings": {
+    "prompt": [
+      [
+        "459:452",
+        "prompt"
+      ]
+    ],
+    "negative_prompt": [
+      [
+        "459:452",
+        "negative_prompt"
+      ]
+    ],
+    "cfg": [
+      [
+        "459:458",
+        "cfg"
+      ]
+    ],
+    "steps": [
+      [
+        "459:458",
+        "steps"
+      ]
+    ],
+    "scheduler": [
+      [
+        "459:458",
+        "sampler_name"
+      ]
+    ],
+    "scheduler_1": [
+      [
+        "459:458",
+        "scheduler"
+      ]
+    ],
+    "seed": [
+      [
+        "459:458",
+        "seed"
+      ]
+    ],
+    "unet_name": [
+      [
+        "459:451",
+        "unet_name"
+      ]
+    ],
+    "clip_name": [
+      [
+        "459:453",
+        "clip_name"
+      ]
+    ],
+    "vae_name": [
+      [
+        "459:454",
+        "vae_name"
+      ]
+    ]
+  },
+  "changes": [
+    "Restore promoted named instance values via definition input link IDs and target socket names, preserving connected width/height routes."
+  ],
+  "defaults": {
+    "steps": 25,
+    "cfg": 1,
+    "negativePrompt": "",
+    "preset": "square",
+    "enhance": false
+  }
+}

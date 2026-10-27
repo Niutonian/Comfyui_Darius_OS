@@ -1,0 +1,127 @@
+{
+  "schemaVersion": 1,
+  "profile": "fibo-fast-experimental-v1",
+  "graphDigest": "bbe8ee8a677d8219cf0665d58a6eaaeb8801208daa463493ddd9d24bfd1cf3df",
+  "manifest": {
+    "name": "fibo-fast-experimental-v1",
+    "workflows": [
+      {
+        "name": "default",
+        "file": "workflow.api.json"
+      }
+    ],
+    "nodes": [
+      {
+        "name": "comfyui-kjnodes",
+        "git_url": "https://github.com/kijai/ComfyUI-KJNodes",
+        "commit": "d3cfe21625e5170126ce06fbfcfe1d88108688c3",
+        "class_types": [
+          "JoinStrings",
+          "SomethingToString",
+          "StringConstantMultiline"
+        ]
+      }
+    ],
+    "models": [
+      {
+        "filename": "qwen3vl_4b_bf16.safetensors",
+        "folder": "text_encoders",
+        "url": "https://huggingface.co/Comfy-Org/Fibo-2.0/resolve/b2bffaf57d48825a6989b986f24d5cfb8c71231b/text_encoders/qwen3vl_4b_bf16.safetensors",
+        "auth": null,
+        "size_bytes": 8875719384,
+        "sha256": "36f3ff447ef59201722e8f9ce6020c9819fdcfba6aa2608c4e09b1c0ce114e34"
+      },
+      {
+        "filename": "flux2-vae.safetensors",
+        "folder": "vae",
+        "url": "https://huggingface.co/Comfy-Org/flux2-dev/resolve/be27b9cf1b7212b3a281c2abbd9ecf6985242bb8/split_files/vae/flux2-vae.safetensors",
+        "auth": null,
+        "size_bytes": 336213556,
+        "sha256": "d64f3a68e1cc4f9f4e29b6e0da38a0204fe9a49f2d4053f0ec1fa1ca02f9c4b5"
+      },
+      {
+        "filename": "fibo2_dev_int8_convrot.safetensors",
+        "folder": "diffusion_models",
+        "url": "https://huggingface.co/Comfy-Org/Fibo-2.0/resolve/b2bffaf57d48825a6989b986f24d5cfb8c71231b/diffusion_models/fibo2_dev_int8_convrot.safetensors",
+        "auth": null,
+        "size_bytes": 8408562474,
+        "sha256": "063dd397395809fd22234c6bd32932cfcb22619f4d2282bdbf1dc58c406fe325"
+      }
+    ],
+    "inputs": [],
+    "outputs": [
+      {
+        "node_id": "24",
+        "class_type": "SaveImage",
+        "name": "image_0"
+      }
+    ],
+    "output": {
+      "node_id": "24",
+      "class_type": "SaveImage"
+    },
+    "parameters": [],
+    "repair": {
+      "comfy_not_found": [
+        "ask_path"
+      ],
+      "host_mismatch": [
+        "ask_path"
+      ],
+      "missing_node": [
+        "install_pinned"
+      ],
+      "missing_python_dependency": [
+        "ask"
+      ],
+      "node_version_conflict": [
+        "ask"
+      ],
+      "missing_model": [
+        "download_verified",
+        "ask"
+      ],
+      "missing_source": [
+        "ask"
+      ],
+      "auth_required": [
+        "ask"
+      ],
+      "approval_required": [
+        "ask"
+      ],
+      "restart_required": [
+        "ask"
+      ],
+      "download_failed": [
+        "retry",
+        "ask"
+      ],
+      "install_failed": [
+        "ask"
+      ],
+      "disk_full": [
+        "ask"
+      ],
+      "hash_mismatch": [
+        "stop"
+      ],
+      "stale_contract": [
+        "prepare"
+      ],
+      "oom": [
+        "skip"
+      ],
+      "bad_input": [
+        "skip"
+      ],
+      "unclassified": [
+        "show",
+        "skip"
+      ],
+      "port_busy": [
+        "ask"
+      ]
+    }
+  }
+}

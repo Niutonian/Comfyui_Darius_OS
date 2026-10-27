@@ -1,0 +1,158 @@
+{
+  "schemaVersion": 1,
+  "profile": "qwen21-edit-v1",
+  "graphDigest": "ec1e03964de55c23f96ac54eccf0995af109bd4d7fb48b60c4e481ba4d991840",
+  "manifest": {
+    "name": "qwen21-edit-v1",
+    "workflows": [
+      {
+        "name": "default",
+        "file": "workflow.api.json"
+      }
+    ],
+    "nodes": [],
+    "models": [
+      {
+        "filename": "qwen_image_2.1_int8_convrot.safetensors",
+        "folder": "diffusion_models",
+        "url": "https://huggingface.co/Comfy-Org/Qwen-Image-2.1/resolve/0217efd1d9c9452e84f6448903d6e21bfa171ffd/diffusion_models/qwen_image_2.1_int8_convrot.safetensors",
+        "auth": null,
+        "size_bytes": 7256783064,
+        "sha256": "cb74113cb03faecd79611b01fd7fd642f0aa60d6f0b95086abee214d75eaa57d"
+      },
+      {
+        "filename": "qwen3vl_8b_int8_convrot.safetensors",
+        "folder": "text_encoders",
+        "url": "https://huggingface.co/Comfy-Org/Qwen-Image-2.1/resolve/0217efd1d9c9452e84f6448903d6e21bfa171ffd/text_encoders/qwen3vl_8b_int8_convrot.safetensors",
+        "auth": null,
+        "size_bytes": 9350798360,
+        "sha256": "8bfd0f6e12abf2d2d697ecc888e5e90b0d6741d6708f05799f53afa560452e8f"
+      },
+      {
+        "filename": "qwen_image_2.1_vae_bf16.safetensors",
+        "folder": "vae",
+        "url": "https://huggingface.co/Comfy-Org/Qwen-Image-2.1/resolve/0217efd1d9c9452e84f6448903d6e21bfa171ffd/vae/qwen_image_2.1_vae_bf16.safetensors",
+        "auth": null,
+        "size_bytes": 675509688,
+        "sha256": "bb21f7473051e1ac368515dd3f2e15cd44d7a11748ee8823e1ddca3e4876b7c9"
+      }
+    ],
+    "inputs": [
+      {
+        "node_id": "470",
+        "class_type": "LoadImage",
+        "key": "image",
+        "extensions": [
+          ".png",
+          ".jpg",
+          ".jpeg",
+          ".webp",
+          ".bmp",
+          ".gif"
+        ],
+        "name": "image_0"
+      },
+      {
+        "node_id": "475",
+        "class_type": "LoadImage",
+        "key": "image",
+        "extensions": [
+          ".png",
+          ".jpg",
+          ".jpeg",
+          ".webp",
+          ".bmp",
+          ".gif"
+        ],
+        "name": "image_1"
+      }
+    ],
+    "outputs": [
+      {
+        "node_id": "461",
+        "class_type": "SaveImageAdvanced",
+        "name": "image_0"
+      }
+    ],
+    "output": {
+      "node_id": "461",
+      "class_type": "SaveImageAdvanced"
+    },
+    "parameters": [],
+    "repair": {
+      "comfy_not_found": [
+        "ask_path"
+      ],
+      "host_mismatch": [
+        "ask_path"
+      ],
+      "missing_node": [
+        "install_pinned"
+      ],
+      "missing_python_dependency": [
+        "ask"
+      ],
+      "node_version_conflict": [
+        "ask"
+      ],
+      "missing_model": [
+        "download_verified",
+        "ask"
+      ],
+      "missing_source": [
+        "ask"
+      ],
+      "auth_required": [
+        "ask"
+      ],
+      "approval_required": [
+        "ask"
+      ],
+      "restart_required": [
+        "ask"
+      ],
+      "download_failed": [
+        "retry",
+        "ask"
+      ],
+      "install_failed": [
+        "ask"
+      ],
+      "disk_full": [
+        "ask"
+      ],
+      "hash_mismatch": [
+        "stop"
+      ],
+      "stale_contract": [
+        "prepare"
+      ],
+      "oom": [
+        "skip"
+      ],
+      "bad_input": [
+        "skip"
+      ],
+      "unclassified": [
+        "show",
+        "skip"
+      ],
+      "port_busy": [
+        "ask"
+      ]
+    },
+    "input": {
+      "node_id": "470",
+      "class_type": "LoadImage",
+      "key": "image",
+      "extensions": [
+        ".png",
+        ".jpg",
+        ".jpeg",
+        ".webp",
+        ".bmp",
+        ".gif"
+      ]
+    }
+  }
+}
