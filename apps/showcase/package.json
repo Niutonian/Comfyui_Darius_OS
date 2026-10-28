@@ -1,0 +1,7 @@
+{
+  "name": "@darius/showcase",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": { "build": "node build.mjs", "dev": "node serve.mjs", "check": "node --check public/demo.js" }
+}

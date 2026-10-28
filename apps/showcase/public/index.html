@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#14231d">
+  <title>Darius — a creative workspace for your mind</title>
+  <meta name="description" content="Explore Darius: an interactive demo of a local creative workspace for ComfyUI. Discover Canvas boards, creative chat, image and video workflows, and fullscreen voice.">
+  <meta property="og:title" content="Darius — don't let prompting scare you">
+  <meta property="og:description" content="Explore the workspace behind I AM ALIVE. An interactive static demo with real project media.">
+  <meta property="og:type" content="website"><meta property="og:image" content="https://niutonian.github.io/Comfyui_Darius_OS/media/thumbnail.png">
+  <meta property="og:url" content="https://niutonian.github.io/Comfyui_Darius_OS/">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; media-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'self'">
+  <link rel="icon" href="./media/orb.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./demo.css"><link rel="stylesheet" href="./refinement.css"><script type="module" src="./demo.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to workspace</a>
+  <div class="ambient" aria-hidden="true"><i class="ambient-orbit"></i></div>
+  <header class="topbar">
+    <button class="project-switch" data-action="projects" aria-label="Choose a demo project"><span class="project-initial">D</span><span><small>CURRENT PROJECT</small><strong id="project-name">I AM ALIVE</strong></span><span class="chevron">⌄</span></button>
+    <button class="brand" data-action="home" aria-label="Darius home"><img src="./media/orb.svg" alt="" width="30" height="30"><span>Darius<small>INTERACTIVE DEMO</small></span></button>
+    <div class="top-actions"><span class="demo-badge"><i></i><span>Demo · browser only</span></span><button class="icon-button mobile-jobs" data-action="jobs" aria-label="Background jobs" title="Background jobs">↗</button><button class="icon-button" data-action="activity" aria-label="Demo activity" title="Demo activity"></button><button class="icon-button" data-action="settings" aria-label="Settings" title="Settings"></button><a class="get-darius" href="https://github.com/Niutonian/Comfyui_Darius_OS" target="_blank" rel="noopener noreferrer">Get Darius <span>↗</span></a></div>
+  </header>
+  <main id="main" tabindex="-1"></main>
+  <footer class="bottom-bar"><button class="jobs-pill" data-action="jobs"><span class="status-dot"></span><span id="jobs-label">Background jobs</span><small id="jobs-count">No active demos</small></button><nav class="dock" aria-label="Workspace sections"></nav><div class="voice-actions"><button class="secondary" data-action="fullscreen-chat">Fullscreen chat</button><button class="secondary" data-action="voice">Voice demo</button></div></footer>
+  <dialog id="modal" aria-label="Darius dialog"></dialog>
+  <dialog id="live" aria-label="Fullscreen conversation"></dialog>
+  <div id="toast" role="status" aria-live="polite"></div>
+  <noscript><p>This interactive demo requires JavaScript. <a href="https://github.com/Niutonian/Comfyui_Darius_OS">Explore Darius on GitHub.</a></p></noscript>
+</body></html>

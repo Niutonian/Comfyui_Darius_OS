@@ -1,0 +1,28 @@
+{
+  "files": [
+    "workstation.png",
+    "workstation-pov.png",
+    "workstation.mp4",
+    "workstation-pov.mp4",
+    "intro.mp4",
+    "demo-film.mp4",
+    "voice-input.wav",
+    "voice-reply.wav",
+    "thumbnail.png",
+    "orb.svg"
+  ],
+  "project": "I AM ALIVE \u2014 fictional showcase project",
+  "disclosure": "Images and motion are prepared real Darius outputs. Intro titles are composited. Product film narration is AI-generated. Voice input is prerecorded; its recognition and reply were captured from the actual application. The static site does not run models or request microphone access.",
+  "integrity": {
+    "workstation.png": "d3dc831a532a376e0864d8080b285e49ebee6dcba5286949a87ec3a7610e276d",
+    "workstation-pov.png": "e1f97f2d62e36ef8a2fa79b0957d2d7a040a6115eed5cb40e668d69db5e3f2fb",
+    "workstation.mp4": "9dca09e042baf2600c5a48383f3cb5b6dfe10b5281f1d3d1d6aa515fbb6b699b",
+    "workstation-pov.mp4": "18a3bf9dd049002058366253d756c6d8f64a65f4accc625ba4321cb399cbf914",
+    "intro.mp4": "6670d5e3a92b912798a3ed6b98ee0c8a1645f2cf9b377267e9c5265b8c6e00f0",
+    "demo-film.mp4": "1642acd9a5a3c0b49dd3ad0a1a065056c6c6396b75718c7b6f4e4a2e9b8fca78",
+    "voice-input.wav": "e132c0df01491e32b8a55d7678eda496cf0150777537baf7307f48f6cf642080",
+    "voice-reply.wav": "51aec2ba3d87dd28d836f413b89ab8803f58ed4bc30c613dfe8d21992c861ee2",
+    "thumbnail.png": "d8079c4d2ecfc6c5c5e81e437afacffa4d565f97ba61066a591bdf7bf1326437",
+    "orb.svg": "f05e4492fc4c864658bb8ed12caef36ad45dd09b6ecd4ecf59c0341173bcdc70"
+  }
+}

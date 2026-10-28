@@ -2,6 +2,10 @@
 
 <p align="center"><img src="docs/media/darius-logo-animated.gif" width="480" alt="Darius — animated green orb and wordmark"></p>
 
+[**Try the interactive demo →**](https://niutonian.github.io/Comfyui_Darius_OS/) · [Watch the demo video](https://www.youtube.com/watch?v=nn0Ipl-3BT8)
+
+Explore the workspace without installing anything. The hosted demo uses prepared media, guided replies and recorded voice; your edits stay in your browser. Install the local app below to connect your own models and generate new work.
+
 Darius is a local-first creative workspace for conversation, voice, images, video and story production. The current release is an early-access Windows/PowerShell application with a FastAPI/SQLite backend, Next.js interface and separate execution workers.
 
 ![Darius Home with fictional project folders](docs/media/01-home-projects.png)
