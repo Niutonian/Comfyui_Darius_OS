@@ -1,6 +1,10 @@
 # Darius
 
+<p align="center"><img src="docs/media/darius-logo-animated.gif" width="480" alt="Darius — animated green orb and wordmark"></p>
+
 Darius is a local-first creative workspace for conversation, voice, images, video and story production. The current release is an early-access Windows/PowerShell application with a FastAPI/SQLite backend, Next.js interface and separate execution workers.
+
+![Darius Home with fictional project folders](docs/media/01-home-projects.png)
 
 ## What is available
 
@@ -83,6 +87,10 @@ For frontend/API development, use `scripts/start-local.ps1 -Development`. The la
 
 Open **Create → Canvas**. The toolbar adds MOSS, FIBO, Image and Video boards. The Image board menu chooses one of the four image recipes. Each workflow keeps its own editable draft; switching, saving or uploading does not generate. Wheel zooms, holding the middle mouse button pans, and Fit restores the view.
 
+![Canvas overview with three editable demo board drafts](docs/media/02-canvas-overview.png)
+
+<p><img src="docs/media/03-board-moss.png" width="32%" alt="MOSS composition draft"><img src="docs/media/04-board-flux.png" width="32%" alt="Image board draft"><img src="docs/media/05-board-video.png" width="32%" alt="Video board draft"></p>
+
 Qwen Edit accepts explicitly selected/uploaded project images. Their content versions are pinned; selecting a newer upstream image is a separate action. Generated results remain in History. MOSS/FIBO region layouts and plain image/video recipe inputs are distinct capabilities.
 
 - [MOSS](docs/canvas-moss.md), [FIBO](docs/canvas-fibo.md), [multi-board workspace](docs/multi-board-workspace.md)
@@ -97,6 +105,10 @@ Original workflow sources and versioned templates are under `workflows/defaults/
 Legacy Krea/seamless semantic contracts remain for compatibility. They are unavailable when their original external source files are absent. Canvas recipes use the bundled versioned templates instead.
 
 ## Voice, LAN and other guides
+
+![Creative chat with a fictional project and scripted prompt](docs/media/06-chat.png)
+
+![Fullscreen voice interface during microphone connection setup](docs/media/07-fullscreen-voice.png)
 
 - [Pipecat voice](docs/pipecat-voice.md) and [classic local voice](docs/local-voice.md)
 - [Fullscreen conversation](docs/fullscreen-voice.md) and [local command router](docs/local-command-router.md)
