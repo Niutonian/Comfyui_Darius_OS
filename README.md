@@ -36,6 +36,8 @@ weights, runtimes and dependencies retain their own terms; see
 
 ## Install
 
+![Darius setup and services manager](docs/media/install-menu.png)
+
 On Windows, double-click **install.bat** to open the Darius manager. Choose
 **Install / repair**, configure your services, then **Start Darius**. The manager
 handles missing Windows tools, Python 3.12, locked packages, migrations and the
