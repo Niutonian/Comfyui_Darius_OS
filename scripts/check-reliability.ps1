@@ -1,5 +1,5 @@
 [CmdletBinding()]
-param([switch]$Browser, [string]$PlaywrightModule, [string]$UiUrl = "http://127.0.0.1:3000")
+param([switch]$Browser, [switch]$Privacy)
 $ErrorActionPreference = "Stop"
 $checkRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
 Push-Location $checkRoot
@@ -16,17 +16,18 @@ try {
         if ($LASTEXITCODE -ne 0) { throw "Frontend typecheck failed." }
         npm test
         if ($LASTEXITCODE -ne 0) { throw "Frontend regressions failed." }
-        npm run build
+        $previousDist = $env:DARIUS_NEXT_DIST_DIR
+        $env:DARIUS_NEXT_DIST_DIR = ".next-check"
+        try { npm run build } finally { $env:DARIUS_NEXT_DIST_DIR = $previousDist }
         if ($LASTEXITCODE -ne 0) { throw "Frontend build failed." }
     } finally { Pop-Location }
     if ($Browser) {
-        if (-not (Test-Path (Join-Path $checkRoot "scripts/check-ui.cjs"))) {
-            throw "Browser checks require the workstation-only scripts/check-ui.cjs probe; it is not shipped in source releases. Core checks have passed."
-        }
-        $env:DARIUS_UI_URL = $UiUrl
-        if ($PlaywrightModule) { $env:DARIUS_PLAYWRIGHT_MODULE = $PlaywrightModule }
-        node scripts/check-ui.cjs
-        if ($LASTEXITCODE -ne 0) { throw "Browser regressions failed." }
+        npm --prefix tests/browser test
+        if ($LASTEXITCODE -ne 0) { throw "Browser smoke failed. Run npm ci --prefix tests/browser and npm --prefix tests/browser run install:browser first." }
+    }
+    if ($Privacy) {
+        & "$checkRoot/.venv/Scripts/python.exe" scripts/release_audit.py --history --privacy
+        if ($LASTEXITCODE -ne 0) { throw "Publication privacy checks failed. Do not prepare or publish this checkout." }
     }
     Write-Host "Reliability checks passed. No cloud generation or model calls were made."
 } finally { Pop-Location }

@@ -80,7 +80,7 @@ function formatApiError(value: unknown, fallback: string, depth = 0): string {
   return fallback;
 }
 
-export async function request<T>(path: string, init?: RequestInit): Promise<T> {
+export async function request<T>(path: string, init?: RequestInit, readDeadlineMs = 20_000): Promise<T> {
   // Bound discovery/read requests; mutations and conversations manage their own lifecycle.
   if (init?.signal || (init?.method && init.method.toUpperCase() !== "GET")) return performRequest<T>(path, init);
   const controller = new AbortController();
@@ -90,9 +90,12 @@ export async function request<T>(path: string, init?: RequestInit): Promise<T> {
       performRequest<T>(path, { ...init, signal: controller.signal }),
       new Promise<never>((_, reject) => {
         timer = setTimeout(() => {
-          reject(new ApiError("The local Darius API did not respond within 20 seconds. Check that it is running, then retry.", 408));
+          const chatRead = /\/(conversations|messages)(?:\?|$)/.test(path);
+          reject(new ApiError(chatRead
+            ? "Loading the conversation took too long. Your messages are still saved. Reload the conversation to reconnect."
+            : "The local Darius API did not respond within 20 seconds. Check that it is running, then retry.", 408));
           controller.abort();
-        }, 20_000);
+        }, readDeadlineMs);
       }),
     ]);
   } finally { clearTimeout(timer); }
@@ -292,14 +295,14 @@ export const api = {
     request<DerivativeBatch>(`/assets/${encodeURIComponent(assetId)}/derivatives`, { method: "POST" }),
   analyzeAsset: (assetId: string, payload: MediaAnalysisRequest = {}) =>
     request<MediaAnalysis>(`/assets/${encodeURIComponent(assetId)}/analyze`, { method: "POST", body: JSON.stringify(payload) }),
-  conversations: (projectId: string) => request<Conversation[]>(`/projects/${encodeURIComponent(projectId)}/conversations`),
+  conversations: (projectId: string) => request<Conversation[]>(`/projects/${encodeURIComponent(projectId)}/conversations`, undefined, 45_000),
   renameConversation: (projectId: string, conversationId: string, title: string) =>
     request<Conversation>(`/projects/${encodeURIComponent(projectId)}/conversations/${encodeURIComponent(conversationId)}`, { method: "PATCH", body: JSON.stringify({ title }) }),
   deleteConversation: (projectId: string, conversationId: string) =>
     request<{ deleted: string }>(`/projects/${encodeURIComponent(projectId)}/conversations/${encodeURIComponent(conversationId)}`, { method: "DELETE" }),
   createConversation: (projectId: string, title = "Conversation") =>
     conversationRequest<Conversation>(`/projects/${encodeURIComponent(projectId)}/conversations`, { method: "POST", body: JSON.stringify({ title }) }),
-  messages: (conversationId: string) => request<Message[]>(`/conversations/${encodeURIComponent(conversationId)}/messages`),
+  messages: (conversationId: string) => request<Message[]>(`/conversations/${encodeURIComponent(conversationId)}/messages`, undefined, 45_000),
   createMessage: (conversationId: string, payload: Pick<Message, "role" | "content"> & { metadata?: Record<string, unknown> }) =>
     conversationRequest<Message>(`/conversations/${encodeURIComponent(conversationId)}/messages`, { method: "POST", body: JSON.stringify(payload) }),
   planConversation: (conversationId: string, requestText: string) =>

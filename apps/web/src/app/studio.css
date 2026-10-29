@@ -303,3 +303,18 @@ body { font-family: "Segoe UI", Arial, sans-serif; }
   .brand-presence { width: 26px; height: 26px; }
   .brand-presence .liquid-orb { width: 24px; height: 24px; }
 }
+
+.video-recovery { padding: 14px 18px; border: 1px solid var(--line); border-radius: 16px; background: var(--panel); margin: 10px; overflow: auto; max-height: 45vh; }
+.video-recovery p { font-size: .85rem; line-height: 1.5; }
+.video-recovery video { display: block; max-width: 100%; max-height: 240px; margin-block: 10px; border-radius: 10px; }
+
+.readiness-summary { border: 1px solid var(--line); border-radius: 14px; padding: 14px; margin-block: 12px; background: var(--panel); }
+.readiness-summary h3 { margin: 0 0 6px; font-size: 1rem; }
+.readiness-summary p,.readiness-summary dd { color: var(--muted); font-size: .82rem; line-height: 1.5; }
+.readiness-summary dl { margin: 0; }
+.readiness-summary dl > div { border-top: 1px solid var(--line); padding-block: 9px; }
+.readiness-summary dt { display: flex; flex-wrap: wrap; gap: 6px 12px; justify-content: space-between; font-size: .85rem; }
+.readiness-summary dd { margin: 4px 0 0; overflow-wrap: anywhere; }
+.readiness-summary dd button { margin-left: 6px; }
+
+.h3-partial-label { position: absolute; top: 8px; left: 8px; z-index: 2; padding: 4px 8px; border-radius: 8px; background: var(--panel); color: var(--text); font-size: 10px; }

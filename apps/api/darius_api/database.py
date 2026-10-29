@@ -388,13 +388,16 @@ class MossBoardRecord(Base):
 
 
 def make_engine(database_url: str) -> Engine:
-    connect_args = {"check_same_thread": False} if database_url.startswith("sqlite") else {}
+    # Queueing, autosave, thumbnails and worker receipts share this local file.
+    # Wait for brief writer contention rather than surfacing SQLite's 5s default.
+    connect_args = {"check_same_thread": False, "timeout": 30} if database_url.startswith("sqlite") else {}
     engine = create_engine(database_url, connect_args=connect_args)
     if database_url.startswith("sqlite"):
         @event.listens_for(engine, "connect")
         def set_sqlite_pragmas(dbapi_connection, _connection_record) -> None:  # type: ignore[no-untyped-def]
             cursor = dbapi_connection.cursor()
             cursor.execute("PRAGMA foreign_keys=ON")
+            cursor.execute("PRAGMA busy_timeout=30000")
             cursor.execute("PRAGMA journal_mode=WAL")
             cursor.close()
     return engine

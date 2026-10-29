@@ -3696,6 +3696,15 @@
             "default": true,
             "title": "Turbo",
             "type": "boolean"
+          },
+          "upscaleDevice": {
+            "default": "cuda",
+            "enum": [
+              "cuda",
+              "cpu"
+            ],
+            "title": "Upscaledevice",
+            "type": "string"
           }
         },
         "title": "VideoDraft",
@@ -6834,6 +6843,64 @@
           }
         },
         "summary": "Start",
+        "tags": [
+          "canvas"
+        ]
+      }
+    },
+    "/api/v1/projects/{project_id}/canvases/{document_id}/requests/{request_key}": {
+      "get": {
+        "operationId": "generation_receipt_api_v1_projects__project_id__canvases__document_id__requests__request_key__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "project_id",
+            "required": true,
+            "schema": {
+              "title": "Project Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "document_id",
+            "required": true,
+            "schema": {
+              "title": "Document Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "request_key",
+            "required": true,
+            "schema": {
+              "title": "Request Key",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Generation Receipt",
         "tags": [
           "canvas"
         ]

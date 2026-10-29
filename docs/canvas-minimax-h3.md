@@ -57,3 +57,26 @@ Generated audio stays in the original video; muted playback does not request sil
 ## Immediate input previews
 
 The viewer and card read the shared board draft, so image selection/removal appears before Save or Generate. Upload image uses the authenticated asset pipeline and binds the returned image/version on completion. The focused viewer displays all current reference images and preserves access to the last generated video through Input images / Generated video controls. Uploading disables Generate until the new binding is ready. Desktop/phone browser acceptance verifies both library selection and a real multipart upload without board saves or render submissions (`input-preview-report.json`).
+
+
+## Failed final stage and recovery drafts
+
+A failed reference-video final stage retains stage-one video as an intermediate.
+The board/history now identifies the failed stage, exposes the playable saved
+preview and download, and preserves the last successful final result. It never
+labels an intermediate as a successful final render.
+
+**Use CPU final upscale** loads the failed request's original video configuration,
+references and exact seed into a saved recovery draft, changing only the latent
+upscaler's device. **Use a 5-second 480p draft** instead explicitly lowers those
+settings. Both require confirmation before replacing unsaved video settings and
+neither submits a render; Generate remains the execution action. The normal
+reference-video controls also offer **Final-stage upscaler: GPU / CPU**. CPU can
+save memory at that transform, consumes RAM/time and does not move the later
+refinement sampler off the GPU. Installed schema validation still applies.
+
+There is no durable latent checkpoint in the bundled workflow. A retry reruns the
+workflow; ComfyUI can reuse a surviving execution cache, but this is not a promise
+of an upscale-only resume. The preserved MP4 cannot reproduce the exact original
+latent. No checkpoint or final-only execution is invented from that video.
+Memory guidance is advisory; no hardware-fit estimate is claimed as measured.

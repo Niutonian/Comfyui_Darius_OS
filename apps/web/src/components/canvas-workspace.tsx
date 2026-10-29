@@ -6,7 +6,7 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState, type CSSProp
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowDown, ArrowLeft, ArrowUp, Check, ChevronDown, ChevronRight, Copy, Download, Eye, EyeOff, Focus, Hand, History, Layers3, LockKeyhole, Maximize, Minus, MousePointer2, Plus, Redo2, Save, Scan, Sparkles, Trash2, Undo2, UnlockKeyhole, X } from "lucide-react";
 import { ApiError, API_BASE } from "@/lib/api-client";
-import { canvasApi, type CanvasDocument } from "@/lib/canvas-api";
+import { definitiveGenerationError, canvasApi, type CanvasDocument } from "@/lib/canvas-api";
 import { commit, descendants, duplicateRegion, emptyCanvas, localRect, parentRect, redo, removeRegion, reparentRegion, reorderRegion, resolveRegions, sameContent, undo, updateRect, type CanvasContent, type CanvasHistory, type CanvasRegion, type CanvasViewport, type Rect, type RegionKind } from "@/lib/canvas-document";
 import { useWorkspaceState } from "@/lib/workspace-session";
 import { useDariusStore } from "@/lib/store";
@@ -196,14 +196,14 @@ export function CanvasEditor({ projectId, documentId, assets, chooser, presets, 
         request = { revision: saved?.revision ?? snapshot.revision, key: crypto.randomUUID(), seed: board ? board.settings.seed : seed.trim() ? Number(seed) : null, profileId: profile, ...(board ? { boardId: board.id, boardRevision: board.revision } : {}) };
         setDraft(previous => previous ? { ...previous, pending: request } : previous);
       }
-      const receipt = await canvasApi.generate(projectId, documentId, request.revision, request.key, request.seed, request.boardId ? { boardId: request.boardId, boardRevision: request.boardRevision!, profileId: request.profileId } : board ? { boardId: board.id, boardRevision: board.revision } : undefined);
+      const receipt = await canvasApi.generate(projectId, documentId, request.revision, request.key, request.seed, request.boardId ? { boardId: request.boardId, boardRevision: request.boardRevision!, profileId: request.profileId } : board ? { boardId: board.id, boardRevision: board.revision } : undefined, () => setEngineStatus("Checking whether your job was queued..."));
       setDraft(previous => previous ? { ...previous, pending: undefined } : previous);
       if (receipt.launchError) setError(receipt.launchError);
       await query.refetch(); void client.invalidateQueries({ queryKey: ["jobs", { projectId }] });
     } catch (error) {
       setError(message(error));
-      if (error instanceof ApiError && error.status >= 400 && error.status < 500) setDraft(previous => previous ? { ...previous, pending: undefined } : previous);
-    } finally { setGenerating(false); }
+      if (definitiveGenerationError(error)) setDraft(previous => previous ? { ...previous, pending: undefined } : previous);
+    } finally { setGenerating(false); setEngineStatus(""); }
   }
   function keyboard(event: KeyboardEvent<HTMLDivElement>) {
     if (event.key === "Tab" && focus && root.current) {

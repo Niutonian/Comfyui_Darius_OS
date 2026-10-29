@@ -91,3 +91,28 @@ describe("api client", () => {
     vi.unstubAllGlobals();
   });
 });
+
+
+it.each([{ name: "chat list", load: () => api.conversations("p") }, { name: "history", load: () => api.messages("c") }])("allows a slow $name read to finish after 20 seconds without replaying a message", async ({ load }) => {
+ vi.useFakeTimers();
+ try {
+  let resolve!: (value: Response) => void;
+  const fetch = vi.spyOn(globalThis, "fetch").mockImplementation(() => new Promise<Response>(done => { resolve = done; }));
+  let finished = false;
+  const pending = load().then(value => { finished = true; return value; });
+  await vi.advanceTimersByTimeAsync(25_000);
+  expect(finished).toBe(false); expect(fetch.mock.calls[0][1]?.signal?.aborted).toBe(false);
+  resolve(new Response("[]")); await expect(pending).resolves.toEqual([]);
+  expect(fetch).toHaveBeenCalledOnce(); expect(fetch.mock.calls[0][1]?.method).toBeUndefined();
+ } finally { vi.useRealTimers(); }
+});
+
+it("bounds stalled history reads and explains saved-history recovery", async () => {
+ vi.useFakeTimers();
+ try {
+  const fetch = vi.spyOn(globalThis, "fetch").mockImplementation(() => new Promise(() => {}));
+  const pending = expect(api.messages("c")).rejects.toMatchObject({ status: 408, message: expect.stringContaining("messages are still saved") });
+  await vi.advanceTimersByTimeAsync(45_000); await pending;
+  expect(fetch.mock.calls[0][1]?.signal?.aborted).toBe(true);
+ } finally { vi.useRealTimers(); }
+});

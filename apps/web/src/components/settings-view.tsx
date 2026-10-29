@@ -9,6 +9,8 @@ import type { ThemeMode } from "@/lib/types";
 import { LlmSetting } from "./llm-setting";
 import { TranscriptionSetting } from "./transcription-setting";
 import { VoicePreferences } from "./voice-preferences";
+import { requestBoardSetup } from "@/lib/board-setup";
+import { ReadinessSummary } from "./readiness-summary";
 import { TrustedWorkflows } from "./trusted-workflows";
 
 export function SettingsView() {
@@ -63,6 +65,7 @@ export function SettingsView() {
       </article>
       <article hidden={category !== "services"} className="settings-card settings-status-card">
         <div className="settings-card-heading"><span className="settings-icon"><Check size={17} /></span><div><h2>Services</h2><p>See which local and optional providers are ready.</p></div></div>
+        <ReadinessSummary health={health.data} onAction={action => { if (action === "model" || action === "voice") openCategory(action); else if (action === "connection") void requestBoardSetup("moss-bboxes-v1").catch(() => {}); else openCategory("workflows"); }} />
         <div className="service-status-list">
           {Object.entries(health.data?.components ?? {}).filter(([key]) => key !== "database").map(([key, value]) => <div className="service-status" key={key}><span className={value.ready ? "service-dot ready" : "service-dot"} /><strong>{key.replaceAll("_", " ")}</strong><small>{value.ready ? "Ready" : value.configured ? "Configured · unavailable" : "Not configured"}</small></div>)}
           {!health.data ? <p className="muted">Checking local services…</p> : null}

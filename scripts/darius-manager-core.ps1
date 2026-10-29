@@ -133,6 +133,7 @@ function Backup-DariusInstallation([switch]$SettingsOnly) {
     }
     $python = Join-Path $script:DariusRoot '.venv\Scripts\python.exe'
     if ($SettingsOnly) {
+        [IO.File]::WriteAllText((Join-Path $backup 'BACKUP_REPORT.txt'), "Private settings-only backup. Do not share.`r`nDatabase, media, workflows and external dependencies are not included in this early setup backup.`r`nA verified database/workflow backup follows successful dependency installation before migration.")
         # A failed first sync may have created Python without SQLAlchemy yet.
         # Back up settings now; the full configured database backup follows sync,
         # before any migrations. Sync itself never migrates the database.
@@ -142,6 +143,7 @@ function Backup-DariusInstallation([switch]$SettingsOnly) {
         throw 'An existing database has no working Python environment. Restore the environment or make a verified database backup before repairing.'
     }
     Write-Host "Private backup: $backup (contains settings; do not share)."
+    if (-not $SettingsOnly -and (Test-Path -LiteralPath (Join-Path $backup "BACKUP_REPORT.txt"))) { Get-Content -LiteralPath (Join-Path $backup "BACKUP_REPORT.txt") | Out-Host }
 }
 
 function Install-DariusComfyCli {

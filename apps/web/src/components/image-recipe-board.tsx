@@ -12,6 +12,7 @@ import { emptyCanvas, type CanvasViewport } from "@/lib/canvas-document";
 import { useWorkspaceState } from "@/lib/workspace-session";
 import type { Asset } from "@/lib/types";
 import type { CanvasHosts } from "./canvas-workspace";
+import { ProjectImagePicker } from "./project-image-picker";
 import { CanvasUtilityPanel, useCanvasNarrow, type CanvasUtilityTab } from "./canvas-utility-panel";
 const CanvasStage = dynamic(() => import("./canvas-stage"), { ssr: false });
 
@@ -32,9 +33,21 @@ function useImageDraft(board: MossBoard) {
 type Engine = { profiles: { id: ImageProfile; readiness: { ready: boolean; issues: string[] } | null }[]; presets: { id: ImageDraft["preset"]; name: string }[] };
 const label = (asset?: Asset) => String(asset?.metadata.display_name ?? asset?.metadata.original_filename ?? "Pinned image version");
 
+function useImageInputPicker(board: MossBoard) {
+ return useWorkspaceState(`image-recipe:${board.projectId}:${board.id}:input-picker`, { open: false, request: 0 });
+}
+
 export function ImageRecipeControls({ board, assets, onChange, onError }: { board: MossBoard; assets: Asset[]; onChange: (settings: BoardSettings) => Promise<unknown>; onError: (message: string) => void }) {
  const { form, setForm, baseRevision, setBaseRevision, uploading, setUploading } = useImageDraft(board);
- const [saving, setSaving] = useState(false), [picker, setPicker] = useState(false), upload = useRef<HTMLInputElement>(null), client = useQueryClient();
+ const [picker, setPicker] = useImageInputPicker(board);
+ const pickerRef = useRef<HTMLDivElement>(null);
+ useEffect(() => {
+  if (!picker.open) return;
+  let focusFrame = 0;
+  const frame = requestAnimationFrame(() => { focusFrame = requestAnimationFrame(() => { pickerRef.current?.scrollIntoView?.({ block: "nearest" }); pickerRef.current?.focus({ preventScroll: true }); }); });
+  return () => { cancelAnimationFrame(frame); cancelAnimationFrame(focusFrame); };
+ }, [picker.open, picker.request]);
+ const [saving, setSaving] = useState(false), upload = useRef<HTMLInputElement>(null), client = useQueryClient();
  const engine = useQuery({ queryKey: ["image-recipe-engine"], queryFn: () => request<Engine>("/canvas/image/engine?check=true"), staleTime: 60000 });
  const profile = form.activeProfile, draft = form.drafts[profile], edit = profile === IMAGE_EDIT, dirty = JSON.stringify(form) !== JSON.stringify(board.settings.image);
  const update = (patch: Partial<ImageDraft>) => setForm(old => ({ ...old, drafts: { ...old.drafts, [old.activeProfile]: { ...old.drafts[old.activeProfile], ...patch } } }));
@@ -47,7 +60,7 @@ export function ImageRecipeControls({ board, assets, onChange, onError }: { boar
  }
  function bind(asset: Asset) {
   setForm(old => { const d = old.drafts[IMAGE_EDIT]; if (d.inputs.length >= 10) return old; return { ...old, drafts: { ...old.drafts, [IMAGE_EDIT]: { ...d, inputs: [...d.inputs, { id: crypto.randomUUID(), assetId: asset.id, assetVersionId: asset.content_hash, mediaKind: "image", token: d.inputs.length + 1 }] } } }; });
-  setPicker(false);
+  setPicker(old => ({ ...old, open: false }));
  }
  const status = engine.data?.profiles.find(p => p.id === profile)?.readiness;
  return <div className="h3-controls image-recipe-controls" aria-busy={saving || uploading}>
@@ -56,9 +69,9 @@ export function ImageRecipeControls({ board, assets, onChange, onError }: { boar
  <fieldset disabled={saving || uploading || board.archived}>
  <label>{edit ? "Edit instructions" : "Image prompt"}<textarea aria-label="Image recipe prompt" rows={6} value={draft.prompt} placeholder={edit ? "Describe the changes. Use <image1>, <image2> to identify references…" : "Describe the subject, composition, light and style…"} onChange={e => update({ prompt: e.target.value })} /></label>
  {edit ? <><div className="h3-inputs">{draft.inputs.map((input, index) => <div className="h3-input" key={input.id}><img src={api.assetContentUrl(input.assetId)} alt={`Image ${input.token}`} /><div><strong>{index === 0 ? "Source · <image1>" : `<image${input.token}>`}</strong><small>{label(assets.find(a => a.id === input.assetId))}</small><button className="text-button" onClick={() => { if (index !== draft.inputs.length - 1 || new RegExp(`<image\\s*${input.token}>`, "i").test(draft.prompt)) { onError("Remove the last reference first, and update its prompt label before removing it."); return; } update({ inputs: draft.inputs.filter(i => i.id !== input.id) }); }}>Remove</button></div></div>)}</div>
- <button type="button" className="secondary-button" disabled={draft.inputs.length >= 10} onClick={() => setPicker(p => !p)}>Choose input image</button><button type="button" className="secondary-button" disabled={draft.inputs.length >= 10} onClick={() => upload.current?.click()}>{uploading ? "Uploading…" : "Upload input image"}</button>
+ <button type="button" className="secondary-button" disabled={draft.inputs.length >= 10} onClick={() => setPicker(old => ({ open: !old.open, request: old.request + 1 }))}>Choose reference image</button><button type="button" className="secondary-button" disabled={draft.inputs.length >= 10} onClick={() => upload.current?.click()}>{uploading ? "Uploading…" : "Upload input image"}</button>
  <input ref={upload} type="file" accept="image/png,image/jpeg,image/webp,image/gif" aria-label="Upload edit image" hidden onChange={async e => { const file = e.target.files?.[0]; e.target.value = ""; if (!file) return; setUploading(true); try { const asset = await api.uploadAsset(file, { project_id: board.projectId, role: "reference" }); bind(asset); await client.invalidateQueries({ queryKey: ["assets"] }); } catch (error) { onError((error as Error).message); } finally { setUploading(false); } }} />
- {picker ? <div className="h3-asset-picker" aria-label="Edit input gallery">{assets.filter(a => a.kind === "image" && a.role !== "derivative").map(asset => <button key={asset.id} type="button" title={label(asset)} onClick={() => bind(asset)}><img src={api.assetContentUrl(asset.id)} alt={label(asset)} loading="lazy" /><span>{label(asset)}</span></button>)}</div> : null}
+ {picker.open ? <ProjectImagePicker pickerRef={pickerRef} assets={assets} projectId={board.projectId} onChoose={bind} /> : null}
  <label className="image-recipe-check"><input type="checkbox" checked={draft.followSource} onChange={e => update({ followSource: e.target.checked })} />Follow source image size</label>
  <label>Reference image sizing<select aria-label="Reference image sizing" value={draft.referenceResolution} onChange={e => update({ referenceResolution: Number(e.target.value) as 0 | 1024 | 2048 })}><option value={0}>Keep original · align to 32 px</option><option value={1024}>1 MP · preserve aspect</option><option value={2048}>4 MP · preserve aspect</option></select></label><small>Image 1 defines the source canvas. Additional images are pinned references, not masks. Follow source preserves its aspect ratio.</small></> : null}
  {!edit || !draft.followSource ? <><label>Output aspect<select aria-label="Image output aspect" value={draft.preset} onChange={e => update({ preset: e.target.value as ImageDraft["preset"] })}>{(engine.data?.presets ?? [{ id: "square", name: "1:1" }, { id: "poster", name: "2:3" }, { id: "photo", name: "3:2" }, { id: "portrait", name: "3:4" }, { id: "standard", name: "4:3" }, { id: "vertical", name: "9:16" }, { id: "wide", name: "16:9" }, { id: "ultrawide", name: "21:9" }]).map(p => <option key={p.id} value={p.id}>{p.name}</option>)}</select></label>
@@ -86,6 +99,8 @@ function ImageRecipeViewer({ board, assetId, assets, onError }: { board: MossBoa
 
 export function ImageRecipeEditor({ board, assets, projectId, onExit, onGenerate, onVideo, ...hosts }: CanvasHosts & { board: MossBoard; assets: Asset[]; projectId: string; onExit: () => void; onGenerate: () => Promise<void>; onVideo: () => void }) {
  const client = useQueryClient(), narrow = useCanvasNarrow(), [open, setOpen] = useState(!narrow), [tab, setTab] = useState<CanvasUtilityTab>("board"), [error, setError] = useState("");
+ const [, setInputPicker] = useImageInputPicker(board);
+ function chooseInputs() { setOpen(true); setTab("board"); if (hosts.assistantOpen) hosts.onToggleAssistant?.(); setInputPicker(old => ({ open: true, request: old.request + 1 })); }
  const { form, uploading } = useImageDraft(board), profile = form.activeProfile, draft = form.drafts[profile];
  const doc = useQuery({ queryKey: ["canvas", projectId, board.documentId], queryFn: () => canvasApi.get(projectId, board.documentId), refetchInterval: 2500 });
  const result = doc.data?.generations.find(g => g.id === doc.data?.activeGenerationId), assetId = result?.assetIds[0], inputKey = JSON.stringify([profile, draft.inputs]);
@@ -97,7 +112,7 @@ export function ImageRecipeEditor({ board, assets, projectId, onExit, onGenerate
  {error || board.latest?.error ? <div className="canvas-notice is-error" role="alert">{error || board.latest?.error}</div> : null}
  <div className="moss-body"><main className="image-recipe-main">
  {assetId ? <nav className="h3-view-tabs" aria-label="Image preview"><button className="secondary-button" aria-pressed={showInputs} onClick={() => setDisplay({ kind: "inputs", inputKey, resultId: result?.id })}>Input images</button><button className="secondary-button" aria-pressed={!showInputs} onClick={() => setDisplay({ kind: "result", inputKey, resultId: result?.id })}>Generated image</button></nav> : null}
- {assetId && !showInputs ? <><ImageRecipeViewer key={assetId} board={board} assetId={assetId} assets={assets} onError={setError} /><div className="image-recipe-result-actions"><a href={api.assetContentUrl(assetId)} download><Download size={15} /> Download</a><button className="text-button" onClick={onVideo}>Create video board from result</button><small>{String(result?.provenance.profileName ?? "Image")}</small></div></> : draft.inputs.length === 1 ? <ImageRecipeViewer key={draft.inputs[0].assetId} board={board} assetId={draft.inputs[0].assetId} assets={assets} onError={setError} /> : draft.inputs.length ? <div className="h3-input-preview is-multiple">{draft.inputs.map(input => <figure key={input.id}><img src={api.assetContentUrl(input.assetId)} alt={`Image ${input.token} preview`} /><figcaption>{`<image${input.token}>`}</figcaption></figure>)}</div> : <div className="h3-empty"><ImagePlus size={42} /><h3>{profile === IMAGE_EDIT ? "Give an image a new direction." : "A fresh image starts with an idea."}</h3><p>{profile === IMAGE_EDIT ? "Pin the source image and describe the changes." : "Describe the subject, choose the image workflow and generate."}</p><button className="secondary-button" onClick={() => setOpen(true)}>Open image settings</button></div>}
+ {assetId && !showInputs ? <><ImageRecipeViewer key={assetId} board={board} assetId={assetId} assets={assets} onError={setError} /><div className="image-recipe-result-actions"><a href={api.assetContentUrl(assetId)} download><Download size={15} /> Download</a><button className="text-button" onClick={onVideo}>Create video board from result</button><small>{String(result?.provenance.profileName ?? "Image")}</small></div></> : draft.inputs.length === 1 ? <ImageRecipeViewer key={draft.inputs[0].assetId} board={board} assetId={draft.inputs[0].assetId} assets={assets} onError={setError} /> : draft.inputs.length ? <div className="h3-input-preview is-multiple">{draft.inputs.map(input => <figure key={input.id}><img src={api.assetContentUrl(input.assetId)} alt={`Image ${input.token} preview`} /><figcaption>{`<image${input.token}>`}</figcaption></figure>)}</div> : <div className="h3-empty"><ImagePlus size={42} /><h3>{profile === IMAGE_EDIT ? "Give an image a new direction." : "A fresh image starts with an idea."}</h3><p>{profile === IMAGE_EDIT ? "Pin the source image and describe the changes." : "Describe the subject, choose the image workflow and generate."}</p><button className="secondary-button" onClick={profile === IMAGE_EDIT ? chooseInputs : () => setOpen(true)}>{profile === IMAGE_EDIT ? "Choose image inputs" : "Open image settings"}</button></div>}
  </main><CanvasUtilityPanel open={open} tab={tab} onTabChange={value => { setTab(value); setOpen(true); }} onClose={() => setOpen(false)} context={`Image board: ${board.name} · ${canvasProfiles[profile].name}`} primary={<ImageRecipeControls board={board} assets={assets} onChange={save} onError={setError} />} history={<div className="h3-history">{doc.data?.generations.map(g => <article key={g.id}><strong>{String(g.provenance.profileName ?? "Image")}</strong><small>{g.status} · seed {g.seed}</small>{g.assetIds.map(id => <button className="image-recipe-history-image" key={id} onClick={async () => { await canvasApi.select(projectId, board.documentId, g.id); await doc.refetch(); }}><img src={api.assetContentUrl(id)} alt={String(g.provenance.profileName ?? "Saved result")} loading="lazy" /></button>)}{g.error ? <p>{g.error}</p> : null}<details><summary>Prompt and recipe</summary><p>{String(g.provenance.steps)} steps · CFG {String(g.provenance.cfg)} · {String(g.provenance.actualWidth ?? g.provenance.width)} × {String(g.provenance.actualHeight ?? g.provenance.height)}</p><pre>{String(g.provenance.conditioningPrompt ?? "")}</pre>{g.provenance.effectiveConditioningPrompt ? <><small>Actual conditioning prompt</small><pre>{String(g.provenance.effectiveConditioningPrompt)}</pre></> : null}</details></article>)}</div>} hosts={hosts} /></div>
  <footer className="canvas-footer"><span>{JSON.stringify(form) === JSON.stringify(board.settings.image) ? "Image draft saved" : "Unsaved image draft"}</span><span>{board.jobs[0]?.statusMessage ?? "Ready"}</span></footer></section>;
 }

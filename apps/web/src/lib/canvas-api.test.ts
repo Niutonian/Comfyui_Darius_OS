@@ -3,7 +3,7 @@ import { canvasApi } from "./canvas-api";
 import { loadCanvasIntent } from "./canvas-intent";
 import { subscribeBoardSetup } from "./board-setup";
 
-afterEach(() => { vi.restoreAllMocks(); sessionStorage.clear(); });
+afterEach(() => { vi.useRealTimers(); vi.restoreAllMocks(); sessionStorage.clear(); });
 
 it("prepares missing dependencies and resumes only the exact saved generation request", async () => {
   const fetch = vi.spyOn(globalThis, "fetch")
@@ -47,4 +47,54 @@ it("keeps promotion fields and exact large seeds while retaining only transport 
     seed: "18446744073709551615", documentId: "document-a", boardId: "board-a", boardRevision: 9,
     profileId: "fibo-dev-v1", promotedFromGenerationId: "preview-a" });
   expect(loadCanvasIntent("project-a", "document-a")).toBeUndefined();
+});
+
+
+it("recovers a committed receipt after the submission response is lost", async () => {
+  const receipt = { id: "recovered", jobId: "one-job", status: "queued" };
+  const fetch = vi.spyOn(globalThis, "fetch")
+    .mockRejectedValueOnce(new TypeError("Connection lost after commit"))
+    .mockResolvedValueOnce(new Response(JSON.stringify(receipt)));
+  const checking = vi.fn();
+  await expect(canvasApi.generate("p", "d", 1, "original-key", 42, undefined, checking)).resolves.toEqual(receipt);
+  expect(fetch.mock.calls.map(call => call[1]?.method ?? "GET")).toEqual(["POST", "GET"]);
+  expect(String(fetch.mock.calls[1][0])).toContain("/requests/original-key");
+  expect(checking).toHaveBeenCalledOnce();
+  expect(loadCanvasIntent("p", "d")).toBeUndefined();
+});
+
+it("retains an uncertain request through reload and reconciles before resubmitting", async () => {
+  const fetch = vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response(JSON.stringify({ detail: "busy" }), { status: 503 }));
+  await expect(canvasApi.generate("p", "d", 7, "retry-key", "18446744073709551615")).rejects.toThrow("request is saved");
+  const saved = loadCanvasIntent("p", "d")!;
+  expect(saved).toMatchObject({ key: "retry-key", revision: 7, seed: "18446744073709551615" });
+  fetch.mockReset().mockResolvedValueOnce(new Response(JSON.stringify({ id: "existing", status: "completed" })));
+  await expect(canvasApi.generate("p", "d", saved.revision, saved.key, saved.seed)).resolves.toMatchObject({ id: "existing" });
+  expect(fetch).toHaveBeenCalledOnce();
+  expect(fetch.mock.calls[0][1]?.method).toBeUndefined();
+});
+
+it("bounds submission at 45 seconds and preserves its key after a timeout", async () => {
+  vi.useFakeTimers();
+  const fetch = vi.spyOn(globalThis, "fetch")
+    .mockImplementationOnce(() => new Promise(() => {}))
+    .mockResolvedValueOnce(new Response("null"));
+  const pending = expect(canvasApi.generate("p", "d", 1, "timeout-key", 42)).rejects.toMatchObject({ status: 408 });
+  await vi.advanceTimersByTimeAsync(45_000);
+  await pending;
+  expect(loadCanvasIntent("p", "d")?.key).toBe("timeout-key");
+  expect(fetch).toHaveBeenCalledTimes(2);
+});
+
+it.each([408, 429, 503])("preserves retry identity for HTTP %s", async status => {
+  vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response(JSON.stringify({ detail: "retry later" }), { status }));
+  await expect(canvasApi.generate("p", "d", 1, "retained-key", 42)).rejects.toMatchObject({ status });
+  expect(loadCanvasIntent("p", "d")?.key).toBe("retained-key");
+});
+
+it("drops a definitively rejected request so corrected input can be submitted", async () => {
+  const fetch = vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response(JSON.stringify({ detail: "Invalid input" }), { status: 422 }));
+  await expect(canvasApi.generate("p", "d", 1, "invalid-key", 42)).rejects.toMatchObject({ status: 422 });
+  expect(loadCanvasIntent("p", "d")).toBeUndefined();
+  expect(fetch).toHaveBeenCalledOnce();
 });

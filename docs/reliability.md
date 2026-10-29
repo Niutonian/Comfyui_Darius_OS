@@ -43,15 +43,79 @@ Run from the repository:
 ```
 This runs the backend tests, committed API-contract check, frontend tests, and production build. Job lifecycle integration tests use isolated fake providers and fixture graphs, independent of installed ComfyUI workflow files. No paid APIs or real renders are used.
 
-For browser layout checks, start the freshly built frontend and run:
+For the portable browser smoke suite, install its pinned tooling once:
 ```powershell
-./scripts/check-reliability.ps1 -Browser -UiUrl http://127.0.0.1:3000 -PlaywrightModule C:/path/to/node_modules/playwright
+npm ci --prefix tests/browser
+npm --prefix tests/browser run install:browser
+./scripts/check-reliability.ps1 -Browser
 ```
-The browser suite intercepts all API calls with fixtures. It checks all six views, light/dark, 390/768/1440px widths, composer bounds, Production Bible input bounds, and the inspector/jobs controls. Screenshots are saved under ignored `data/ui-audit/`. Playwright and Chromium must already be installed; this script does not download them.
+The wrapper builds into `.next-check` and Playwright starts its own frontend on
+loopback port 3100. It never reuses port 3000 or starts a backend. All API calls
+are fulfilled by synthetic fixtures; unexpected APIs and other origins fail the
+test. The twelve desktop/390px phone cases cover project creation, reviewed
+prompt transfer without rendering, lost queue acknowledgement/receipt recovery,
+completed result display, Qwen Edit thumbnail selection, a fullscreen chat turn, and video recovery without rendering. Traces from failed cases
+stay under ignored `test-results/browser`. This small suite does not claim to
+cover every layout, real microphone, provider, or workflow.
+
+For individual commands, CI parity and the Windows installation smoke boundary,
+see [release checks](release-checks.md). Before preparing a public release, run
+`./scripts/check-reliability.ps1 -Browser -Privacy` from the clean publication
+checkout. Privacy checks include tracked files and reachable history; do not run
+publication preparation from the private development repository.
 
 Live model, ComfyUI and microphone checks are separate, deliberate tests because they can consume resources or create media. A green simulated suite does not establish live model quality.
 
-For an optional **local speaker-only** smoke, set `DARIUS_LIVE_VOICE=1` when
-running `node scripts/check-ui.cjs` against port 3000 with the voice service
-running. This adds a real Windows WAV synthesis/decode/playback check while
-keeping project and model APIs mocked. It does not record the microphone.
+## Concurrent Canvas queue writes
+
+Workflow registration skips unchanged records, including their timestamps. Canvas
+image/video/composition requests register only their new immutable workflow;
+worker startup and explicit catalog refresh can still synchronize the full catalog.
+Pending changes are rechecked under a SQLite writer reservation so concurrent API
+and worker registration cannot insert the same definition twice. SQLite connections
+allow up to 30 seconds for brief writer contention to clear.
+
+A Canvas request that still encounters a SQLite busy/locked error returns an
+actionable 503 response. Retry the saved request with its original idempotency key;
+an existing generation is reused. It does not automatically submit another render.
+`tests/test_workflow_registration_concurrency.py` covers an unchanged catalog while
+a worker holds the writer lock, overlapping registration from separate engines,
+parallel board submissions and saved-request retries. These tests use isolated
+databases and mocked generation services.
+
+## Canvas acknowledgement recovery
+
+Canvas submission now has a 45-second acknowledgement deadline, longer than the
+30-second SQLite contention allowance. Network loss, timeout, throttling and
+server failures retain the original intent key in the tab session. These are
+uncertain outcomes, not evidence that generation stopped. A read-only,
+project/document-scoped receipt lookup runs after an uncertain result and before
+resubmission of a saved intent. Finding a receipt returns that same job without
+launching a worker; an explicit retry with no receipt reuses the original key,
+revision, seed and board inputs. Definitive validation/auth/conflict failures
+release the intent so the user can correct the request. Closing setup does not
+submit or automatically retry a render.
+
+Regression coverage: `canvas-api.test.ts`, `test_moss_workspace.py` and
+`test_workflow_registration_concurrency.py`. No real renders are required.
+
+Duplicating a board preserves its displayed size and places the copy 48 canvas
+units down/right from its source, cascading past occupied origins. It retains the
+current camera instead of jumping to a newly fitted viewport.
+
+
+## Chat history loading under background activity
+
+The project job-list query already returns the full project history. The desktop
+no longer starts a separate query for every remembered job ID; persisted IDs are
+retained, and project jobs still refresh through events and bounded polling.
+This avoids repeated waves of historical/foreign-project job reads on reload,
+focus and the 15-second reconciliation backstop.
+
+Conversation-list and message-history reads use a 45-second deadline; ordinary
+read/discovery requests retain their 20-second bound, and reply streaming retains
+its separate deadline. A history timeout is labelled as a conversation-loading
+problem rather than an interrupted model reply. Reload conversation retries the
+saved history in place and clears the loading failure on success; it never sends
+a message or triggers a model/render call. Browser fixtures seed 50 remembered
+historical jobs and reject unexpected per-job reads.

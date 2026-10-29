@@ -104,3 +104,5 @@ Package source references: [uv installation](https://docs.astral.sh/uv/getting-s
 [Node.js WinGet manifest](https://github.com/microsoft/winget-pkgs/tree/master/manifests/o/OpenJS/NodeJS/LTS),
 [Git manifest](https://github.com/microsoft/winget-pkgs/tree/master/manifests/g/Git/Git),
 [FFmpeg Windows builds](https://www.gyan.dev/ffmpeg/builds/).
+
+See [private workspace backups and restore rehearsal](workspace-backups.md) for the manager backup/report actions, media exclusions, verified full copies and isolated restoration.

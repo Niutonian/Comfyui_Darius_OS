@@ -112,3 +112,15 @@ has no verified public download source. The similarly named official file has
 different contents and is not silently substituted. Existing installations with
 the matching file can use it; a fresh installation reports this specific missing
 source until its author provides the correct URL or publishes a separate recipe.
+
+
+## Readiness at a glance
+
+Preparation now summarizes Darius/API/database, ComfyUI, the selected board,
+optional chat and optional voice. Missing model access, missing dependencies,
+node revision conflicts and a stopped/unconfigured ComfyUI have distinct remedies.
+Use **Check connection** to open detection/manual connection controls, **Review
+dependencies** for download sizes/blockers, and the chat/voice links for their
+existing settings. Settings > Services also exposes the summary. Ollama is never
+presented as required for board rendering. Configuration readiness is not a live
+chat-quality or microphone test; use the existing Voice diagnostics.

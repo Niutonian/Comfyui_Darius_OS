@@ -111,12 +111,13 @@ def test_abandoned_running_job_fails_instead_of_replaying(recovery_db):
 @pytest.mark.parametrize("overrides", [
     {"status": "queued"}, {"status": "completed"}, {"status": "failed"},
     {"status": "cancelled"}, {"provider": "bfl"}, {"job_type": "timeline_render"},
-    {"heartbeat_at": utcnow()},
-    {"heartbeat_at": None, "started_at": utcnow()},
-    {"heartbeat_at": None, "started_at": None, "created_at": utcnow()},
+    {"heartbeat_at": utcnow},
+    {"heartbeat_at": None, "started_at": utcnow},
+    {"heartbeat_at": None, "started_at": None, "created_at": utcnow},
 ])
 def test_out_of_scope_and_healthy_jobs_are_not_probed(recovery_db, overrides):
-    seed(recovery_db, **overrides)
+    # Collection may precede execution by more than the recovery stale threshold.
+    seed(recovery_db, **{key: value() if callable(value) else value for key, value in overrides.items()})
     probe = MagicMock(side_effect=AssertionError("Must not inspect queue"))
     assert job_recovery.recover_abandoned_local_jobs(
         recovery_db.factory, recovery_db.settings, queue_probe=probe) == []

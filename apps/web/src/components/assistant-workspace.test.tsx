@@ -282,3 +282,18 @@ it("keeps saved history in fullscreen without reviving old generation proposals"
   expect(session.queryByText("Choose test workflow")).toBeNull();
   expect(screen.getByRole("dialog", { name: /Darius/ })).toBeVisible();
 });
+
+
+it("reloads failed conversation history in place without sending or generating a reply", async () => {
+ const history = { id: "history-chat", project_id: "history-project", title: "Saved ideas", created_at: "", updated_at: "" };
+ vi.spyOn(api, "conversations").mockRejectedValueOnce(new Error("Loading the conversation took too long.")).mockResolvedValue([history]);
+ vi.spyOn(api, "messages").mockResolvedValue([{ id: "saved-reply", conversation_id: history.id, role: "assistant", content: "The saved garden idea", metadata: {}, created_at: "" }]);
+ const send = vi.spyOn(api, "createMessage"), reply = vi.spyOn(api, "assistantReplyStream");
+ render(<AssistantWorkspace projectId="history-project" visible workflows={[]} workflowsLoading={false} workflowsError={null} onRetry={vi.fn()} />);
+ expect(await screen.findByText("Conversation could not load")).toBeVisible();
+ await userEvent.setup().click(screen.getByRole("button", { name: "Reload conversation" }));
+ expect(await screen.findByText("The saved garden idea")).toBeVisible();
+ expect(screen.queryByText("Conversation could not load")).toBeNull();
+ expect(send).not.toHaveBeenCalled(); expect(reply).not.toHaveBeenCalled();
+ expect(screen.getByRole("button", { name: "Send test message" })).toBeEnabled();
+});

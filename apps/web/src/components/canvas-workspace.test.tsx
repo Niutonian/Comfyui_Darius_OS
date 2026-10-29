@@ -8,7 +8,7 @@ import { CanvasWorkspace } from "./canvas-workspace";
 
 vi.mock("next/dynamic", () => ({ default: () => function Stage() { return <div data-testid="canvas-stage" />; } }));
 vi.mock("@/lib/project-sync", () => ({ subscribeProjectRefresh: () => () => {} }));
-vi.mock("@/lib/canvas-api", () => ({ canvasApi: { list: vi.fn(), get: vi.fn(), engine: vi.fn(), save: vi.fn(), generate: vi.fn() } }));
+vi.mock("@/lib/canvas-api", async importOriginal => ({ ...await importOriginal<typeof import("@/lib/canvas-api")>(), canvasApi: { list: vi.fn(), get: vi.fn(), engine: vi.fn(), save: vi.fn(), generate: vi.fn() } }));
 let doc: CanvasDocument;
 beforeEach(() => {
   vi.resetAllMocks();
@@ -53,7 +53,7 @@ it("retains one submission key across an uncertain transport failure", async () 
   await screen.findByText("Network interrupted");
   fireEvent.click(screen.getByRole("button", { name: "Retry submission" }));
   await waitFor(() => expect(canvasApi.generate).toHaveBeenCalledTimes(2));
-  expect(vi.mocked(canvasApi.generate).mock.calls[0]).toEqual(vi.mocked(canvasApi.generate).mock.calls[1]);
+  expect(vi.mocked(canvasApi.generate).mock.calls[0].slice(0, 6)).toEqual(vi.mocked(canvasApi.generate).mock.calls[1].slice(0, 6));
 });
 
 it("keeps the same editable draft through focus mode without unsupported pixel controls", async () => {

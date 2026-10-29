@@ -1,8 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { canvasApi, type CanvasGeneration } from "@/lib/canvas-api";
-import { ApiError } from "@/lib/api-client";
+import { definitiveGenerationError, canvasApi, type CanvasGeneration } from "@/lib/canvas-api";
 import { canvasProfiles, canvasSeed, switchCanvasProfile, MOSS, FIBO_FAST, LEGACY_FIBO_FAST, FIBO_DEV, type CanvasProfile } from "@/lib/canvas-profile";
 import { loadCanvasIntent, saveCanvasIntent, type CanvasIntent } from "@/lib/canvas-intent";
 import type { MossBoard, BoardSettings } from "@/lib/moss-workspace";
@@ -41,7 +40,7 @@ export function CanvasGenerationDetails({ result, board, projectId, generations,
       const receipt = await canvasApi.generate(projectId, board.documentId, intent.revision, intent.key, intent.seed, { boardId: intent.boardId!, boardRevision: intent.boardRevision!, profileId: FIBO_DEV, promotedFromGenerationId: result.id });
       setAccepted(receipt);
       await Promise.all([client.invalidateQueries({ queryKey: ["canvas", projectId, board.documentId] }), client.invalidateQueries({ queryKey: ["moss-workspace", projectId] }), client.invalidateQueries({ queryKey: ["jobs"] })]);
-    } catch (error) { if (error instanceof ApiError && error.status >= 400 && error.status < 500) saveCanvasIntent(projectId, scope); onError(error instanceof Error ? error.message : "Dev submission failed. The preview and draft are retained."); }
+    } catch (error) { if (definitiveGenerationError(error)) saveCanvasIntent(projectId, scope); onError(error instanceof Error ? error.message : "Dev submission failed. The preview and draft are retained."); }
     finally { setBusy(false); }
   }
   return <div className="canvas-generation-details">

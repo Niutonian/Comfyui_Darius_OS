@@ -43,6 +43,7 @@ class VideoDraft(StrictModel):
  inputs: list[MediaBinding] = Field(default_factory=list, max_length=9)
  seconds: int = Field(default=10, ge=5, le=15)
  turbo: bool = True
+ upscaleDevice: Literal["cuda", "cpu"] = "cuda"
  preset: Literal["square", "poster", "photo", "portrait", "standard", "vertical", "wide", "ultrawide"] = "wide"
  resolution: Literal["native", "480p", "720p", "1080p"] = "native"
 
@@ -167,6 +168,7 @@ def compile_graph(settings, config, seed, media, *, content=None):
    graph["119"]["inputs"]["megapixels"] = width*height/(1024*1024)
   noise,sink="105:15","92"
  else:
+  graph["140"]["inputs"]["device"] = draft.upscaleDevice
   for k in ["51","49","50"]: graph.pop(k,None)
   graph["265"]["inputs"] = {k:v for k,v in graph["265"]["inputs"].items() if not k.startswith("ref_images.")}
   for index,b in enumerate(refs):
@@ -272,7 +274,7 @@ def retain_intermediate(session, settings, job, error):
   session.add(asset);ids.append(asset.id)
   add_event(session,job.project_id,'asset.created','asset',asset.id,{'job_id':job.id,'role':'intermediate'})
  job.output_asset_ids=ids;job.external_job_id=error.prompt_id
- generation.provenance_json={**generation.provenance_json,'partial':True,'intermediateAssetIds':ids,'comfyPromptId':error.prompt_id}
+ generation.provenance_json={**generation.provenance_json,'partial':True,'intermediateAssetIds':ids,'comfyPromptId':error.prompt_id,'recovery':failure_recovery(str(error), bool(ids))}
 
 
 def verify_outputs(session, job, provenance):
@@ -293,3 +295,12 @@ CONFIG_FIELD = "video"
 OUTPUT_KIND = "video"
 def active_inputs(config): return config.modeDrafts[config.activeMode].inputs
 def active_profile_name(config): return config.activeMode
+
+
+def failure_recovery(detail, preview_saved):
+ oom = any(word in detail.lower() for word in ('out of memory', 'allocation on device', 'cuda out of memory'))
+ upscale = 'MinimaxH3LatentUpscaler3D' in detail or 'upscal' in detail.lower()
+ return {"stage": "upscale" if upscale else "final-stage", "outOfMemory": oom,
+  "message": ("Preview saved; final upscale ran out of GPU memory." if oom and upscale else "Preview saved; the final video stage failed.") if preview_saved else "The final video stage failed; no preview was recovered.",
+  "canResumeFinalOnly": False,
+  "explanation": "No durable latent checkpoint is saved. Generate reruns the original workflow; ComfyUI may reuse its cache, but an upscale-only resume is not guaranteed."}

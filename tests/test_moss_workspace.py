@@ -312,3 +312,31 @@ def test_missing_contract_fails_one_job_without_stalling_queue(canvas_client, mo
     with app.state.session_factory() as session:
         job = session.get(Job, run["jobId"])
         assert job.status == "failed" and job.error_code == "workflow_unavailable"
+
+
+def test_duplicates_stay_near_source_preserve_card_size_and_cascade(canvas_client):
+    client, _, project, _ = canvas_client
+    source = add(client, project, "Source", x=-1200, y=870)
+    workspace = client.get(root(project)).json()
+    placement = next(p for p in workspace["placements"] if p["boardId"] == source["id"])
+    placement.update(displayWidth=640, displayHeight=390)
+    assert client.post(root(project) + "/layout", json={"revision": workspace["revision"], "placements": workspace["placements"]}).status_code == 200
+    copies = [add(client, project, "Copy", duplicateBoardId=source["id"], x=99999, y=-99999) for _ in range(2)]
+    placements = client.get(root(project)).json()["placements"]
+    for index, copy in enumerate(copies, 1):
+        actual = next(p for p in placements if p["boardId"] == copy["id"])
+        assert actual["x"] == -1200 + index * 48
+        assert actual["y"] == 870 + index * 48
+        assert (actual["displayWidth"], actual["displayHeight"]) == (640, 390)
+
+
+def test_receipt_lookup_is_read_only_and_project_scoped(canvas_client):
+    client, _, project, _ = canvas_client
+    board = add(client, project, "A")
+    path = f"/api/v1/projects/{project}/canvases/{board['documentId']}"
+    assert client.get(path + "/requests/missing-key").json() is None
+    receipt = generate(client, project, board, key="lookup-original")
+    assert client.get(path + "/requests/lookup-original").json()["jobId"] == receipt["jobId"]
+    before = client.get(path).json()
+    assert client.get(path.replace(project, "foreign-project") + "/requests/lookup-original").status_code == 404
+    assert client.get(path).json() == before

@@ -4,6 +4,7 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useDariusStore } from "@/lib/store";
 import type { ViewId } from "@/lib/types";
+import { useKnownJobs } from "@/lib/queries";
 import { AppShell } from "./app-shell";
 
 vi.mock("@/lib/queries", () => ({
@@ -12,7 +13,7 @@ vi.mock("@/lib/queries", () => ({
   useWorkflows: () => ({}),
   useProjectWorkflows: () => ({}),
   useProjectEventStream: () => undefined,
-  useKnownJobs: () => ({ jobs: [] }),
+  useKnownJobs: vi.fn(() => ({ jobs: [] })),
   useProjectJobs: () => ({}),
   useProjectAssets: () => ({}),
 }));
@@ -54,4 +55,12 @@ describe("AppShell navigation", () => {
     expect(screen.getAllByTestId("space")).toHaveLength(1);
     expect(errors).not.toHaveBeenCalled();
   });
+});
+
+
+it("uses the project history without launching a read per remembered job", () => {
+ useDariusStore.setState({ knownJobIds: Array.from({ length: 50 }, (_, i) => `past-${i}`) });
+ render(<AppShell />);
+ expect(useKnownJobs).not.toHaveBeenCalled();
+ expect(screen.getByRole("main")).toHaveClass("space-talk");
 });

@@ -1,10 +1,12 @@
 [CmdletBinding()]
 param(
-    [ValidateSet('Menu', 'Install', 'BackendRepair', 'Start', 'Stop', 'Update', 'Diagnostics', 'ConsoleCode', 'Voice', 'Ollama', 'Lan', 'Configuration', 'Logs')]
+    [ValidateSet('Menu', 'Install', 'BackendRepair', 'Start', 'Stop', 'Update', 'Diagnostics', 'ConsoleCode', 'Voice', 'Ollama', 'Lan', 'Configuration', 'Logs', 'Backup', 'RestoreRehearsal', 'Backups')]
     [string]$Action = 'Menu',
     [switch]$ParentUpdate,
     [switch]$InteractiveAction,
     [switch]$SelectOllama,
+    [string]$BackupSource,
+    [string]$RestoreDestination,
     [string]$PreviewPath
 )
 $ErrorActionPreference = 'Stop'
@@ -44,9 +46,14 @@ if ($Action -eq 'Menu') {
         @('Voice', 'Install CPU voice', 'Optional Pipecat environment & speech models'),
         @('Ollama', 'Install local AI', 'Optional Ollama + Ornith 1.5 9B (~6.6 GB)'),
         @('Lan', 'Set up LAN HTTPS', 'Optional trusted access for phone microphones'),
+        @('Backup', 'Back up workspace', 'Private database, settings, media and workflow files'),
+        @('RestoreRehearsal', 'Restore rehearsal', 'Verify a backup into a new folder; no services start'),
+        @('Backups', 'Backup reports', 'Open private reports and excluded-file lists'),
         @('Logs', 'Open logs', 'Private local logs and installation backups')
     )
-    $form.ClientSize = New-Object Drawing.Size(620, (212 + 42 * $actions.Count))
+    $form.AutoScroll = $true
+    $form.AutoScrollMinSize = New-Object Drawing.Size(600, (212 + 42 * $actions.Count))
+    $form.ClientSize = New-Object Drawing.Size(620, ([Math]::Min((212 + 42 * $actions.Count), [Windows.Forms.Screen]::PrimaryScreen.WorkingArea.Height - 90)))
     $form.MinimumSize = $form.Size
     for ($i = 0; $i -lt $actions.Count; $i++) {
         $button = New-Object Windows.Forms.Button
@@ -58,8 +65,9 @@ if ($Action -eq 'Menu') {
         $button.ForeColor = [Drawing.Color]::FromArgb(27, 42, 30)
         $button.Add_Click({
             $selected = $this.Tag
-            if ($selected -in @('Stop', 'Update', 'Install', 'Voice', 'Ollama', 'Lan')) {
+            if ($selected -in @('Stop', 'Update', 'Install', 'Voice', 'Ollama', 'Lan', 'Backup')) {
                 $message = switch ($selected) {
+                    'Backup' { 'Create a private workspace backup including all catalogued media? This may need significant disk space and contains credentials. Darius must be stopped. Existing backups are preserved.' }
                     'Stop' { 'Finish any active generation first. Stop this Darius installation now?' }
                     'Update' { 'Update from the configured Git upstream, then install dependencies? Local settings and the database are backed up. Darius must be stopped.' }
                     'Install' { 'Install missing Windows tools through WinGet, Python 3.12 and locked Darius packages? Internet access is required; Windows may request permission. Existing settings and projects are preserved. Darius must be stopped.' }
@@ -170,6 +178,34 @@ try {
             else { Write-Host 'Current chat provider retained. To use Ornith later, start Darius, open Settings -> AI model -> Ollama, refresh models and select ornith-1.5:9b.' }
         }
         'Lan' { Assert-DariusStopped; & (Join-Path $PSScriptRoot 'setup-lan-https.ps1') }
+        'Backup' {
+            Assert-DariusStopped
+            $backupFolder = Join-Path $script:DariusRoot ('data\backups\workspace-' + (Get-Date -Format 'yyyyMMdd-HHmmss-fff'))
+            Invoke-DariusCommand (Join-Path $script:DariusRoot '.venv\Scripts\python.exe') @((Join-Path $PSScriptRoot 'backup-installation.py'), $backupFolder, '--include-media')
+            Write-Host "Private backup and report: $backupFolder"
+        }
+        'RestoreRehearsal' {
+            if ($InteractiveAction) {
+                Add-Type -AssemblyName System.Windows.Forms
+                $chooseBackup = New-Object Windows.Forms.FolderBrowserDialog
+                $chooseBackup.Description = 'Select the backup containing backup-report.json'
+                $chooseBackup.SelectedPath = Join-Path $script:DariusRoot 'data\backups'
+                if ($chooseBackup.ShowDialog() -ne 'OK') { return }
+                $BackupSource = $chooseBackup.SelectedPath
+                $chooseTarget = New-Object Windows.Forms.FolderBrowserDialog
+                $chooseTarget.Description = 'Select a parent folder for a NEW Darius-Restore folder'
+                if ($chooseTarget.ShowDialog() -ne 'OK') { return }
+                $RestoreDestination = Join-Path $chooseTarget.SelectedPath ('Darius-Restore-' + (Get-Date -Format 'yyyyMMdd-HHmmss-fff'))
+            }
+            if (-not $BackupSource -or -not $RestoreDestination) { throw 'Specify -BackupSource and a NEW -RestoreDestination, or open Restore rehearsal from the menu.' }
+            Invoke-DariusCommand (Join-Path $script:DariusRoot '.venv\Scripts\python.exe') @((Join-Path $PSScriptRoot 'backup-installation.py'), $RestoreDestination, '--restore-from', $BackupSource)
+            Write-Host "Offline restore report: $RestoreDestination\RESTORE_REPORT.txt"
+        }
+        'Backups' {
+            $reports = Join-Path $script:DariusRoot 'data\backups'
+            New-Item -ItemType Directory -Path $reports -Force | Out-Null
+            Start-Process explorer.exe -ArgumentList ('"' + $reports + '"')
+        }
         'Configuration' {
             Initialize-DariusConfiguration
             Start-Process notepad.exe -ArgumentList ('"' + (Join-Path $script:DariusRoot '.env') + '"')

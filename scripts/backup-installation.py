@@ -1,34 +1,21 @@
-"""Back up the configured SQLite database before installer migrations (app stopped)."""
-from __future__ import annotations
-
-import sqlite3
-import sys
+"""Private backups and offline restore rehearsals; use a new destination each time."""
 from pathlib import Path
-
-from sqlalchemy.engine import make_url
-
+import argparse
 from darius_api.config import Settings
+from darius_api.installation_backup import backup as create_backup, restore_rehearsal
 
+def backup(destination: Path, *, include_media=False):
+    result = create_backup(destination, Settings.from_env(), include_media=include_media)
+    print((destination / 'BACKUP_REPORT.txt').read_text(encoding='utf-8'))
+    return result
 
-def backup(destination: Path) -> None:
-    url = make_url(Settings.from_env().database_url)
-    if url.get_backend_name() != "sqlite":
-        raise RuntimeError("Back up the external database manually before updating; automatic backup supports SQLite only.")
-    if not url.database or url.database == ":memory:":
-        return
-    if url.query:
-        raise RuntimeError("Custom SQLite URI options require a manual backup before updating.")
-    source = Path(url.database).resolve()
-    if not source.exists():
-        return
-    destination.mkdir(parents=True, exist_ok=True)
-    with sqlite3.connect(source.as_uri() + "?mode=ro", uri=True) as current:
-        with sqlite3.connect(destination / "darius.db") as saved:
-            current.backup(saved)
-            if saved.execute("PRAGMA integrity_check").fetchone() != ("ok",):
-                raise RuntimeError("Database backup integrity check failed; installation stopped.")
-    print("Database backup verified.")
-
-
-if __name__ == "__main__":
-    backup(Path(sys.argv[1]))
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('destination', type=Path)
+    parser.add_argument('--include-media', action='store_true')
+    parser.add_argument('--restore-from', type=Path)
+    args = parser.parse_args()
+    if args.restore_from:
+        restore_rehearsal(args.restore_from, args.destination)
+        print((args.destination / 'RESTORE_REPORT.txt').read_text(encoding='utf-8'))
+    else: backup(args.destination, include_media=args.include_media)

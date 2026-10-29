@@ -2,6 +2,7 @@
 from copy import deepcopy
 from datetime import timezone
 import hashlib
+import sqlite3
 from pathlib import Path
 from secrets import randbelow
 import threading
@@ -9,6 +10,7 @@ import threading
 from fastapi import APIRouter, HTTPException
 from pydantic import Field, field_validator
 from sqlalchemy import select, text
+from sqlalchemy.exc import OperationalError
 
 from .atomic_files import atomic_json
 from .canvas_document import CanvasContent, StrictModel, dimensions, PRESETS, resolve_regions
@@ -322,10 +324,32 @@ def router(settings, session_factory, registry):
                 raise HTTPException(404, "Generation does not exist in this canvas")
             return generation.provenance_json
 
+    @routes.get("/projects/{project_id}/canvases/{document_id}/requests/{request_key}")
+    def generation_receipt(project_id: str, document_id: str, request_key: str):
+        # Read-only reconciliation: never launch or requeue a worker here.
+        with session_factory() as session:
+            owned(session, project_id, document_id)
+            generation = session.scalar(select(Generation).where(
+                Generation.document_id == document_id, Generation.idempotency_key == request_key))
+            return generation_view(session, generation) if generation else None
+
     @routes.post("/projects/{project_id}/canvases/{document_id}/generate")
     def generate(project_id: str, document_id: str, payload: GenerateCanvas):
         current_settings = comfy_connection.effective_settings(settings)
-        return generate_with_settings(project_id, document_id, payload, current_settings)
+        try:
+            return generate_with_settings(project_id, document_id, payload, current_settings)
+        except OperationalError as exc:
+            original = exc.orig
+            code = getattr(original, "sqlite_errorcode", 0)
+            if isinstance(original, sqlite3.OperationalError) and (
+                (code & 0xff) in {sqlite3.SQLITE_BUSY, sqlite3.SQLITE_LOCKED}
+                or str(original).lower().startswith(("database is locked", "database table is locked"))
+            ):
+                raise HTTPException(503,
+                    "Darius is finishing another workspace update. Wait a moment and retry this saved request. "
+                    "Any job already saved for this request will be reused; do not create a new request.",
+                    headers={"Retry-After": "1"}) from exc
+            raise
 
     def generate_with_settings(project_id: str, document_id: str, payload: GenerateCanvas, settings):
         if not payload.approved:
@@ -427,7 +451,7 @@ def router(settings, session_factory, registry):
                 runtime_mapping=RuntimeMapping(filename_prefix_slot=f"{sink}.filename_prefix", api_format=True),
                 output_node_ids=[sink], internal_only=True, project_id=project_id, requires_approval=True)
             atomic_json(settings.workflow_definitions_dir / (workflow_id + ".json"), contract.model_dump())
-            registry.load(); register_workflows(session_factory, registry)
+            registry.load(); register_workflows(session_factory, registry, workflow_ids=[workflow_id])
             with session_factory.begin() as session:
                 session.execute(text("BEGIN IMMEDIATE"))
                 doc = owned(session, project_id, document_id)

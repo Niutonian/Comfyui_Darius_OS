@@ -70,6 +70,7 @@ export function AssistantWorkspace({ projectId, visible, onRetry, voiceHost, wor
   const requestedControl = useRef<"pause" | "cancel" | null>(null);
   const [failedInput, setFailedInput] = useState<{ text: string; assets: Asset[]; exactReferences: boolean } | null>(null);
   const [loadError, setLoadError] = useState(false);
+  const [loadAttempt, setLoadAttempt] = useState(0);
   const [remoteWorking, setRemoteWorking] = useState(false);
   const [liveVoiceEnabled, setLiveVoiceEnabled] = useState(false);
   const [fullscreenVoice, setFullscreenVoice] = useState(false);
@@ -100,7 +101,7 @@ export function AssistantWorkspace({ projectId, visible, onRetry, voiceHost, wor
         const remembered = readWorkspaceValue<string>(`conversation:${projectId}`);
         const current = items.find(item => item.id === remembered) ?? items[0];
         if (cancelled) return;
-        setThreads(items);
+        setThreads(items); setLoadError(false); setError("");
         if (!current) return;
         setActiveThread(current.id);
         const history = await api.messages(current.id);
@@ -120,7 +121,7 @@ export function AssistantWorkspace({ projectId, visible, onRetry, voiceHost, wor
         .finally(() => { if (!cancelled) { setLoading(false); hydrated.current = true; } });
     }
     return () => { cancelled = true; alive.current = false; };
-  }, [projectId]);
+  }, [projectId, loadAttempt]);
 
   useEffect(() => {
     if (!projectId || loading) return;
@@ -382,9 +383,10 @@ export function AssistantWorkspace({ projectId, visible, onRetry, voiceHost, wor
     setLoading(true);
     let history: Message[];
     try { history = await api.messages(id); }
+    catch (error) { if (alive.current && conversation.current === id) { setError(error instanceof Error ? error.message : "The conversation could not load. Reload to reconnect."); setLoadError(true); } return; }
     finally { if (alive.current) setLoading(false); }
     if (!alive.current || conversation.current !== id) return;
-    setMessages(history);
+    setMessages(history); setLoadError(false);
     const last = history.at(-1);
     const task = last?.metadata.task as { state?: string; error?: string } | undefined;
     setTaskState(task?.state ?? "ready");
@@ -547,7 +549,7 @@ export function AssistantWorkspace({ projectId, visible, onRetry, voiceHost, wor
           {!busy && !error && taskState !== "cancelled" ? <button className="secondary-button" onClick={() => void submit("", [], true).catch(() => {})} type="button">{pending.metadata.task || taskState === "paused" ? "Resume saved task" : "Continue reply"}</button> : null}
         </div> : null}
       </section> : null}
-      {error ? <div className="assistant-error assistant-reply-error" role="alert"><strong>Reply interrupted</strong><p>{error}</p>{pending || failedInput ? <><p>Your message is saved. You can retry this reply here.</p><button className="secondary-button" disabled={busy} onClick={() => void submit("", [], true).catch(() => {})} type="button">Retry reply</button></> : <button className="secondary-button" onClick={() => window.location.reload()} type="button">Reload conversation</button>}</div> : null}
+      {error ? <div className="assistant-error assistant-reply-error" role="alert"><strong>{loadError ? "Conversation could not load" : "Reply interrupted"}</strong><p>{error}</p>{pending || failedInput ? <><p>Your message is saved. You can retry this reply here.</p><button className="secondary-button" disabled={busy} onClick={() => void submit("", [], true).catch(() => {})} type="button">Retry reply</button></> : <button className="secondary-button" onClick={() => { if (loadError) { setError(""); setLoading(true); setLoadError(false); setLoadAttempt(attempt => attempt + 1); } else window.location.reload(); }} type="button">Reload conversation</button>}</div> : null}
       {!fullscreenVoice && !messages.length && !workspaceHost ? <CreativeChatWelcome mood={mood} /> : null}
       {!fullscreenVoice ? resultFollowup : null}
       <div ref={bottom} style={{ height: 1 }} />

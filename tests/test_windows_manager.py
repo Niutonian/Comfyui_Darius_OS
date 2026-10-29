@@ -330,7 +330,7 @@ def test_database_backup_uses_configured_database_and_includes_wal(tmp_path: Pat
         connection.execute("CREATE TABLE ideas (name TEXT)")
         connection.execute("INSERT INTO ideas VALUES ('keep me')")
         connection.commit()
-        monkeypatch.setattr(module, "Settings", SimpleNamespace(from_env=lambda: SimpleNamespace(database_url=f"sqlite:///{database.as_posix()}")))
+        monkeypatch.setattr(module, "Settings", SimpleNamespace(from_env=lambda: SimpleNamespace(database_url=f"sqlite:///{database.as_posix()}", repository_root=tmp_path, workflow_definitions_dir=tmp_path / "workflows")))
         module.backup(tmp_path / "backup")
     with sqlite3.connect(tmp_path / "backup/darius.db") as result:
         assert result.execute("SELECT name FROM ideas").fetchall() == [("keep me",)]

@@ -3,7 +3,7 @@
 import { MotionConfig, motion, useReducedMotion } from "motion/react";
 import { ListVideo, Menu, MessageCircle, Minus, PanelRightOpen, Plus, Settings, X } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useHealth, useKnownJobs, useProjectAssets, useProjectEventStream, useProjectJobs, useProjectWorkflows, useProjects, useWorkflows } from "@/lib/queries";
+import { useHealth, useProjectAssets, useProjectEventStream, useProjectJobs, useProjectWorkflows, useProjects, useWorkflows } from "@/lib/queries";
 import { gentleSpring } from "@/lib/os-motion";
 import { readAppUrl, rememberAppUrl } from "@/lib/os-navigation";
 import { useDariusStore } from "@/lib/store";
@@ -56,7 +56,7 @@ function Clock() {
 
 export function AppShell() {
   const reduceMotion = useReducedMotion();
-  const { view, theme, activeProjectId, knownJobIds, inspectorOpen, trayOpen, dariusMood, projects, setActiveProject, setInspectorOpen, setProjects, setTrayOpen, setView } = useDariusStore();
+  const { view, theme, activeProjectId, inspectorOpen, trayOpen, dariusMood, projects, setActiveProject, setInspectorOpen, setProjects, setTrayOpen, setView } = useDariusStore();
   const [voiceHost, setVoiceHost] = useState<HTMLDivElement | null>(null);
   const [editAssistantHost, setEditAssistantHost] = useState<HTMLDivElement | null>(null);
   const [editComposerHost, setEditComposerHost] = useState<HTMLDivElement | null>(null);
@@ -75,16 +75,12 @@ export function AppShell() {
   const workflowQuery = useWorkflows();
   const projectWorkflowQuery = useProjectWorkflows(activeProjectId);
   const syncStatus = useProjectEventStream(activeProjectId);
-  const knownJobs = useKnownJobs(knownJobIds);
   const projectJobQuery = useProjectJobs(activeProjectId);
-  const projectJobs = useMemo(() => {
-    const merged = new Map(
-      [...knownJobs.jobs, ...(projectJobQuery.data ?? [])]
-        .filter((job) => job.project_id === activeProjectId)
-        .map((job) => [job.id, job]),
-    );
-    return Array.from(merged.values()).sort((left, right) => right.created_at.localeCompare(left.created_at));
-  }, [activeProjectId, knownJobs.jobs, projectJobQuery.data]);
+  // The project endpoint already returns its full job history. Hydrating every
+  // persisted job ID duplicates it and fans out reads across unrelated projects.
+  const projectJobs = useMemo(() => (projectJobQuery.data ?? [])
+    .filter(job => job.project_id === activeProjectId)
+    .sort((left, right) => right.created_at.localeCompare(left.created_at)), [activeProjectId, projectJobQuery.data]);
   const projectAssets = useProjectAssets(activeProjectId);
   const project = projects.find((item) => item.id === activeProjectId);
   const copy = spaceCopy[view];
@@ -190,7 +186,7 @@ export function AppShell() {
         </div>
         {mobile && (inspectorOpen || trayOpen || mobileNavigationOpen) ? <button className="mobile-sheet-scrim" aria-label="Dismiss panel" onClick={dismissSheet} type="button" /> : null}
         {view !== "talk" && activeProjectId ? <button className="mobile-chat-fab" onClick={() => { rememberAppUrl("talk", activeProjectId, "push"); setView("talk"); }} type="button"><MessageCircle size={22} /><span>Ask Darius</span></button> : null}
-        <JobTray mobileModal={mobile} hasError={knownJobs.hasError || projectJobQuery.isError} jobs={projectJobs} />
+        <JobTray mobileModal={mobile} hasError={projectJobQuery.isError} jobs={projectJobs} />
       </main>
     </MotionConfig>
   );

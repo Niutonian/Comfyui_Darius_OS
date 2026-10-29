@@ -103,24 +103,55 @@ def add_event(
     return event
 
 
-def register_workflows(session_factory: sessionmaker, registry: WorkflowRegistry) -> None:
+def register_workflows(
+    session_factory: sessionmaker,
+    registry: WorkflowRegistry,
+    *, workflow_ids: list[str] | None = None,
+) -> None:
+    """Synchronize changed contracts without rewriting the historical catalog.
+
+    Canvas queue requests register only their new immutable contract. Worker
+    startup/full refresh can scan the catalog, but an unchanged scan is read-only.
+    Recheck pending changes under SQLite's writer reservation so API and worker
+    processes cannot both insert the same new definition.
+    """
+    contracts = (registry.enabled(include_internal=True) if workflow_ids is None
+                 else [registry.get(key) for key in dict.fromkeys(workflow_ids)])
+    values = {contract.id: {
+        "name": contract.name, "version": contract.version,
+        "capability": contract.capability,
+        "execution_provider": contract.execution_provider,
+        "contract": registry.serialized(contract), "enabled": contract.enabled,
+    } for contract in contracts if contract.enabled}
+    if not values:
+        return
+
+    def records(session, ids):
+        return {row.id: row for row in session.scalars(
+            select(WorkflowDefinitionRecord).where(WorkflowDefinitionRecord.id.in_(ids)))}
+
+    def differs(record, desired):
+        return record is None or any(getattr(record, key) != value for key, value in desired.items())
+
+    with session_factory() as session:
+        existing = records(session, values)
+        pending = {key: desired for key, desired in values.items() if differs(existing.get(key), desired)}
+    if not pending:
+        return
     with session_factory.begin() as session:
-        for contract in registry.enabled(include_internal=True):
-            record = session.get(WorkflowDefinitionRecord, contract.id)
-            values = {
-                "name": contract.name,
-                "version": contract.version,
-                "capability": contract.capability,
-                "execution_provider": contract.execution_provider,
-                "contract": registry.serialized(contract),
-                "enabled": contract.enabled,
-                "updated_at": utcnow(),
-            }
+        if session.get_bind().dialect.name == "sqlite":
+            session.execute(text("BEGIN IMMEDIATE"))
+        existing = records(session, pending)
+        for key, desired in pending.items():
+            record = existing.get(key)
+            if not differs(record, desired):
+                continue
             if record is None:
-                session.add(WorkflowDefinitionRecord(id=contract.id, **values))
+                session.add(WorkflowDefinitionRecord(id=key, **desired, updated_at=utcnow()))
             else:
-                for key, value in values.items():
-                    setattr(record, key, value)
+                for field, value in desired.items():
+                    setattr(record, field, value)
+                record.updated_at = utcnow()
 
 
 def create_project(session_factory: sessionmaker, name: str, description: str = "", **values) -> Project:  # noqa: ANN003

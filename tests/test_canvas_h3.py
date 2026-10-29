@@ -231,3 +231,48 @@ def test_completed_video_displays_without_replacing_a_draft_or_explicit_choice(c
  displayed=next(b for b in workspace['boards'] if b['id']==board['id'])['activeResult']
  if change in {'unchanged','edited-draft'}:
   assert displayed['assetIds']==['video-result-final','video-result-intermediate']
+
+
+def test_cpu_final_upscaler_changes_only_device_and_keeps_original_recipe(tmp_path):
+ original=config('reference-video',1)
+ source=deepcopy(original)
+ before, _=h3.compile_graph(settings_for(tmp_path),original,42,{'ref0':'pinned.png'})
+ original.modeDrafts['reference-video'].upscaleDevice='cpu'
+ after, provenance=h3.compile_graph(settings_for(tmp_path),original,42,{'ref0':'pinned.png'})
+ assert before['140']['inputs']['device']=='cuda'
+ assert after['140']['inputs']['device']=='cpu'
+ after['140']['inputs']['device']='cuda'
+ assert after==before
+ assert provenance['videoConfig']['modeDrafts']['reference-video']['upscaleDevice']=='cpu'
+ assert source.modeDrafts['reference-video'].upscaleDevice=='cuda'
+ assert h3.failure_recovery('MinimaxH3LatentUpscaler3D: Allocation on device', True)['message']=='Preview saved; final upscale ran out of GPU memory.'
+ assert not h3.failure_recovery('upscale failed', True)['canResumeFinalOnly']
+ with pytest.raises(ValidationError): h3.VideoDraft(upscaleDevice='auto')
+
+
+def test_failed_upscale_retains_playable_intermediate_without_replacing_final(canvas_client, tmp_path, monkeypatch):
+ from types import SimpleNamespace
+ from datetime import timedelta
+ from darius_api.database import CanvasDocumentRecord as Document, utcnow
+ from darius_api.providers import PartialVideoError
+ client, app, project, _=canvas_client
+ board=add(client,project,'Video',settings={'adapterVersion':'minimax-h3-reference-video-v1','video':config('reference-video',0).model_dump()})
+ media=tmp_path/'preview.mp4';media.write_bytes(b'fixture video')
+ monkeypatch.setattr('darius_api.media.ingest_generated',lambda *args: SimpleNamespace(kind='video',duration=5,path=media,content_hash='a'*64,mime_type='video/mp4',width=640,height=360,fps=24,sample_rate=48000,metadata={}))
+ with app.state.session_factory.begin() as session:
+  session.add(Asset(id='previous-final',project_id=project,kind='video',role='generation',path=str(tmp_path/'final.mp4'),content_hash='b'*64,mime_type='video/mp4',provider='fixture'))
+  previous=Job(id='previous-video-job',project_id=project,provider='local-comfyui',status='completed',input_payload={},output_asset_ids=['previous-final'])
+  failed=Job(id='failed-video-job',project_id=project,provider='local-comfyui',status='failed',error_detail='MinimaxH3LatentUpscaler3D: Allocation on device',input_payload={'canvas_generation_id':'failed-generation'})
+  session.add_all([previous,failed]);session.flush()
+  older=Generation(id='previous-generation',document_id=board['documentId'],project_id=project,revision=1,job_id=previous.id,idempotency_key='previous-key',seed='42',selection_version=0,provenance_json={'profileId':'minimax-h3-reference-video-v1'},created_at=utcnow()-timedelta(minutes=1))
+  generation=Generation(id='failed-generation',document_id=board['documentId'],project_id=project,revision=1,job_id=failed.id,idempotency_key='failed-key',seed='42',selection_version=0,provenance_json={'profileId':'minimax-h3-reference-video-v1','mediaReceipts':[],'videoConfig':config('reference-video',0).model_dump()})
+  session.add_all([older,generation]);session.flush()
+  session.get(Document,board['documentId']).active_generation_id=older.id
+  h3.retain_intermediate(session,app.state.settings,failed,PartialVideoError(failed.error_detail,[media],'comfy-fixture'))
+ document=client.get(f"/api/v1/projects/{project}/canvases/{board['documentId']}").json()
+ assert document['activeGenerationId']=='previous-generation'
+ assert document['generations'][0]['provenance']['recovery']['outOfMemory']
+ assert document['generations'][0]['assetIds']
+ latest=client.get(root(project)).json()['boards'][0]
+ assert latest['activeResult']['assetIds']==['previous-final']
+ assert latest['latest']['intermediateAssetIds'] and latest['latest']['recovery']['stage']=='upscale'

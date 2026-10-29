@@ -4,7 +4,7 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, ArrowRight, ChevronDown, Copy, Download, Hand, Layers3, Maximize, Minus, MousePointer2, Plus, Redo2, Sparkles, PanelRightOpen, Minimize2, Undo2 } from "lucide-react";
 import { api, ApiError, request } from "@/lib/api-client";
-import { canvasApi } from "@/lib/canvas-api";
+import { definitiveGenerationError, canvasApi } from "@/lib/canvas-api";
 import { requestBoardSetup } from "@/lib/board-setup";
 import { useWorkspaceState } from "@/lib/workspace-session";
 import { subscribeProjectRefresh } from "@/lib/project-sync";
@@ -173,7 +173,6 @@ export function MossWorkspace({ projectId, assets, onBoardContext, expanded = fa
       client.setQueryData(["moss-workspace", projectId], result.workspace);
       setLayout({ revision: result.workspace.revision, saved: result.workspace.placements, present: result.workspace.placements });
       setSelectedId(result.boardId); setArchives(false); setSearch("");
-      if (duplicate) { const placement = result.workspace.placements.find(p => p.boardId === result.boardId); if (placement) setCamera(fitPlacements([placement], size)); }
     } catch (e) { setError(errorText(e)); } finally { setCreating(false); }
   }
   async function bindImageToVideo(source: MossBoard) {
@@ -214,15 +213,15 @@ export function MossWorkspace({ projectId, assets, onBoardContext, expanded = fa
     try {
       let intent = intents[board.id];
       if (!intent) { const snapshot = await prepareBoard(projectId, board); intent = { ...snapshot, key: crypto.randomUUID(), revision: snapshot.documentRevision, seed: snapshot.seed === undefined ? board.settings.seed : snapshot.seed, profileId: snapshot.profileId ?? board.settings.adapterVersion }; setIntents(i => ({ ...i, [board.id]: intent })); }
-      const result = await canvasApi.generate(projectId, intent.documentId, intent.revision, intent.key, intent.seed, intent);
+      const result = await canvasApi.generate(projectId, intent.documentId, intent.revision, intent.key, intent.seed, intent, () => setBoardErrors(e => ({ ...e, [board.id]: "Checking whether your job was queued..." })));
       client.setQueryData<import("@/lib/moss-workspace").ProjectWorkspace>(["moss-workspace", projectId], old => old ? { ...old, boards: old.boards.map(current => current.id !== board.id ? current : { ...current, latest: result, jobs: ["queued", "running", "cancelling"].includes(result.status) ? [result, ...current.jobs.filter(job => job.id !== result.id)] : current.jobs.filter(job => job.id !== result.id) }) } : old);
       setIntents(i => { const next = { ...i }; delete next[board.id]; return next; });
-      if (result.launchError) setBoardErrors(e => ({ ...e, [board.id]: result.launchError! }));
+      setBoardErrors(e => ({ ...e, [board.id]: result.launchError ?? "" }));
       refresh(); void client.invalidateQueries({ queryKey: ["jobs"] });
     } catch (e) {
       setBoardErrors(errors => ({ ...errors, [board.id]: errorText(e) }));
       setError(`${board.name}: ${errorText(e)}`);
-      if (e instanceof ApiError && e.status >= 400 && e.status < 500) setIntents(i => { const next = { ...i }; delete next[board.id]; return next; });
+      if (definitiveGenerationError(e)) setIntents(i => { const next = { ...i }; delete next[board.id]; return next; });
     } finally { preparingIds.current.delete(board.id); setPreparing(new Set(preparingIds.current)); }
   }
   async function settings(board: MossBoard, next: BoardSettings, remember = true) {

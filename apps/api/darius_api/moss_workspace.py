@@ -11,7 +11,7 @@ from sqlalchemy.orm import load_only
 
 from .canvas_document import CanvasContent, StrictModel, resolve_regions
 from . import canvas_images as images
-from .canvas_h3 import VideoConfig, PROFILES as H3_PROFILES, validate_inputs as validate_video_inputs, video_dimensions
+from .canvas_h3 import failure_recovery, VideoConfig, PROFILES as H3_PROFILES, validate_inputs as validate_video_inputs, video_dimensions
 from .canvas_moss import VERSION
 from .database import (CanvasWorkspaceRecord as Workspace, MossBoardRecord as Board,
     CanvasDocumentRecord as Document, CanvasRevisionRecord as Revision, CanvasGenerationRecord as Generation,
@@ -192,6 +192,8 @@ def board_view(session, board):
         job = session.get(Job, row.job_id)
         profile = row.provenance_json.get("adapterVersion", VERSION)
         return {"id": row.id, "jobId": row.job_id, "revision": row.revision, "seed": str(row.seed) if profile.startswith(("fibo-", "minimax-h3-")) or profile in images.PROFILES else row.seed,
+            "recovery": row.provenance_json.get("recovery") or (failure_recovery(job.error_detail or "", True) if row.provenance_json.get("partial") else None),
+            "intermediateAssetIds": [key for key in row.provenance_json.get("intermediateAssetIds", []) if (item := session.get(Asset, key)) and item.project_id == board.project_id],
             "profileId": profile, "profileName": row.provenance_json.get("profileName", "MOSS"),
             "promotedFromGenerationId": row.provenance_json.get("promotedFromGenerationId"),
             "status": job.status, "statusMessage": job.status_message, "error": job.error_detail,
@@ -293,13 +295,23 @@ def router(settings, session_factory, generate):
             session.add(Revision(document_id=document.id, revision=1, content_json=content.model_dump()))
             board = Board(id=new_id(), project_id=project_id, document_id=document.id, settings_json=config)
             session.add(board); session.flush()
-            # Look for a nearby free slot; no semantic document changes involved.
-            x, y = payload.x, payload.y
-            for _ in range(256):
-                if all(abs(x-p["x"]) >= 400 or abs(y-p["y"]) >= 500 for p in workspace.placements_json): break
-                x += 420
-                if x > payload.x + 3*420: x, y = payload.x, y+520
-            workspace.placements_json = [*workspace.placements_json, Placement(boardId=board.id, x=x, y=y, order=len(workspace.placements_json)).model_dump()]
+            # Copies stay near their source, independent of viewport or other cards.
+            source_placement = next((p for p in workspace.placements_json
+                if p["boardId"] == payload.duplicateBoardId), None)
+            if source_placement:
+                x, y = source_placement["x"] + 48, source_placement["y"] + 48
+                while any(abs(x-p["x"]) < 1 and abs(y-p["y"]) < 1 for p in workspace.placements_json):
+                    x += 48; y += 48
+                placement = {**source_placement, "boardId": board.id, "x": x, "y": y,
+                    "order": len(workspace.placements_json)}
+            else:
+                x, y = payload.x, payload.y
+                for _ in range(256):
+                    if all(abs(x-p["x"]) >= 400 or abs(y-p["y"]) >= 500 for p in workspace.placements_json): break
+                    x += 420
+                    if x > payload.x + 3*420: x, y = payload.x, y+520
+                placement = Placement(boardId=board.id, x=x, y=y, order=len(workspace.placements_json)).model_dump()
+            workspace.placements_json = [*workspace.placements_json, placement]
             workspace.revision += 1
             add_event(session, project_id, "canvas.board_added", "board", board.id)
             return {"boardId": board.id, "workspace": workspace_view(session, workspace)}

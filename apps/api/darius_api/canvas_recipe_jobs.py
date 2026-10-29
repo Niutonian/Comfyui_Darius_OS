@@ -46,7 +46,7 @@ def generate(settings, session_factory, registry, project_id, document_id, paylo
  contract=WorkflowContract(id=workflow_id,name=snapshot['name']+' · '+adapter.OUTPUT_KIND.title(),version=profile,capability=provenance.get('capability','image-to-video'),execution_provider='local-comfyui',workflow_reference=str(path.resolve()),
   required_inputs=[WorkflowInput(key='seed',type='integer',default=seed,maps_to=WorkflowMapping(slot=provenance.get('seedSlot',provenance['sampler']+'.noise_seed')))],output=WorkflowOutput(kind=adapter.OUTPUT_KIND,count=len(provenance['outputs'])),runtime_mapping=RuntimeMapping(filename_prefix_slot=provenance['outputNode']+'.filename_prefix',api_format=True),
   output_node_ids=list(provenance['outputs']),source_asset_ids=[r['assetId'] for r in receipts],internal_only=True,project_id=project_id,requires_approval=True)
- atomic_json(settings.workflow_definitions_dir/(workflow_id+'.json'),contract.model_dump());registry.load();register_workflows(session_factory,registry)
+ atomic_json(settings.workflow_definitions_dir/(workflow_id+'.json'),contract.model_dump());registry.load();register_workflows(session_factory,registry,workflow_ids=[workflow_id])
  with session_factory.begin() as session:
   session.execute(text('BEGIN IMMEDIATE'));doc=owned(session,project_id,document_id)
   existing=session.scalar(select(Generation).where(Generation.document_id==doc.id,Generation.idempotency_key==payload.idempotencyKey))

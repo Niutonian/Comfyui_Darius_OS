@@ -3,9 +3,15 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Download, RefreshCw, X } from "lucide-react";
-import { ApiError } from "@/lib/api-client";
+import { api, ApiError } from "@/lib/api-client";
 import { boardSetupApi, subscribeBoardSetup, type BoardSetup, type BoardSetupRequest } from "@/lib/board-setup";
 import { canvasProfiles, type CanvasProfile } from "@/lib/canvas-profile";
+
+import { ReadinessSummary } from "./readiness-summary";
+import { useDariusStore } from "@/lib/store";
+import { rememberWorkspaceValue } from "@/lib/workspace-session";
+import type { Health } from "@/lib/types";
+import type { ComfyConnection } from "@/lib/board-setup";
 
 const bytes = (value: number) => value >= 1e9 ? `${(value / 1e9).toFixed(1)} GB` : `${Math.ceil(value / 1e6)} MB`;
 
@@ -13,6 +19,8 @@ export function BoardSetupDialog() {
   const [pending, setPending] = useState<BoardSetupRequest | null>(null);
   const active = useRef<BoardSetupRequest | null>(null);
   const [status, setStatus] = useState<BoardSetup | null>(null);
+  const [health, setHealth] = useState<Health | null>(null);
+  const [connection, setConnection] = useState<ComfyConnection | null>(null);
   const [error, setError] = useState("");
   const [restart, setRestart] = useState(true);
   const [working, setWorking] = useState(false);
@@ -24,15 +32,16 @@ export function BoardSetupDialog() {
   useEffect(() => subscribeBoardSetup(value => {
     if (active.current) { value.reject(new ApiError("Another board is being prepared. Finish or close its setup first.", 409)); return; }
     active.current = value;
-    setPending(value); setStatus(null); setError(""); setRestart(true); setWorking(false); setConnectionNotice('');
+    setPending(value); setStatus(null); setHealth(null); setConnection(null); setError(""); setRestart(true); setWorking(false); setConnectionNotice('');
   }), []);
   useEffect(() => {
     if (!pending) return;
     const previous = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     let cancelled = false;
     let timer: ReturnType<typeof setTimeout>;
+    void api.health().then(value => { if (!cancelled) setHealth(value); }).catch(() => { if (!cancelled) setHealth({ status: "offline", components: {} }); });
     void boardSetupApi.connection().then(value => {
-      if (!cancelled) { setComfyFolder(value.root); setComfyUrl(value.baseUrl); setComfyOutput(value.outputDir ?? ''); }
+      if (!cancelled) { setConnection(value); setComfyFolder(value.root); setComfyUrl(value.baseUrl); setComfyOutput(value.outputDir ?? ''); }
     }).catch(() => { /* Connection controls remain available for manual repair. */ });
     async function refresh(initial: boolean) {
       try {
@@ -66,7 +75,7 @@ export function BoardSetupDialog() {
     try {
       const value = detect ? await boardSetupApi.detect(comfyUrl) : await boardSetupApi.connect(comfyFolder, comfyUrl, comfyOutput);
       if (active.current !== pending) return;
-      setComfyFolder(value.root); setComfyUrl(value.baseUrl); setComfyOutput(value.outputDir ?? '');
+      setConnection(value); setComfyFolder(value.root); setComfyUrl(value.baseUrl); setComfyOutput(value.outputDir ?? '');
       setConnectionNotice(detect ? 'Found ComfyUI. Save this connection to use it.' : 'Connected. Checking this board again…');
       if (!detect) setStatus(await boardSetupApi.check(pending.profile));
     } catch (value) { if (active.current === pending) setError(value instanceof Error ? value.message : 'Could not connect ComfyUI.'); }
@@ -87,13 +96,18 @@ export function BoardSetupDialog() {
     }
   }}><div ref={panel} role="dialog" aria-modal="true" aria-labelledby="board-setup-title" tabIndex={-1} className="board-setup-panel">
     <header><div><span className="eyebrow">First-use preparation · Block Party</span><h2 id="board-setup-title">Prepare {canvasProfiles[pending.profile as CanvasProfile]?.name ?? "this board"}</h2></div><button className="icon-button" aria-label="Close board preparation" onClick={close}><X size={20}/></button></header>
+    <ReadinessSummary health={health} setup={status} connection={connection} onAction={action => {
+      if (action === "connection") { const details = document.getElementById("board-setup-connection") as HTMLDetailsElement | null; if (details) { details.open = true; details.scrollIntoView?.({ block: "nearest" }); } }
+      else if (action === "dependencies") document.getElementById("board-setup-dependencies")?.scrollIntoView?.({ block: "nearest" });
+      else { rememberWorkspaceValue("settings:category", action); useDariusStore.getState().setView("settings"); close(); }
+    }} />
     <p>Models and node packs are installed once in your ComfyUI and shared by your boards. Existing files and node revisions are checked before anything changes.</p>
-    <div role="status" aria-live="polite" className="board-setup-status"><RefreshCw size={18} className={busy ? "board-setup-spinning" : ""}/><span>{progress?.message ?? status?.message ?? "Checking this board’s dependencies…"}</span></div>
+    <div role="status" aria-live="polite" id="board-setup-dependencies" className="board-setup-status"><RefreshCw size={18} className={busy ? "board-setup-spinning" : ""}/><span>{progress?.message ?? status?.message ?? "Checking this board’s dependencies…"}</span></div>
     {progress?.bytes_total ? <><progress aria-label="Model download" max={progress.bytes_total} value={progress.bytes_done ?? 0}/><small>{bytes(progress.bytes_done ?? 0)} / {bytes(progress.bytes_total)}{progress.speed ? ` · ${bytes(progress.speed)}/s` : ""}</small></> : null}
     {actions.length ? <><strong>{total ? `${bytes(total)} of model downloads` : "Dependencies to prepare"}{actions.some(item => item.kind === "node") ? " · custom nodes included" : ""}</strong><ul className="board-setup-list">{actions.map((item, index) => <li key={`${item.filename ?? item.name}:${index}`}><span>{item.filename ?? item.name}</span><small>{item.size_bytes ? bytes(item.size_bytes) : "Node pack"}{item.auth ? ` · ${item.auth} access required` : ""}</small></li>)}</ul></> : null}
     {status?.blocked?.length ? <ul className="form-error">{status.blocked.map((item, index) => <li key={index}>{item}</li>)}</ul> : null}
     {error ? <p className="form-error" role="alert">{error}</p> : null}
-    <details className="board-setup-connection" open={status?.state === 'failed' || status?.state === 'interrupted'}><summary>ComfyUI connection</summary>
+    <details id="board-setup-connection" className="board-setup-connection" open={status?.state === 'failed' || status?.state === 'interrupted'}><summary>ComfyUI connection</summary>
       <p>Use the installation on the computer running Darius. Start ComfyUI, then detect it, or paste its folder path.</p>
       <label>Server address<input value={comfyUrl} disabled={busy} onChange={event => setComfyUrl(event.target.value)} placeholder="http://127.0.0.1:8188"/></label>
       <button type="button" disabled={busy} onClick={() => void connectionAction(true)}>Detect ComfyUI</button>

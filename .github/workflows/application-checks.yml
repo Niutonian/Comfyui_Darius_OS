@@ -1,0 +1,86 @@
+name: Application checks
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: application-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9
+        with:
+          version: '0.11.28'
+      - run: uv sync --frozen --extra test --python 3.12
+      - run: uv run --frozen pytest -q --junitxml=test-results/backend.xml
+      - run: uv run --frozen python scripts/export_openapi.py --check
+      - name: Audit public files and history before any release
+        run: uv run --frozen python scripts/release_audit.py --history --privacy
+  frontend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      NEXT_TELEMETRY_DISABLED: '1'
+      DARIUS_NEXT_DIST_DIR: .next-check
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '24'
+      - run: npm ci --prefix apps/web
+      - run: npm run lint --prefix apps/web
+      - run: npm run typecheck --prefix apps/web
+      - run: npm test --prefix apps/web
+      - run: npm run build --prefix apps/web
+      - run: npm ci --prefix tests/browser
+      - run: npm --prefix tests/browser exec -- playwright install --with-deps chromium
+      - run: npm --prefix tests/browser test
+  windows-install:
+    if: github.event_name != 'pull_request'
+    runs-on: windows-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9
+        with:
+          version: '0.11.28'
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '24'
+      - run: uv sync --frozen --extra test --python 3.12
+      - name: Installer safety and fresh/previous-schema database smoke
+        run: uv run --frozen pytest tests/test_windows_manager.py tests/test_migration_upgrade.py tests/test_release_preparation.py tests/test_installation_backup.py -q
+      - run: npm ci --prefix apps/web
+      - run: npm run build --prefix apps/web
+        env:
+          NEXT_TELEMETRY_DISABLED: '1'
+          DARIUS_NEXT_DIST_DIR: .next-check
+  release-checks:
+    if: always()
+    needs: [backend, frontend, windows-install]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require passing application checks
+        env:
+          BACKEND: ${{ needs.backend.result }}
+          FRONTEND: ${{ needs.frontend.result }}
+          WINDOWS: ${{ needs.windows-install.result }}
+          EVENT: ${{ github.event_name }}
+        run: |
+          test "$BACKEND" = success
+          test "$FRONTEND" = success
+          if [ "$EVENT" = pull_request ]; then test "$WINDOWS" = skipped; else test "$WINDOWS" = success; fi
