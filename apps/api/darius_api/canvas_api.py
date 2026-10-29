@@ -233,11 +233,11 @@ def router(settings, session_factory, registry):
     @routes.get("/canvas/video/engine")
     def video_engine(check: bool = False):
         return {"family": "minimax-h3", "modes": [{"id": mode, "profileId": profile,
-            **h3.video_dimensions(mode), "timings": [h3.timing(mode, s) for s in h3.DURATIONS],
+            **h3.video_dimensions(mode), "durations": [5] if mode == "body-swap" else list(h3.DURATIONS), "timings": [h3.timing(mode, s) for s in ([5] if mode == "body-swap" else h3.DURATIONS)],
             "sizes": [h3.video_dimensions(mode, preset, resolution) for preset in PRESETS for resolution in h3.RESOLUTIONS],
             "readiness": h3.readiness(settings, profile) if check else None,
             "referenceImages": 9 if mode == "reference-video" else 1,
-            "referenceVideo": False, "referenceAudio": False,
+            "referenceVideo": mode == "body-swap", "referenceAudio": False,
             "note": "Motion/audio-reference branches require additional runtime validation; generated audio is retained."}
             for profile, mode in h3.PROFILES.items()],
             "presets": [{"id": key, "name": value[0]} for key, value in PRESETS.items()],

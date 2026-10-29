@@ -9,6 +9,7 @@ from hashlib import sha256
 from pathlib import Path
 import re
 import subprocess
+import json
 
 PIN = 'd3cfe21625e5170126ce06fbfcfe1d88108688c3'
 ORIGIN = 'https://github.com/kijai/comfyui-kjnodes'
@@ -53,6 +54,8 @@ def class_signatures(source):
 
 def reuse_installed(profile, manifest, link):
     """Re-pin only known identical nodes, otherwise retain normal conflict checks."""
+    if profile == 'minimax-h3-body-swap-v1':
+        return reuse_body_swap(manifest, link)
     if profile not in {'fibo-fast-turbo-v2', 'fibo-fast-experimental-v1', 'fibo-dev-v1'}:
         return manifest, []
     adapted, reused = deepcopy(manifest), []
@@ -99,10 +102,71 @@ def reuse_installed(profile, manifest, link):
     return adapted, reused
 
 
+def source_files(pack):
+    """Fingerprint the authored runtime Python and text resources, never follow links."""
+    result = {}
+    for path in sorted(pack.rglob('*')):
+        parts = path.relative_to(pack).parts
+        if any(part in {'tests', 'examples', 'docs', '__pycache__', '.git'} for part in parts):
+            continue
+        if path.suffix not in {'.py', '.txt'} or not path.is_file():
+            continue
+        if path.is_symlink() or not path.resolve().is_relative_to(pack.resolve()) or path.stat().st_size > 2_000_000:
+            raise ValueError('Local node source is linked or too large')
+        result[path.relative_to(pack).as_posix()] = sha256(path.read_bytes()).hexdigest()
+    return result
+
+
+def reuse_body_swap(manifest, link):
+    """Reuse exact authored local packs only when ComfyUI reports their loaded ownership."""
+    allowed = {
+        'ComfyUI-Darius-Ollama': {'DariusOllamaH3SwapPrompt', 'DariusOllamaModel'},
+        'ComfyUI-Darius-Recast': {'RecastH3PrepareVideo', 'RecastH3Release', 'RecastVideoSize'},
+    }
+    adapted = deepcopy(manifest)
+    pins = adapted.pop('local_source_pins', {})
+    reused = []
+    for node in list(adapted.get('nodes', [])):
+        name = node.get('name')
+        expected = pins.get(name)
+        if name not in allowed or set(node.get('class_types', [])) != allowed[name] or not expected:
+            continue
+        pack = Path(link.custom_nodes) / name
+        try:
+            # Development installs may junction the whole pack into the workspace.
+            # This path is read-only: exact source hashes and loaded ownership are still required.
+            if not pack.is_dir() or source_files(pack) != expected:
+                continue
+            from one_job.comfy import _request
+            loaded = True
+            for kind in allowed[name]:
+                registry = json.loads(_request(link.url.rstrip('/') + '/object_info/' + kind)[1])
+                owner = registry.get(kind, {}).get('python_module', '').lower().split('.')[:2]
+                if owner != ['custom_nodes', name.lower()]:
+                    loaded = False
+                    break
+            if not loaded:
+                continue
+            adapted['nodes'].remove(node)
+            reused.append({'name': name, 'scheme': 'source-files-v1', 'files': expected,
+                           'locationDigest': sha256(str(pack.resolve()).encode()).hexdigest()})
+        except (OSError, ValueError, KeyError):
+            continue
+    return adapted, reused
+
+
 def receipt_matches(root, receipts):
     """Invalidate readiness if a reused checkout changes after preparation."""
     try:
         for receipt in receipts:
+            if receipt.get('scheme') == 'source-files-v1':
+                if not root or receipt.get('name') not in {'ComfyUI-Darius-Ollama', 'ComfyUI-Darius-Recast'}:
+                    return False
+                pack = Path(root) / 'custom_nodes' / receipt['name']
+                if (not pack.is_dir() or sha256(str(pack.resolve()).encode()).hexdigest() != receipt.get('locationDigest')
+                        or not receipt.get('files') or source_files(pack) != receipt['files']):
+                    return False
+                continue
             if receipt.get('name') != 'comfyui-kjnodes' or not root:
                 return False
             pack = Path(root) / 'custom_nodes' / receipt['name']

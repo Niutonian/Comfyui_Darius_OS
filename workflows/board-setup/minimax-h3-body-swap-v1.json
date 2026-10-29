@@ -1,0 +1,338 @@
+{
+  "schemaVersion": 1,
+  "profile": "minimax-h3-body-swap-v1",
+  "graphDigest": "d3b77b2ceb7da661b9f03b09073fd714d3dd2632139b8bd5082c4ff37b3d82bb",
+  "manifest": {
+    "name": "Darius_H3_BodySwap",
+    "workflows": [
+      {
+        "name": "default",
+        "file": "workflow.api.json"
+      }
+    ],
+    "nodes": [
+      {
+        "name": "ComfyUI-Darius-Ollama",
+        "git_url": null,
+        "commit": "146cdc3bc76fc5d229ec312fe2c76cbb2b63a232",
+        "class_types": [
+          "DariusOllamaH3SwapPrompt",
+          "DariusOllamaModel"
+        ]
+      },
+      {
+        "name": "ComfyUI-Darius-Recast",
+        "git_url": null,
+        "commit": "146cdc3bc76fc5d229ec312fe2c76cbb2b63a232",
+        "class_types": [
+          "RecastH3PrepareVideo",
+          "RecastH3Release",
+          "RecastVideoSize"
+        ]
+      },
+      {
+        "name": "comfyui-kjnodes",
+        "git_url": "https://github.com/kijai/ComfyUI-KJNodes",
+        "commit": "d3cfe21625e5170126ce06fbfcfe1d88108688c3",
+        "class_types": [
+          "MiniMaxChunkFeedForward",
+          "MiniMaxLowVRAMAttention"
+        ]
+      },
+      {
+        "name": "comfyui-rmbg",
+        "git_url": "https://github.com/1038lab/ComfyUI-RMBG",
+        "commit": "d7402513f23f58db7d56754b02a4f51a148b4941",
+        "class_types": [
+          "AILab_ColorInput",
+          "BiRefNetRMBG"
+        ]
+      }
+    ],
+    "models": [
+      {
+        "filename": "minimax_h3_video_vae_fp16.safetensors",
+        "folder": "vae",
+        "url": "https://huggingface.co/Comfy-Org/MiniMax-H3/resolve/main/vae/minimax_h3_video_vae_fp16.safetensors",
+        "auth": null,
+        "size_bytes": 5207808496,
+        "sha256": "7c1f131492e7eddacaac9069a61b81bdd39de5cc96561e677c5eab1cdce5e522"
+      },
+      {
+        "filename": "qwen3vl_32b_minimax_h3_nvfp4_awq.safetensors",
+        "folder": "text_encoders",
+        "url": "https://huggingface.co/Comfy-Org/MiniMax-H3/resolve/main/text_encoders/qwen3vl_32b_minimax_h3_nvfp4_awq.safetensors",
+        "auth": null,
+        "size_bytes": 15687142551,
+        "sha256": "35a88d51044231fe332301d7a62aa81e3f2cba62febeb446e2c1e3e0ef76f2c6"
+      },
+      {
+        "filename": "minimax_h3_ref2va_pruned_int8_convrot.safetensors",
+        "folder": "diffusion_models",
+        "url": "https://huggingface.co/Comfy-Org/MiniMax-H3/resolve/main/diffusion_models/minimax_h3_ref2va_pruned_int8_convrot.safetensors",
+        "auth": null,
+        "size_bytes": 20970379616,
+        "sha256": "9255f52b6677845ad238f20dfaafa94727053694127ab7f255c048f0f9365779"
+      },
+      {
+        "filename": "minimax_h3_dmd_ref2va_8step_turbo_pruned.safetensors",
+        "folder": "loras",
+        "url": "https://huggingface.co/drbaph/MiniMax-H3-Turbo-Lora-ComfyUI/resolve/main/experimental/minimax_h3_dmd_ref2va_8step_turbo_pruned.safetensors",
+        "auth": null,
+        "size_bytes": 2285989092,
+        "sha256": "693f41129785f31a820d32100b698cdcc42182c27c291f37f47d1ca5f38f5c20"
+      },
+      {
+        "filename": "minimax_h3_character_swap_v1.1_ref2va_fro.safetensors",
+        "folder": "loras",
+        "url": "https://huggingface.co/Alissonerdx/Minimax-H3-ComfyUI/resolve/main/loras/minimax_h3_character_swap_v1.1_ref2va_fro.safetensors",
+        "auth": null,
+        "size_bytes": 80673112,
+        "sha256": "ab21167bed71db99ac09527ad1f26f5f3517687ebf2e1f1bd5e91cc0bdf9b9c3"
+      }
+    ],
+    "inputs": [
+      {
+        "node_id": "3",
+        "class_type": "LoadImage",
+        "key": "image",
+        "extensions": [
+          ".png",
+          ".jpg",
+          ".jpeg",
+          ".webp",
+          ".bmp",
+          ".gif"
+        ],
+        "name": "image_0"
+      },
+      {
+        "node_id": "1",
+        "class_type": "LoadVideo",
+        "key": "file",
+        "extensions": [
+          ".mp4",
+          ".webm",
+          ".mkv",
+          ".mov",
+          ".avi",
+          ".gif"
+        ],
+        "name": "video_0"
+      }
+    ],
+    "outputs": [
+      {
+        "node_id": "25",
+        "class_type": "SaveVideo",
+        "name": "video_0"
+      },
+      {
+        "node_id": "26",
+        "class_type": "SaveVideo",
+        "name": "video_1"
+      }
+    ],
+    "output": {
+      "node_id": "25",
+      "class_type": "SaveVideo"
+    },
+    "parameters": [
+      {
+        "name": "noise_seed",
+        "node_id": "20",
+        "class_type": "RandomNoise",
+        "key": "noise_seed",
+        "type": "seed",
+        "default": "random"
+      },
+      {
+        "name": "seed",
+        "node_id": "28",
+        "class_type": "DariusOllamaH3SwapPrompt",
+        "key": "seed",
+        "type": "seed",
+        "default": "random"
+      }
+    ],
+    "repair": {
+      "comfy_not_found": [
+        "ask_path"
+      ],
+      "host_mismatch": [
+        "ask_path"
+      ],
+      "missing_node": [
+        "install_pinned"
+      ],
+      "missing_python_dependency": [
+        "ask"
+      ],
+      "node_version_conflict": [
+        "ask"
+      ],
+      "missing_model": [
+        "download_verified",
+        "ask"
+      ],
+      "missing_source": [
+        "ask"
+      ],
+      "auth_required": [
+        "ask"
+      ],
+      "approval_required": [
+        "ask"
+      ],
+      "restart_required": [
+        "ask"
+      ],
+      "download_failed": [
+        "retry",
+        "ask"
+      ],
+      "install_failed": [
+        "ask"
+      ],
+      "disk_full": [
+        "ask"
+      ],
+      "hash_mismatch": [
+        "stop"
+      ],
+      "stale_contract": [
+        "prepare"
+      ],
+      "oom": [
+        "skip"
+      ],
+      "bad_input": [
+        "skip"
+      ],
+      "unclassified": [
+        "show",
+        "skip"
+      ],
+      "port_busy": [
+        "ask"
+      ]
+    },
+    "input": {
+      "node_id": "3",
+      "class_type": "LoadImage",
+      "key": "image",
+      "extensions": [
+        ".png",
+        ".jpg",
+        ".jpeg",
+        ".webp",
+        ".bmp",
+        ".gif"
+      ]
+    },
+    "local_source_pins": {
+      "ComfyUI-Darius-Ollama": {
+        "__init__.py": "be3cfdf0c844b6aaf148cab9387981efbbceb8e13fa75d0c90ad2704af70e310",
+        "h3_swap.py": "36d6b4b010a077182e52f5efab72b8ae940531c86abfee1c3ea2b0f6f9a8aa95",
+        "h3_swap_template.txt": "4fe4013f34064bd1a218b615a0ae470ef93433ee780a2e88d394c680f6a5c5bc",
+        "nodes.py": "25aa16d084a2cd6ba612c0b24cf1dfb2b6d98e32882c99b7d8d0f5ad7f693a2c",
+        "routes.py": "381753f2bbed3b1ac673d3cf039f3fe876a40b0c56738e603dd9892562fe8665",
+        "sampling.py": "effa0dbbf153c9eb5d8a595fb0b6f319dba7daaab8156ad9e005087c2f1a6c8d",
+        "VALIDATION.txt": "81120f50a2bd5bce9736accc7935a517a2ef652142a9d1a733f430fed354113a",
+        "vision_prompt.py": "64f3eb39ee6dcd41c4ae686348d19e8594e715913cf38f2973927ce57560de9d"
+      },
+      "ComfyUI-Darius-Recast": {
+        "__init__.py": "33d90a27bca5be9b9330383fade82554ee989131e493cae63faff8256e81fbbf",
+        "cleanplate.py": "e9fabbefacd1f962cdcbc2972b991f6ed6c2f9a2e06909e8e66c8bcd26b86a3b",
+        "client.py": "27a9c2600161ee85d1854549519d7d71079b260a96c74174cc5e69b08037f0bd",
+        "core.py": "bec675774ac9dd4701e4723a1e295300f1643c137fcc64dea98584f5dc6f0ded",
+        "detail_blend.py": "e39ffef7ceabc48cbd22d096d5073daa20fb6affd982e0d00d5120cb34245c39",
+        "detail_nodes.py": "38f49b5fc6e76fa4e4d1159f31aca0ca9393fa5fa138905adde00c33aaeb9331",
+        "foreground_composite.py": "712219457160d6aaa026e2a996db2d3868f1a506ed6273cc361eb0bf6902dad2",
+        "h3_core.py": "2e5c9dfa6696a9fedc14c08dff634ec937a54e9d8a87b20ed7fb9726ede2d4a8",
+        "h3_edges.py": "0a0438ea39b33e81212e6bebcb0f57eb664531f16d6d851f56c775f07d7cdeef",
+        "h3_input.py": "27938bb34e0c01c4d796d342d6a03346388693dbfc898ff6c2df3e3a4794a5e8",
+        "h3_long_core.py": "81fcfd840007f6eff569ca613c7c4f162726240aa5b2f0b6d1629c08ecb6bdba",
+        "h3_long_nodes.py": "0beaa123ba9e8d015f9574614e4a9e9b2e405473c003c14d34555443868d7bbe",
+        "h3_nodes.py": "aac4cca447d0184d993f79724f897d7900f82753b817b3c25a14a7d6f96bd471",
+        "identity_nodes.py": "01961ddc272a253591b06aca840ee862c701fbe069b3a47c56f3cb113635f7c2",
+        "long_core.py": "dbd8c75c5db15b335a68d7451591b5c300df8573d4561476e2a58260ed48afe1",
+        "long_nodes.py": "12bfa23d9a453bacb682dc5cc20110dc79a9031d59a68582d6ece64c5f68ee57",
+        "model_selectors.py": "0310a67c7fbfa992c2076d1d7b94a7db58fa2d5b655ad27989424022147ace2a",
+        "ollama_prompt.py": "76bb208dcccd6e10cabcee905b416cf11647ab281f7579bf0d4cf35f8c20a4ad",
+        "optimizations.py": "63e4947cb2d8dcacb68ee8e7000dea28d322fa866bada509747777a93025b91d",
+        "processing.py": "559f472ac2e60a5ad2532d581b61db5a598650c58abb630173d0420595cc3b14",
+        "propainter_worker.py": "42786fc7e7076eb80b056f205e18f4e4f3cebc7d3498ae7dd8265cbe71d3f973",
+        "requirements-worker.txt": "43f650d5afddd60d9ed3c7a991bfa5b26c2523e8282c603819a5d65c8e1abc22",
+        "requirements.txt": "3bf7758175b05cb2577ae314288ffdec219d6ee7134daf69820f12afadee3cb2",
+        "runtime.py": "ebc8d771fb62fa5786250d76f884e0d35f70dda4e1ddfff78ba29f7d02797a47",
+        "scene_nodes.py": "bd0e6b6f410a37b4eb32bd7b871a1b42a372f519d892519600b451fb1f2b5eea",
+        "setup_cleanplate.py": "25e0c2dac8945f7a6e9b73820cc358eee0bac6b2ba59135b31999dfe82c47390",
+        "setup_worker.py": "67ad64a87a1f5b5dae93afeb6db854404f2f8b46a3e7b9f25118a56199a326a3",
+        "VALIDATION.txt": "f7d1d1b3b2402d467af0c493fd9f6522d408fc7403d9ed8cc00db80c200b188a",
+        "vendor/ProPainter/core/dataset.py": "bf34d70000d87182bafd4ac6b5e4407c021c8f6af6f1cec1fa60e60b9b09ecba",
+        "vendor/ProPainter/core/dist.py": "ffdda94c1cd8bdcf9214f61c6fa65554f2b06032333b9122d42e4551e34ead37",
+        "vendor/ProPainter/core/loss.py": "74c7c2a8c94f3a66774037eb2e94aa7fa86c5437c43a989196486620a531d78a",
+        "vendor/ProPainter/core/lr_scheduler.py": "27e0ab8fbc2556f2ac76cf9f0e2a99a27e165bfbfc6ea208d4e5a923ebdf9705",
+        "vendor/ProPainter/core/metrics.py": "6ae13cd75285b87afd903981a5c372797ee66caa4ccb67c8fcdcc1f0d871bb14",
+        "vendor/ProPainter/core/prefetch_dataloader.py": "1d0d0615851ab34d422dc273bc36c4e6c155c22d7f4256f002b5b82740e1226b",
+        "vendor/ProPainter/core/trainer.py": "b45f52b43148a3360ce9bfdcf474c7ea477dd505edf340e1df2965aff25651c5",
+        "vendor/ProPainter/core/trainer_flow_w_edge.py": "05b352c9754accc49c415b35b32b088eda4e5dcd34eb5c18e51246734922f85e",
+        "vendor/ProPainter/core/utils.py": "4ee9d482fc5755a1ac5943f363d82a916539004588143e5b1ac2ec19ce470426",
+        "vendor/ProPainter/inference_propainter.py": "39b02c59d34ae76385ce6d5dadde17970d0f3d2d758f02e591ce23448bb3678d",
+        "vendor/ProPainter/model/__init__.py": "7eb70257593da06f682a3ddda54a9d260d4fc514f645237f5ca74b08f8da61a6",
+        "vendor/ProPainter/model/canny/canny_filter.py": "cbde61c0089e49f92eb20a94ee2ead15d42d0aac97141f17b0e643f199afa55b",
+        "vendor/ProPainter/model/canny/filter.py": "1281e7fea964ac90aa490c185d81b56ae1bc35496fb803b2107eecd269283528",
+        "vendor/ProPainter/model/canny/gaussian.py": "3e661d4195b2b52c9c147ea4007ade99ec949ab347d62caf0a4ab85736a4e308",
+        "vendor/ProPainter/model/canny/kernels.py": "c97b21ec087c2b3d9a56d4f2fd0f3a828f5d6dfc393d8785730f152b87b3b1a6",
+        "vendor/ProPainter/model/canny/sobel.py": "452a97a9df920d06410e9aae3019a47b51a900e85d5eb881f3228f612a948cf8",
+        "vendor/ProPainter/model/misc.py": "54831900ba34930856be18ccdbc1d9ab3ad8e2c38ba7c688fbe774c58d056a65",
+        "vendor/ProPainter/model/modules/base_module.py": "3d0ee71663b8f396a3fabadd736c116baaa63ec64bb83d061a09d15d541e4817",
+        "vendor/ProPainter/model/modules/deformconv.py": "7169b659a282e4a8bf9a32b40beeef1e222eb0d98b7e036dd481388459aebb6d",
+        "vendor/ProPainter/model/modules/flow_comp_raft.py": "94bdf259e6ad06e108dff25c9ca4ca9042817ae42856d5239c75cd3c3aaf3e1f",
+        "vendor/ProPainter/model/modules/flow_loss_utils.py": "51f585ee70ac91a1ce1e5785f70b5bc29a37b7d5d4777a4737d90f427a72e023",
+        "vendor/ProPainter/model/modules/sparse_transformer.py": "0f305484286077e523b3ab33b2aa118c70685131f98cd40749ae36e7bc5bdb57",
+        "vendor/ProPainter/model/modules/spectral_norm.py": "62481407dbaa7eca3feb34aedfba2f572d4d62abd5f318d9d6eb944709bdf155",
+        "vendor/ProPainter/model/propainter.py": "286662f98d2a1371917529420f5f952c04bee10cda45627f633175d0070e237e",
+        "vendor/ProPainter/model/recurrent_flow_completion.py": "f351375397c7f24965c1907163c9e0d36dd61de56d92b51b06737868e1839d13",
+        "vendor/ProPainter/model/vgg_arch.py": "c7d5f5ad1da68000f900832acf2e887680452ee94cfcc0864db501c387077b51",
+        "vendor/ProPainter/RAFT/__init__.py": "302bcf9437e99b0b0165cbae684fd742411bcb16602cb7d71421ecb641cc9b15",
+        "vendor/ProPainter/RAFT/corr.py": "3cee89e922f99fefa1b3037ba338098e22a92096c01e29c018186184d88009cd",
+        "vendor/ProPainter/RAFT/datasets.py": "9949ae96ab4ea2bdaa57e57bad9a365bf25699ea28cc02da367ae692a6f699f6",
+        "vendor/ProPainter/RAFT/demo.py": "44d231b44eee18bf7e4aecef17daa8407c844568aa913ca25a279019ecb23ae8",
+        "vendor/ProPainter/RAFT/extractor.py": "53968e9f386f14c81edcf052180e54bf79f17fbc4c4e99b115f9bebadafe49d4",
+        "vendor/ProPainter/RAFT/raft.py": "a24a76f08bbef6336963c5134d4d40a9115e88ee943dca9f2b59b2f1608579c8",
+        "vendor/ProPainter/RAFT/update.py": "71334a2065dacad7d960993d47f67484a7fee4c2e91bc748511aaf789e04cd75",
+        "vendor/ProPainter/RAFT/utils/__init__.py": "b5e6171e9d0e53ed17cf894c10f02b372d3dbf01111c087ed3e1055e633c59de",
+        "vendor/ProPainter/RAFT/utils/augmentor.py": "0a2d7e90b50f3a33894720fcefb83fb5d28926b1f76ec9000555a98adc3c7afa",
+        "vendor/ProPainter/RAFT/utils/flow_viz.py": "d278ecde6f5cb2e07bd794d4ace0d253b12291d9a30e60fe8b8ff979c3c2f1d1",
+        "vendor/ProPainter/RAFT/utils/flow_viz_pt.py": "a4149ca984df1a32c5384afaac1980b15ab80a161a532d5c8d134dd828084f94",
+        "vendor/ProPainter/RAFT/utils/frame_utils.py": "32fa204ebd7089e1148e2739294dacca922025510888126feff79d575190c337",
+        "vendor/ProPainter/RAFT/utils/utils.py": "7d292f3b66e39498231d759041ab6878a392503c6a44e18077e5e9be16d64252",
+        "vendor/ProPainter/utils/download_util.py": "0512f6f0fca44fec46f101ec520417b8d13878117a9c8337b96c6eed9258d319",
+        "vendor/ProPainter/utils/file_client.py": "700c1e256018ec227cd565339cfd280b51805a1ebb0c491d9a439326a0622488",
+        "vendor/ProPainter/utils/flow_util.py": "5de3f50a5e403bc8b28187fb76637ec5d7ea89bf83e7ab4d4f23a7397f5641de",
+        "vendor/ProPainter/utils/img_util.py": "881a30c20ede5cfef6e281118fd86b76a5dbf563284cae26013f88c9267691b4",
+        "vendor/WeVisOne-VL/requirements.txt": "762daade7a6e6ddb78132bac4907fdea17b3f0a6d32b112d5e35e5c077f5aef6",
+        "vendor/WeVisOne-VL/wevisone_vl/__init__.py": "4caa3707ffba93888c93d8e971344ad71a09b6203d898451ba1c3f0c8c22de7a",
+        "vendor/WeVisOne-VL/wevisone_vl/cli.py": "a5c3802e525417e35ea173af0a971ea1a0e88115a1be4963a6714c47042635ec",
+        "vendor/WeVisOne-VL/wevisone_vl/config.py": "526b951e0313006afec98bc4ad914399ad6ade4133f80c1e69aa6ab986aac623",
+        "vendor/WeVisOne-VL/wevisone_vl/decoder.py": "3e6add0f16c586089f3e7364ddb422e0f7153d344996dd6e6eb141661935ee41",
+        "vendor/WeVisOne-VL/wevisone_vl/engine.py": "5ac0749de30f143217e40850d469b9d815cd47edda6116044ffd02365c62b0e0",
+        "vendor/WeVisOne-VL/wevisone_vl/feature_bridge.py": "00db918738c3f0d210d7e5a48e4879b588399b496d9a513f02b496c16c2864a3",
+        "vendor/WeVisOne-VL/wevisone_vl/mask_decoder.py": "b07aeb94e2948b1e1d4ad3e01136af251d2ae05a65dce453e4f411a7be92d5e7",
+        "vendor/WeVisOne-VL/wevisone_vl/msda.py": "83f3108b106541447322d357c8cf3805fbc74d0f4508827bd8008f641e034fd8",
+        "vendor/WeVisOne-VL/wevisone_vl/prompts.py": "7c0640298a66f9eb3fc5b5a453cf53e7fd503e6939e608db0b3a5727becf17f0",
+        "vendor/WeVisOne-VL/wevisone_vl/visualization.py": "072f96e36a8c37170dec1a3b66215a2e18591b3c3f2ad5e248bedff75c9dc6f5",
+        "video_size.py": "fc802fb5fc269c15a833eb3028f3972e64b9196c9dae3ea52cab5c30361f62e3",
+        "wevis_nodes.py": "f3228add8347c5fd64a5003eb4e0683c9556073dfdbabd0d1554710d816399aa",
+        "wevis_settings.py": "b520723adade32eeda8f743c9f5424fd3b104d02fe6accd99f48ab7ae2d711c2",
+        "worker.py": "10b2f3d0b5c694c8d6c3f024d1556ae71736c154a218a6c7e704f03c69996db6"
+      }
+    }
+  },
+  "localNodePacksRequired": [
+    "ComfyUI-Darius-Ollama",
+    "ComfyUI-Darius-Recast"
+  ]
+}

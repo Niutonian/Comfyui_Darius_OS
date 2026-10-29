@@ -215,6 +215,28 @@ def _missing_nodes(link, graph, manifest):
     return sorted(needed - declared - registered.keys()), sorted((needed & declared) - registered.keys())
 
 
+def _prepare_local_sources(directory, link, graph, manifest, full_manifest, receipts):
+    """Darius readiness for exact local sources; never fabricate a Git preparation receipt."""
+    from .board_node_reuse import receipt_matches, reuse_body_swap
+    from one_job.job import check_contract, verify_nodes, verify_models, verify_registered_nodes
+    from one_job.runtime_requirements import verify_runtime_requirements
+    if (json.loads((directory / 'workflow.api.json').read_text(encoding='utf-8')) != graph
+            or json.loads((directory / 'manifest.json').read_text(encoding='utf-8')) != manifest):
+        raise SetupError('The board dependency contract changed during verification.')
+    if not receipt_matches(link.comfy_root, receipts):
+        raise SetupError('Reviewed local node sources changed during preparation.')
+    # Block Party's Git inventory intentionally excludes development junctions.
+    # Verify those packs through Darius's exact source/loaded-owner receipts;
+    # retain Block Party's full contract, model, upstream Git and runtime checks.
+    check_contract(graph, full_manifest)
+    verify_nodes(Path(link.custom_nodes), manifest)
+    verify_models(Path(link.comfy_root), full_manifest, graph)
+    verify_registered_nodes(link, graph)
+    verify_runtime_requirements(directory, link, graph, full_manifest)
+    if not receipt_matches(link.comfy_root, receipts) or reuse_body_swap(full_manifest, link)[1] != receipts:
+        raise SetupError('Reviewed local node sources changed during preparation.')
+
+
 def _run(settings, profile, confirmed, restart):
     base = {'state': 'preparing' if confirmed else 'checking'}
     last = [0.0]
@@ -246,7 +268,7 @@ def _run(settings, profile, confirmed, restart):
             manifest, reused = reuse_installed(profile, spec['manifest'], link)
             base['reusedNodes'] = reused
             if reused:
-                notify({'phase': 'checking', 'message': 'Reusing installed KJNodes: FIBO string-node source and loaded ownership match the reviewed implementation. No node files will be changed.'})
+                notify({'phase': 'checking', 'message': 'Reusing installed nodes: source fingerprints and loaded ownership match the reviewed implementation. No node files will be changed.'})
             # Only declarative, source-pinned graph/manifest files are materialized.
             atomic_json(directory / 'workflow.api.json', graph)
             atomic_json(directory / 'manifest.json', manifest)
@@ -296,9 +318,20 @@ def _run(settings, profile, confirmed, restart):
                             raise SetupError('Installed custom nodes are not loaded. Restart ComfyUI, or enable the idle restart option, then check again.')
                         from one_job.lifecycle import restart_server
                         restart_server(link)
-                    provision.provision_job(directory, link, confirmed, restart=restart)
+                    try:
+                        provision.provision_job(directory, link, confirmed, restart=restart)
+                    except Exception as error:
+                        local_classes = {'DariusOllamaH3SwapPrompt', 'DariusOllamaModel', 'RecastH3PrepareVideo', 'RecastH3Release', 'RecastVideoSize'}
+                        if (not any(r.get('scheme') == 'source-files-v1' for r in reused)
+                                or getattr(error, 'code', None) != 'missing_node'
+                                or not any(str(error).startswith(kind + ' is not declared') for kind in local_classes)):
+                            raise
+                        _prepare_local_sources(directory, link, graph, manifest, spec['manifest'], reused)
                 else:
-                    prepare_job(directory, link)
+                    if any(r.get('scheme') == 'source-files-v1' for r in reused):
+                        _prepare_local_sources(directory, link, graph, manifest, spec['manifest'], reused)
+                    else:
+                        prepare_job(directory, link)
                 _write(settings, profile, **{**base, 'state': 'ready', 'message': 'This board is ready. Generate uses your saved board draft.'})
     except Exception as error:
         code = getattr(error, 'code', 'setup_failed')

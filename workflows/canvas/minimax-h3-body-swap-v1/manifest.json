@@ -1,0 +1,15 @@
+{
+  "profileId": "minimax-h3-body-swap-v1",
+  "templateDigest": "d3b77b2ceb7da661b9f03b09073fd714d3dd2632139b8bd5082c4ff37b3d82bb",
+  "sourceUiDigest": "9b0be473096b034ea27598833708977efc6441d4a4605e387c94401f9370d001",
+  "sourceFormat": "api",
+  "outputs": {
+    "25": "final",
+    "26": "source"
+  },
+  "changes": [
+    "Bind project-owned video and character image; sanitize source upload names and output prefixes. Keep the imported model, prompt, sampler, preparation and source-audio wiring.",
+    "Archive-only source upload names are sanitized in both checked-in copies; source ZIP hash identifies the supplied original."
+  ],
+  "sourcePackageSha256": "e68a01d33754ec98e40791a4e06068d18cba6b7ef281d4d579c0278fe598c809"
+}

@@ -16,13 +16,15 @@ from .canvas_document import StrictModel, PRESETS
 from .canvas_moss import digest
 from .database import Asset, CanvasGenerationRecord as Generation, CanvasRevisionRecord as Revision
 
-MODES = ("animate-image", "camera-direction", "reference-video")
+MODES = ("animate-image", "camera-direction", "reference-video", "body-swap")
 PROFILES = {"minimax-h3-" + mode + "-v1": mode for mode in MODES}
 ANIMATE = "minimax-h3-animate-image-v1"
+BODY_SWAP = "minimax-h3-body-swap-v1"
 DURATIONS = tuple(range(5, 16))
 RESOLUTIONS = {"native": "Workflow default", "480p": "480p class", "720p": "720p class", "1080p": "1080p class"}
 REFERENCE_SCALE = 1.5000000000000002  # Exact imported multiplier, including tie rounding.
 PINS = {
+ BODY_SWAP: "d3b77b2ceb7da661b9f03b09073fd714d3dd2632139b8bd5082c4ff37b3d82bb",
  ANIMATE: "09f1bd0e38d99850c85d6ba623b447a8fd23990bbfd92ec03e8b0929a9cfc6e2",
  "minimax-h3-camera-direction-v1": "38a94c35f37a7f52bb2e35643fcf3a267486258e430e5abe295099aa43a19291",
  "minimax-h3-reference-video-v1": "2f6e6025b3fc6f96fcc0ff58f39dc99d41b72cc6574f00da5717e8914158efaa",
@@ -32,8 +34,8 @@ class MediaBinding(StrictModel):
  id: str = Field(min_length=1, max_length=80, pattern=r"^[a-zA-Z0-9_-]+$")
  assetId: str = Field(min_length=1, max_length=36)
  assetVersionId: str = Field(pattern=r"^[a-f0-9]{64}$")
- mediaKind: Literal["image"] = "image"
- role: Literal["starting-frame", "camera-source", "subject", "environment", "style"] = "subject"
+ mediaKind: Literal["image", "video"] = "image"
+ role: Literal["starting-frame", "camera-source", "subject", "environment", "style", "source-video", "replacement-character"] = "subject"
  token: int = Field(default=1, ge=1, le=9)
 
 class VideoDraft(StrictModel):
@@ -46,6 +48,9 @@ class VideoDraft(StrictModel):
  upscaleDevice: Literal["cuda", "cpu"] = "cuda"
  preset: Literal["square", "poster", "photo", "portrait", "standard", "vertical", "wide", "ultrawide"] = "wide"
  resolution: Literal["native", "480p", "720p", "1080p"] = "native"
+ clipStart: float = Field(default=0, ge=0, le=86400, allow_inf_nan=False)
+ swapLongEdge: Literal[512, 640, 768, 896] = 896
+ visionModel: str = Field(default="robit/ornith-vision:9b", min_length=1, max_length=200, pattern=r"^[a-zA-Z0-9_.:/-]+$")
 
  @model_validator(mode="after")
  def unique(self):
@@ -56,8 +61,8 @@ class VideoDraft(StrictModel):
 class VideoConfig(StrictModel):
  schemaVersion: Literal[1] = 1
  family: Literal["minimax-h3"] = "minimax-h3"
- activeMode: Literal["animate-image", "camera-direction", "reference-video"] = "animate-image"
- modeDrafts: dict[Literal["animate-image", "camera-direction", "reference-video"], VideoDraft] = Field(default_factory=lambda: {m: VideoDraft(seconds=5 if m == "camera-direction" else 10) for m in MODES})
+ activeMode: Literal["animate-image", "camera-direction", "reference-video", "body-swap"] = "animate-image"
+ modeDrafts: dict[Literal["animate-image", "camera-direction", "reference-video", "body-swap"], VideoDraft] = Field(default_factory=lambda: {m: VideoDraft(seconds=5 if m in {"camera-direction", "body-swap"} else 10) for m in MODES})
 
  @model_validator(mode="before")
  @classmethod
@@ -72,11 +77,14 @@ class VideoConfig(StrictModel):
 
  @model_validator(mode="after")
  def complete(self):
-  for mode in MODES: self.modeDrafts.setdefault(mode, VideoDraft(seconds=5 if mode == "camera-direction" else 10))
+  for mode in MODES: self.modeDrafts.setdefault(mode, VideoDraft(seconds=5 if mode in {"camera-direction", "body-swap"} else 10))
   return self
 
 
 def timing(mode, seconds):
+ if mode == "body-swap":
+  frames = 5 + 17 * ((int(min(seconds, 5) * 24) - 5) // 17)
+  return {"requestedSeconds": seconds, "frames": frames, "fps": 24, "nominalSeconds": frames / 24, "sourceLimited": True}
  n = max(5, round(seconds * 24))
  frames = n + (5 - n % 17) % 17
  return {"requestedSeconds": seconds, "frames": frames, "fps": 24, "nominalSeconds": frames / 24}
@@ -94,6 +102,9 @@ def output_size(mode, preset="wide"):
 def video_dimensions(mode, preset="wide", resolution="native"):
  """Return both generation and final dimensions; reference mode has two stages."""
  import math
+ if mode == "body-swap":
+  return {"preset": preset, "resolution": "native", "width": 896, "height": 512,
+          "generationWidth": 896, "generationHeight": 512, "followsSource": True}
  if mode not in MODES or preset not in PRESETS or resolution not in RESOLUTIONS:
   raise ValueError("Choose a supported video mode, aspect ratio and resolution")
  if resolution == "native":
@@ -118,7 +129,8 @@ def artifacts(settings, profile):
  manifest = json.loads((directory / "manifest.json").read_text(encoding="utf-8"))
  if digest(graph) != PINS[profile] or manifest["templateDigest"] != PINS[profile] or manifest["profileId"] != profile:
   raise ValueError("MiniMax H3 template changed; register a new version")
- if hashlib.sha256((directory / "source.ui.json").read_bytes()).hexdigest() != manifest["sourceUiDigest"]:
+ source_file = "source.api.json" if profile == BODY_SWAP else "source.ui.json"
+ if hashlib.sha256((directory / source_file).read_bytes()).hexdigest() != manifest["sourceUiDigest"]:
   raise ValueError("MiniMax H3 original workflow changed")
  return graph, manifest
 
@@ -129,13 +141,23 @@ def validate_inputs(session, project_id, config):
    asset = session.get(Asset, binding.assetId)
    if not asset or asset.project_id != project_id or asset.kind != binding.mediaKind or asset.content_hash != binding.assetVersionId:
     raise ValueError("Choose an exact image version from this project")
+ if config.activeMode == "body-swap":
+  draft = config.modeDrafts["body-swap"]
+  videos = [b for b in draft.inputs if b.mediaKind == "video"]
+  if videos:
+   asset = session.get(Asset, videos[0].assetId)
+   if not asset.duration or asset.duration - draft.clipStart < 5 / 24:
+    raise ValueError("Choose a clip start with at least five frames remaining in the source video")
 
 
 def compile_graph(settings, config, seed, media, *, content=None):
  mode = config.activeMode; profile = "minimax-h3-" + mode + "-v1"
  draft = config.modeDrafts[mode]; graph, manifest = artifacts(settings, profile)
+ if mode == "body-swap":
+  return compile_body_swap(settings, config, seed, media, graph, manifest)
  if not draft.prompt.strip(): raise ValueError("Describe the scene and action before generating")
  refs = sorted(draft.inputs, key=lambda b: b.token)
+ if any(b.mediaKind != "image" for b in refs): raise ValueError("This video mode accepts image inputs only")
  if not refs: raise ValueError("Choose a starting image" if mode != "reference-video" else "Choose at least one reference image")
  if mode != "reference-video" and len(refs) != 1: raise ValueError("This mode uses exactly one source image")
  if mode == "reference-video" and [r.token for r in refs] != list(range(1, len(refs)+1)):
@@ -192,6 +214,37 @@ def compile_graph(settings, config, seed, media, *, content=None):
   "availableModelFingerprints": model_fingerprints(settings, graph)}
 
 
+def compile_body_swap(settings, config, seed, media, graph, manifest):
+ draft = config.modeDrafts["body-swap"]
+ images = [b for b in draft.inputs if b.mediaKind == "image"]
+ videos = [b for b in draft.inputs if b.mediaKind == "video"]
+ if len(images) != 1 or len(videos) != 1 or len(draft.inputs) != 2:
+  raise ValueError("Body swap requires exactly one source video and one replacement character image")
+ if draft.seconds != 5:
+  raise ValueError("This Body swap workflow prepares at most five seconds; select a five-second clip")
+ graph["1"]["inputs"]["file"] = media[videos[0].id]
+ graph["3"]["inputs"]["image"] = media[images[0].id]
+ graph["20"]["inputs"]["noise_seed"] = seed
+ # Ollama's installed node accepts signed 31-bit seeds; keep the H3 noise seed at full uint64 precision.
+ graph["28"]["inputs"]["seed"] = seed % 2**31
+ graph["27"]["inputs"]["model"] = draft.visionModel
+ graph["27"]["inputs"]["base_url"] = settings.ollama_base_url
+ graph["31"]["inputs"]["preset"] = {512:"Fast (512)",640:"Balanced (640)",768:"Detailed (768)",896:"Maximum (896)"}[draft.swapLongEdge]
+ graph["32"]["inputs"].update(start_seconds=draft.clipStart, duration_seconds=5)
+ for node, suffix in (("25", "result"), ("26", "source")):
+  graph[node]["inputs"]["filename_prefix"] = "darius/body-swap/" + suffix
+ prompt = "Body swap: replace the main subject using the pinned character image. Ollama prepares the appearance and fixed adapter prompt from that image."
+ return graph, {**manifest, "adapterVersion":BODY_SWAP, "profileId":BODY_SWAP, "profileName":"Body swap · H3 Recast",
+  "mode":"body-swap", "capability":"video-to-video", "videoConfig":config.model_dump(), "conditioningPrompt":prompt,
+  "promptCompiler":"h3-swap-structured-appearance-v1", "seed":str(seed), "visionSeed":seed % 2**31, "width":None, "height":None,
+  "videoDimensions":{"followsSource":True,"longEdge":draft.swapLongEdge,"maxPixels":458752},
+  "timing":timing("body-swap",5), "sampler":"20", "outputNode":"25", "preparedGraphDigest":digest(graph),
+  "mediaTokenMap":[{**b.model_dump(),"label":"Source video" if b.mediaKind=="video" else "Replacement character","workerInput":media[b.id]} for b in draft.inputs],
+  "inputFit":"Source orientation preserved; fit/pad to legal H3 dimensions. Duration rounds down to 17n+5 frames and available source.",
+  "stages":[{"sink":k,"role":v} for k,v in manifest["outputs"].items()],
+  "availableModelFingerprints":model_fingerprints(settings,graph)}
+
+
 def model_fingerprints(settings, graph):
  root=settings.block_party_comfy_root or (settings.comfyui_output_dir.parent if settings.comfyui_output_dir else None)
  if root is None:return {"available":False}
@@ -239,9 +292,10 @@ def upload_bindings(settings, session, project_id, bindings):
  if url.scheme!='http' or url.hostname not in {'127.0.0.1','localhost','::1'}:raise ValueError('ComfyUI inputs require a loopback server')
  for binding in bindings:
   asset=session.get(Asset,binding.assetId)
-  if not asset or asset.project_id!=project_id or asset.kind!="image" or asset.content_hash!=binding.assetVersionId:raise ValueError("Choose an exact image version from this project")
+  if not asset or asset.project_id!=project_id or asset.kind!=binding.mediaKind or asset.content_hash!=binding.assetVersionId:raise ValueError("Choose an exact media version from this project")
   asset=session.get(Asset,binding.assetId);path=Path(asset.path)
-  if not path.is_file() or path.stat().st_size>64*1024*1024 or _hash(path)!=binding.assetVersionId:raise ValueError('Pinned image is missing or changed; choose its current version explicitly')
+  limit = 1024*1024*1024 if binding.mediaKind == "video" else 64*1024*1024
+  if not path.is_file() or path.stat().st_size>limit or _hash(path)!=binding.assetVersionId:raise ValueError('Pinned media is missing, too large or changed; choose its current version explicitly')
   filename=binding.assetVersionId+path.suffix.lower()
   with path.open('rb') as handle:
    response=http.post(settings.comfyui_base_url+'/upload/image',files={'image':(filename,handle,asset.mime_type)},data={'subfolder':'darius/pinned','overwrite':'false'},timeout=60)
@@ -283,7 +337,7 @@ def verify_outputs(session, job, provenance):
  for index,key in enumerate(job.output_asset_ids):
   asset=session.get(Asset,key)
   streams=asset.metadata_json.get('ffprobe',{}).get('streams',[])
-  if asset.kind!='video' or not asset.duration or not any(s.get('codec_type')=='audio' for s in streams):
+  if asset.kind!='video' or not asset.duration or (provenance['mode'] != 'body-swap' and not any(s.get('codec_type')=='audio' for s in streams)):
    raise ValueError('H3 output lacks a valid video or audio stream; final result was not accepted')
   role=provenance['outputs'][expected[index]]
   asset.metadata_json={**asset.metadata_json,'h3_output_role':role,'h3_mode':provenance['mode'],'h3_output_sink':expected[index]}

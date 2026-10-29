@@ -4,15 +4,24 @@ import argparse
 import time
 import hashlib
 import os
+import sys
 from pathlib import Path
 from sqlalchemy import select
 
+def source_revision(directory: Path | None = None) -> tuple:
+    """Cheap local update marker; never reload Python modules during a render."""
+    directory = directory or Path(__file__).resolve().parent
+    return tuple((path.name, path.stat().st_mtime_ns, path.stat().st_size)
+                 for path in sorted(directory.glob('*.py')))
+
+
+LOADED_SOURCE_REVISION = source_revision()
+
 from .config import Settings
-from .database import Base, make_engine, make_session_factory
+from .database import Base, make_engine, make_session_factory, Job
 from .providers import ComfyMcpProvider
 from .services import JobWorker, register_workflows
 from .workflows import WorkflowRegistry
-from .database import Job
 
 
 def build_worker(settings: Settings | None = None) -> JobWorker:
@@ -57,11 +66,17 @@ def main() -> int:
             except OSError:
                 return 0
             while True:
+                if source_revision() != LOADED_SOURCE_REVISION:
+                    # run_once is synchronous, so this point is always between jobs.
+                    # Leave the dispatcher lock before replacing the process.
+                    break
                 with worker.session_factory() as session:
                     job_id = session.scalar(select(Job.id).where(Job.status == "queued", Job.provider == "local-comfyui", Job.job_type == "generation",
                         (Job.input_payload["canvas_generation_id"].as_string().is_not(None)) | (Job.input_payload["worker_ready"].as_boolean() == True))
                         .order_by(Job.created_at, Job.id).limit(1))
                 if not job_id or not worker.run_once(job_id): time.sleep(args.poll_seconds)
+        os.execv(sys.executable, [sys.executable, '-m', 'darius_api.worker', *sys.argv[1:]])
+        return 0
     if args.job_id:
         # A targeted worker waits for shared capacity instead of losing its
         # wake-up when another Canvas or external ComfyUI job occupies it.

@@ -51,9 +51,9 @@ class Reference(StrictModel):
 class BoardSettings(StrictModel):
     video: VideoConfig | None = None
     image: images.Config | None = None
-    adapterVersion: Literal["moss-bboxes-v1", "fibo-fast-experimental-v1", "fibo-fast-turbo-v2", "fibo-dev-v1", "minimax-h3-animate-image-v1", "minimax-h3-camera-direction-v1", "minimax-h3-reference-video-v1", "flux3-klein-t2i-v1", "krea2-turbo-t2i-v1", "qwen21-t2i-v1", "qwen21-edit-v1"] = VERSION
+    adapterVersion: Literal["moss-bboxes-v1", "fibo-fast-experimental-v1", "fibo-fast-turbo-v2", "fibo-dev-v1", "minimax-h3-animate-image-v1", "minimax-h3-camera-direction-v1", "minimax-h3-reference-video-v1", "minimax-h3-body-swap-v1", "flux3-klein-t2i-v1", "krea2-turbo-t2i-v1", "qwen21-t2i-v1", "qwen21-edit-v1"] = VERSION
     seed: int | str | None = None
-    providerSettings: dict[Literal["moss-bboxes-v1", "fibo-fast-experimental-v1", "fibo-fast-turbo-v2", "fibo-dev-v1", "minimax-h3-animate-image-v1", "minimax-h3-camera-direction-v1", "minimax-h3-reference-video-v1", "flux3-klein-t2i-v1", "krea2-turbo-t2i-v1", "qwen21-t2i-v1", "qwen21-edit-v1"], dict] = Field(default_factory=dict)
+    providerSettings: dict[Literal["moss-bboxes-v1", "fibo-fast-experimental-v1", "fibo-fast-turbo-v2", "fibo-dev-v1", "minimax-h3-animate-image-v1", "minimax-h3-camera-direction-v1", "minimax-h3-reference-video-v1", "minimax-h3-body-swap-v1", "flux3-klein-t2i-v1", "krea2-turbo-t2i-v1", "qwen21-t2i-v1", "qwen21-edit-v1"], dict] = Field(default_factory=dict)
     references: list[Reference] = Field(default_factory=list, max_length=24)
 
     @field_validator("seed", mode="before")

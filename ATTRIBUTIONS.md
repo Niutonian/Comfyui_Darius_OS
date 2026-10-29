@@ -74,6 +74,7 @@ checksums. Credits embedded in source notes remain with those source files.
 | Krea 2 Turbo | Krea, [Comfy Org repackaging](https://huggingface.co/Comfy-Org/Krea-2) and official workflow contributors; model-specific terms apply |
 | Qwen Image 2.1 T2I/edit and Qwen encoders | Qwen team / Alibaba, [Comfy Org repackaging](https://huggingface.co/Comfy-Org/Qwen-Image-2.1) and workflow contributors; exact model licenses apply |
 | MiniMax H3 animation/camera | MiniMax, [Comfy Org repackaging](https://huggingface.co/Comfy-Org/MiniMax-H3) and associated workflow creators |
+| H3 Body swap | Niutonian's supplied Darius BodySwap workflow; MiniMax / Comfy Org base models; [Alissonerdx Character Swap](https://huggingface.co/Alissonerdx/Minimax-H3-ComfyUI), [drbaph Turbo LoRA](https://huggingface.co/drbaph/MiniMax-H3-Turbo-Lora-ComfyUI), and [1038lab RMBG](https://github.com/1038lab/ComfyUI-RMBG). Model and node terms remain separate; author-supplied Recast/Ollama node implementations are not bundled |
 | Reference-video / Singularity | [WarmBloodAban](https://huggingface.co/WarmBloodAban/Minimax-h3_Singularity); model card declares Apache-2.0; workflow rights assessed separately |
 | H3 camera-motion LoRA | [Jojocodex](https://huggingface.co/Jojocodex/minimax-h3-Camera-Motion-lora) |
 | H3 Turbo LoRA / approximate VAE | [Kijai](https://huggingface.co/Kijai/MiniMax-H3_comfy), [MiniMax-H3-TAE](https://huggingface.co/Kijai/MiniMax-H3-TAE), original LightX2V acceleration contributors |

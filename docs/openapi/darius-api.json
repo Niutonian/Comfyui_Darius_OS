@@ -583,6 +583,7 @@
               "minimax-h3-animate-image-v1",
               "minimax-h3-camera-direction-v1",
               "minimax-h3-reference-video-v1",
+              "minimax-h3-body-swap-v1",
               "flux3-klein-t2i-v1",
               "krea2-turbo-t2i-v1",
               "qwen21-t2i-v1",
@@ -615,6 +616,7 @@
                 "minimax-h3-animate-image-v1",
                 "minimax-h3-camera-direction-v1",
                 "minimax-h3-reference-video-v1",
+                "minimax-h3-body-swap-v1",
                 "flux3-klein-t2i-v1",
                 "krea2-turbo-t2i-v1",
                 "qwen21-t2i-v1",
@@ -2309,8 +2311,11 @@
             "type": "string"
           },
           "mediaKind": {
-            "const": "image",
             "default": "image",
+            "enum": [
+              "image",
+              "video"
+            ],
             "title": "Mediakind",
             "type": "string"
           },
@@ -2321,7 +2326,9 @@
               "camera-source",
               "subject",
               "environment",
-              "style"
+              "style",
+              "source-video",
+              "replacement-character"
             ],
             "title": "Role",
             "type": "string"
@@ -3595,7 +3602,8 @@
             "enum": [
               "animate-image",
               "camera-direction",
-              "reference-video"
+              "reference-video",
+              "body-swap"
             ],
             "title": "Activemode",
             "type": "string"
@@ -3614,7 +3622,8 @@
               "enum": [
                 "animate-image",
                 "camera-direction",
-                "reference-video"
+                "reference-video",
+                "body-swap"
               ]
             },
             "title": "Modedrafts",
@@ -3644,6 +3653,13 @@
             "maxLength": 4000,
             "title": "Camera",
             "type": "string"
+          },
+          "clipStart": {
+            "default": 0,
+            "maximum": 86400.0,
+            "minimum": 0.0,
+            "title": "Clipstart",
+            "type": "number"
           },
           "inputs": {
             "items": {
@@ -3692,6 +3708,17 @@
             "title": "Seconds",
             "type": "integer"
           },
+          "swapLongEdge": {
+            "default": 896,
+            "enum": [
+              512,
+              640,
+              768,
+              896
+            ],
+            "title": "Swaplongedge",
+            "type": "integer"
+          },
           "turbo": {
             "default": true,
             "title": "Turbo",
@@ -3704,6 +3731,14 @@
               "cpu"
             ],
             "title": "Upscaledevice",
+            "type": "string"
+          },
+          "visionModel": {
+            "default": "robit/ornith-vision:9b",
+            "maxLength": 200,
+            "minLength": 1,
+            "pattern": "^[a-zA-Z0-9_.:/-]+$",
+            "title": "Visionmodel",
             "type": "string"
           }
         },
