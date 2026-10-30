@@ -321,7 +321,7 @@ def _run(settings, profile, confirmed, restart):
                     try:
                         provision.provision_job(directory, link, confirmed, restart=restart)
                     except Exception as error:
-                        local_classes = {'DariusOllamaH3SwapPrompt', 'DariusOllamaModel', 'RecastH3PrepareVideo', 'RecastH3Release', 'RecastVideoSize'}
+                        local_classes = {'DariusOllamaH3SwapPrompt', 'DariusOllamaModel', 'RecastH3PrepareVideo', 'RecastH3Release', 'RecastVideoSize', 'RecastH3VideoSize', 'RecastH3Sequential'}
                         if (not any(r.get('scheme') == 'source-files-v1' for r in reused)
                                 or getattr(error, 'code', None) != 'missing_node'
                                 or not any(str(error).startswith(kind + ' is not declared') for kind in local_classes)):

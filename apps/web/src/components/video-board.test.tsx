@@ -28,6 +28,29 @@ beforeEach(() => {
 });
 afterEach(() => { cleanup(); vi.restoreAllMocks(); vi.unstubAllGlobals(); vi.clearAllMocks(); });
 
+it("saves a sequential interval beyond 15 seconds and retains the short Body swap draft", async () => {
+  const b = board(); b.id = "sequential-controls";
+  const video = videoDefaults(); video.activeMode = "body-swap-sequential";
+  video.modeDrafts["body-swap"].clipStart = 7.5;
+  b.settings = { ...b.settings, adapterVersion: "minimax-h3-body-swap-sequential-v1", video };
+  const save = vi.fn().mockResolvedValue({});
+  show(<VideoBoardControls board={b} assets={[]} onChange={save} onError={vi.fn()} />);
+  expect(screen.getByRole("combobox", { name: "Video mode" })).toHaveValue("body-swap-sequential");
+  expect(screen.getByRole("combobox", { name: "Body swap processing size" })).toHaveValue("640");
+  expect(screen.getByRole("spinbutton", { name: "Sequential body swap duration" })).toHaveValue(0);
+  expect(screen.queryByRole("combobox", { name: "Video duration" })).toBeNull();
+  expect(screen.queryByRole("textbox", { name: "Video scene prompt" })).toBeNull();
+  fireEvent.click(screen.getByRole("button", { name: "Choose source video" }));
+  expect(screen.getByRole("group", { name: "Project video inputs" })).toBeVisible();
+  fireEvent.change(screen.getByRole("spinbutton", { name: "Sequential body swap duration" }), { target: { value: "90.5" } });
+  fireEvent.change(screen.getByRole("combobox", { name: "Sequential body swap section length" }), { target: { value: "1.7" } });
+  fireEvent.change(screen.getByRole("combobox", { name: "Body swap processing size" }), { target: { value: "1280" } });
+  fireEvent.click(screen.getByRole("button", { name: "Save video draft" }));
+  await waitFor(() => expect(save).toHaveBeenCalled());
+  expect(save.mock.calls[0][0].video.modeDrafts["body-swap-sequential"]).toMatchObject({ totalDuration: 90.5, chunkSeconds: 1.7, swapLongEdge: 1280 });
+  expect(save.mock.calls[0][0].video.modeDrafts["body-swap"].clipStart).toBe(7.5);
+});
+
 it("pins a project video and a separate character image for Body swap without rendering", async () => {
   const b = board(); b.id = "body-swap-media-inputs";
   b.settings = { ...b.settings, adapterVersion: "minimax-h3-body-swap-v1", video: { ...videoDefaults(), activeMode: "body-swap" } };
@@ -46,10 +69,14 @@ it("pins a project video and a separate character image for Body swap without re
   fireEvent.click(screen.getByRole("button", { name: "Choose character image" }));
   fireEvent.click(screen.getByRole("button", { name: "New character" }));
   fireEvent.change(screen.getByRole("spinbutton", { name: "Body swap clip start" }), { target: { value: "12.5" } });
+  const size = screen.getByRole("combobox", { name: "Body swap processing size" });
+  expect(size).toHaveValue("896");
+  expect(Array.from(size.querySelectorAll("option")).map(option => option.value)).toEqual(["512","640","768","896","1024","1280","1536","1920","2048","2560","3072","3840","4096"]);
+  fireEvent.change(size, { target: { value: "1920" } });
   fireEvent.click(screen.getByRole("button", { name: "Save video draft" }));
   await waitFor(() => expect(save).toHaveBeenCalled());
   const draft = save.mock.calls[0][0].video.modeDrafts["body-swap"];
-  expect(draft).toMatchObject({ seconds: 5, clipStart: 12.5 });
+  expect(draft).toMatchObject({ seconds: 5, clipStart: 12.5, swapLongEdge: 1920 });
   expect(draft.inputs).toEqual(expect.arrayContaining([
     expect.objectContaining({ assetId: "source", mediaKind: "video", role: "source-video", token: 2 }),
     expect.objectContaining({ assetId: "character", mediaKind: "image", role: "replacement-character", token: 1 }),

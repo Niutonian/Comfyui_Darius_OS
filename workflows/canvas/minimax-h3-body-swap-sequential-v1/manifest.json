@@ -1,0 +1,13 @@
+{
+  "profileId": "minimax-h3-body-swap-sequential-v1",
+  "templateDigest": "8cb382a1f3343b417452ee9b3bb7c65b2f8700c3ce960dd72b0f06a3107a4342",
+  "sourceUiDigest": "f229d260403f97b904cdb3bbe27f12282d735b23d91d8938866c28977a3be422",
+  "sourceFormat": "api",
+  "outputs": {
+    "33": "final"
+  },
+  "sourcePackageSha256": "03ae61ebbf9d1b2327814b9a1168d4d15716336da6ec7168918da8dddf3c1dda",
+  "changes": [
+    "Sanitize uploaded media names, output prefix and editor metadata in both checked-in copies. Preserve supplied sequential graph wiring, sampling, overlap, source audio and cache behavior. Bind immutable project inputs and explicit board controls at compilation."
+  ]
+}

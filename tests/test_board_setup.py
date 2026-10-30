@@ -176,7 +176,7 @@ def test_published_packages_cover_all_profiles_and_keep_graph_pins():
     settings = Settings.from_env()
     from darius_api import canvas_fibo, canvas_h3, canvas_images, canvas_moss
     profiles = {canvas_moss.VERSION, *canvas_fibo.PROFILES, *canvas_h3.PROFILES, *canvas_images.PROFILES}
-    assert len(profiles) == 12
+    assert len(profiles) == 13
     for profile in profiles:
         spec, graph = setup.package(settings, profile)
         assert spec['graphDigest'] == setup.digest(graph)

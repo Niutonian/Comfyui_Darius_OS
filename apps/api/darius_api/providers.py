@@ -451,10 +451,37 @@ class ComfyMcpProvider:
             raise ProviderError("ComfyUI submission returned no prompt_id; check its queue before retrying")
         return {"data": data}
 
-    def _history(self, prompt_id: str, timeout: int | None = None) -> dict[str, Any]:
+    def _prompt_queued(self, prompt_id: str) -> bool:
+        """Extend long-run waiting only for this exact prompt on the local host."""
+        base = self.settings.comfyui_base_url.rstrip('/')
+        parsed = urlparse(base)
+        if parsed.scheme != 'http' or parsed.hostname not in {'localhost','127.0.0.1','::1'} or parsed.username or parsed.password:
+            return False
+        try:
+            with urllib.request.urlopen(base + '/queue', timeout=5) as response:
+                raw = response.read(1_000_001)
+            if len(raw) > 1_000_000:
+                return False
+            queue = json.loads(raw)
+            return (isinstance(queue, dict)
+                    and all(isinstance(queue.get(key), list) for key in ('queue_running','queue_pending'))
+                    and any(isinstance(item, (list,tuple)) and len(item) > 1 and item[1] == prompt_id
+                            for key in ('queue_running','queue_pending') for item in queue[key]))
+        except (OSError, ValueError):
+            return False
+
+    def _history(self, prompt_id: str, timeout: int | None = None, *, keep_alive_while_busy: bool = False) -> dict[str, Any]:
         """Poll ComfyUI history after an asynchronous prompt submission."""
-        deadline = time.monotonic() + (timeout if timeout is not None else self.settings.comfy_job_timeout_seconds)
-        while time.monotonic() < deadline:
+        started = time.monotonic()
+        interval = timeout if timeout is not None else self.settings.comfy_job_timeout_seconds
+        deadline = started + interval
+        idle_observations = 0
+        while True:
+            if time.monotonic() >= deadline:
+                if keep_alive_while_busy and self._prompt_queued(prompt_id):
+                    deadline = time.monotonic() + max(1, interval)
+                else:
+                    break
             try:
                 with urllib.request.urlopen(
                     f"{self.settings.comfyui_base_url}/history/{prompt_id}", timeout=5
@@ -462,7 +489,15 @@ class ComfyMcpProvider:
                     payload = json.loads(response.read().decode("utf-8"))
                 if prompt_id in payload:
                     return payload[prompt_id]
+                if isinstance(payload, dict) and time.monotonic() - started >= 30:
+                    from .job_recovery import comfy_queue_idle
+                    idle_observations = idle_observations + 1 if comfy_queue_idle(self.settings) else 0
+                    if idle_observations >= 3:
+                        raise ProviderError("ComfyUI no longer has this prompt in its history and its queue is idle. "
+                                            "It may have restarted or the prompt was removed. The run was stopped locally; "
+                                            "no render was resubmitted. Check existing outputs before retrying.")
             except (OSError, TimeoutError, json.JSONDecodeError):
+                idle_observations = 0
                 pass
             time.sleep(1)
         raise ProviderError(f"ComfyUI history did not contain completed prompt {prompt_id}")
@@ -605,7 +640,10 @@ class ComfyMcpProvider:
         prompt_id = data.get("prompt_id")
         if not prompt_id:
             raise ProviderError("Comfy MCP run completed without a prompt_id")
-        history = self._history(prompt_id, self.settings.comfy_job_timeout_seconds)
+        if contract.version == 'minimax-h3-body-swap-sequential-v1':
+            history = self._history(prompt_id, self.settings.comfy_job_timeout_seconds, keep_alive_while_busy=True)
+        else:
+            history = self._history(prompt_id, self.settings.comfy_job_timeout_seconds)
         status = history.get("status") or {}
         if status.get("completed") is False or status.get("status_str") == "error":
             messages = status.get("messages") or []

@@ -54,7 +54,7 @@ def class_signatures(source):
 
 def reuse_installed(profile, manifest, link):
     """Re-pin only known identical nodes, otherwise retain normal conflict checks."""
-    if profile == 'minimax-h3-body-swap-v1':
+    if profile in {'minimax-h3-body-swap-v1', 'minimax-h3-body-swap-sequential-v1'}:
         return reuse_body_swap(manifest, link)
     if profile not in {'fibo-fast-turbo-v2', 'fibo-fast-experimental-v1', 'fibo-dev-v1'}:
         return manifest, []
@@ -120,8 +120,9 @@ def source_files(pack):
 def reuse_body_swap(manifest, link):
     """Reuse exact authored local packs only when ComfyUI reports their loaded ownership."""
     allowed = {
-        'ComfyUI-Darius-Ollama': {'DariusOllamaH3SwapPrompt', 'DariusOllamaModel'},
-        'ComfyUI-Darius-Recast': {'RecastH3PrepareVideo', 'RecastH3Release', 'RecastVideoSize'},
+        'ComfyUI-Darius-Ollama': [{'DariusOllamaH3SwapPrompt', 'DariusOllamaModel'}],
+        'ComfyUI-Darius-Recast': [{'RecastH3PrepareVideo', 'RecastH3Release', 'RecastVideoSize', 'RecastH3VideoSize'},
+                                {'RecastH3Sequential', 'RecastH3VideoSize'}],
     }
     adapted = deepcopy(manifest)
     pins = adapted.pop('local_source_pins', {})
@@ -129,7 +130,7 @@ def reuse_body_swap(manifest, link):
     for node in list(adapted.get('nodes', [])):
         name = node.get('name')
         expected = pins.get(name)
-        if name not in allowed or set(node.get('class_types', [])) != allowed[name] or not expected:
+        if name not in allowed or set(node.get('class_types', [])) not in allowed[name] or not expected:
             continue
         pack = Path(link.custom_nodes) / name
         try:
@@ -139,7 +140,7 @@ def reuse_body_swap(manifest, link):
                 continue
             from one_job.comfy import _request
             loaded = True
-            for kind in allowed[name]:
+            for kind in sorted(node['class_types']):
                 registry = json.loads(_request(link.url.rstrip('/') + '/object_info/' + kind)[1])
                 owner = registry.get(kind, {}).get('python_module', '').lower().split('.')[:2]
                 if owner != ['custom_nodes', name.lower()]:

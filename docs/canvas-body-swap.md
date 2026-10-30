@@ -1,8 +1,12 @@
 # Body swap video boards
 
+For full-length source videos, choose the separate [Body swap · Sequential](canvas-sequential-body-swap.md) mode. This page describes the original short-clip version.
+
 In Canvas, open a Video board and select **Body swap**. Choose or upload a source video and a replacement character image from the same project. Select a clip start and processing size, save the draft, and Generate.
 
-This integrates the supplied `Darius_H3_BodySwap.zip` API graph. Its source preparation takes at most five seconds, rounds down to H3's `17n+5` grid at 24 fps, and trims to available source. A full five-second selection produces 107 frames (4.458 seconds). Size follows source orientation with fit/padding and the imported pixel/height limits; the other H3 modes' aspect, resolution and long-duration controls do not apply. The output retains source audio when present; a silent source remains valid.
+This integrates the supplied `Darius_H3_BodySwap.zip` API graph. Its source preparation takes at most five seconds, rounds down to H3's `17n+5` grid at 24 fps, and trims to available source. A full five-second selection produces 107 frames (4.458 seconds). Size follows source orientation with fit/padding; the other H3 modes' aspect, resolution and long-duration controls do not apply. The output retains source audio when present; a silent source remains valid.
+
+Processing sizes retain the original **512, 640, 768 and 896** options, with **896** still the default. Added presets are **1024, 1280, 1536, 1920, 2048, 2560, 3072, 3840 and 4096**. Only these added presets switch the sizing node to `RecastH3VideoSize`, as provided by `26_H3Swap_Auto_Size_And_Clip`; all other workflow connections, models and sampling remain unchanged. The new presets align both dimensions to multiples of 32 without the legacy 768px height or 458,752-pixel cap. Existing sizes keep their original behavior. Higher presets resize actual generation, requiring more GPU memory; their availability does not guarantee hardware fit. The installed Recast pack must include the updated sizing and clip-preparation nodes; first-use checks verify their source fingerprints and loaded ownership.
 
 The selected Ollama vision model describes only the replacement image. The imported structured appearance node assembles the fixed `body_swap` task prompt and releases Ollama before H3 sampling. This model is independent of the chat provider. Default: `robit/ornith-vision:9b`. Ollama must be running and that vision model (or your selected compatible vision model) must already be installed.
 

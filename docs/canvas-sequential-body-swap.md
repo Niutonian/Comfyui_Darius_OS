@@ -1,0 +1,15 @@
+# Sequential Body swap
+
+Create or open a Video board and choose **Body swap · Sequential** in Mode. The original five-second **Body swap** mode remains separate, with its own saved draft.
+
+Choose a project-owned source video and one replacement character image. **Total duration = 0** processes all remaining video from **Clip start**. A positive duration selects that many seconds, limited by the available source. There is no five- or fifteen-second total-duration cap. Output timing rounds down to whole 24 FPS frames, with at least five source frames required. The existing pinned-video upload limit of 1 GiB still applies.
+
+The supplied `BodySwap_Sequential.zip` recipe processes overlapping sections, carries previous generated frames for continuity, then streams the joined video and original soundtrack to one final output. Silent source videos also work. Section length defaults to **3.1 seconds**, overlap stays at **17 frames**, and the imported matched-cut join, Turbo eight-step sampler, model/LoRA wiring and cache behavior remain intact. The board exposes section lengths from 1.7 to 5 seconds. Total duration controls the final interval; section length controls each bounded generation window.
+
+The default processing size is the supplied **640px long edge**. The same 512–4096 presets are available, all using the H3 sizing node and source orientation, with dimensions aligned to 32 pixels. Higher resolution increases memory use; longer source duration increases processing time and cache/disk use. Source normalization and completed sections stay on disk in the installed Recast node's cache. Matching retries may reuse validated completed sections when source, character conditioning, seed and recipe settings match; a newly randomized seed is a different request. Darius does not claim an automatic resume action or ingest unfinished sections as final assets.
+
+Ollama describes the replacement character image using the selected vision model, independently of the chat provider. The main H3 seed retains full unsigned 64-bit precision; the vision node receives a derived signed-31-bit seed. First-use checks verify the exact installed Recast/Ollama source fingerprints, loaded ownership, model hashes and pinned upstream node packs. Those two author-supplied local packs must already be installed; no unpublished repository URL is invented.
+
+Long sequential runs extend the normal provider wait interval only when ComfyUI confirms that this exact prompt is still running or pending. Unknown queue state, another prompt or an empty queue cannot extend the deadline. Missing-history recovery remains active. This does not change the existing cancellation behavior.
+
+The checked-in source and executable template remove personal upload names and editor metadata. Their manifest pins the sanitized source, executable graph and supplied ZIP by SHA-256. Models and node implementations are not bundled. Existing Body swap attribution also applies to this author-supplied sequential workflow.

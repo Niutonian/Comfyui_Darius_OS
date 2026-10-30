@@ -584,6 +584,7 @@
               "minimax-h3-camera-direction-v1",
               "minimax-h3-reference-video-v1",
               "minimax-h3-body-swap-v1",
+              "minimax-h3-body-swap-sequential-v1",
               "flux3-klein-t2i-v1",
               "krea2-turbo-t2i-v1",
               "qwen21-t2i-v1",
@@ -617,6 +618,7 @@
                 "minimax-h3-camera-direction-v1",
                 "minimax-h3-reference-video-v1",
                 "minimax-h3-body-swap-v1",
+                "minimax-h3-body-swap-sequential-v1",
                 "flux3-klein-t2i-v1",
                 "krea2-turbo-t2i-v1",
                 "qwen21-t2i-v1",
@@ -3603,7 +3605,8 @@
               "animate-image",
               "camera-direction",
               "reference-video",
-              "body-swap"
+              "body-swap",
+              "body-swap-sequential"
             ],
             "title": "Activemode",
             "type": "string"
@@ -3623,7 +3626,8 @@
                 "animate-image",
                 "camera-direction",
                 "reference-video",
-                "body-swap"
+                "body-swap",
+                "body-swap-sequential"
               ]
             },
             "title": "Modedrafts",
@@ -3653,6 +3657,13 @@
             "maxLength": 4000,
             "title": "Camera",
             "type": "string"
+          },
+          "chunkSeconds": {
+            "default": 3.1,
+            "maximum": 5.0,
+            "minimum": 1.0,
+            "title": "Chunkseconds",
+            "type": "number"
           },
           "clipStart": {
             "default": 0,
@@ -3714,10 +3725,26 @@
               512,
               640,
               768,
-              896
+              896,
+              1024,
+              1280,
+              1536,
+              1920,
+              2048,
+              2560,
+              3072,
+              3840,
+              4096
             ],
             "title": "Swaplongedge",
             "type": "integer"
+          },
+          "totalDuration": {
+            "default": 0,
+            "maximum": 1000000000000.0,
+            "minimum": 0.0,
+            "title": "Totalduration",
+            "type": "number"
           },
           "turbo": {
             "default": true,

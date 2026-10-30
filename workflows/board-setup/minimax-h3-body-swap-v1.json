@@ -27,7 +27,8 @@
         "class_types": [
           "RecastH3PrepareVideo",
           "RecastH3Release",
-          "RecastVideoSize"
+          "RecastVideoSize",
+          "RecastH3VideoSize"
         ]
       },
       {
@@ -242,7 +243,7 @@
         "vision_prompt.py": "64f3eb39ee6dcd41c4ae686348d19e8594e715913cf38f2973927ce57560de9d"
       },
       "ComfyUI-Darius-Recast": {
-        "__init__.py": "33d90a27bca5be9b9330383fade82554ee989131e493cae63faff8256e81fbbf",
+        "__init__.py": "fbc2c386f3a4485bbaca13db96e090c3c520dbdedf985a2d23d55eea347fa8d0",
         "cleanplate.py": "e9fabbefacd1f962cdcbc2972b991f6ed6c2f9a2e06909e8e66c8bcd26b86a3b",
         "client.py": "27a9c2600161ee85d1854549519d7d71079b260a96c74174cc5e69b08037f0bd",
         "core.py": "bec675774ac9dd4701e4723a1e295300f1643c137fcc64dea98584f5dc6f0ded",
@@ -251,10 +252,11 @@
         "foreground_composite.py": "712219457160d6aaa026e2a996db2d3868f1a506ed6273cc361eb0bf6902dad2",
         "h3_core.py": "2e5c9dfa6696a9fedc14c08dff634ec937a54e9d8a87b20ed7fb9726ede2d4a8",
         "h3_edges.py": "0a0438ea39b33e81212e6bebcb0f57eb664531f16d6d851f56c775f07d7cdeef",
-        "h3_input.py": "27938bb34e0c01c4d796d342d6a03346388693dbfc898ff6c2df3e3a4794a5e8",
+        "h3_input.py": "99f7434d9f6184919e96006a49efb8f9e5a8312b75eed4c1f377090313fbb1fc",
         "h3_long_core.py": "81fcfd840007f6eff569ca613c7c4f162726240aa5b2f0b6d1629c08ecb6bdba",
-        "h3_long_nodes.py": "0beaa123ba9e8d015f9574614e4a9e9b2e405473c003c14d34555443868d7bbe",
+        "h3_long_nodes.py": "8f1af84d63d5d32adbec2d5d007cf5d7670ef9173c04c6c370237fdf0faaac25",
         "h3_nodes.py": "aac4cca447d0184d993f79724f897d7900f82753b817b3c25a14a7d6f96bd471",
+        "h3_regions.py": "a9e79a163c127ed4a2afd44d65c2445e017f76caffe448123acd02623404e7fe",
         "identity_nodes.py": "01961ddc272a253591b06aca840ee862c701fbe069b3a47c56f3cb113635f7c2",
         "long_core.py": "dbd8c75c5db15b335a68d7451591b5c300df8573d4561476e2a58260ed48afe1",
         "long_nodes.py": "12bfa23d9a453bacb682dc5cc20110dc79a9031d59a68582d6ece64c5f68ee57",
@@ -324,7 +326,7 @@
         "vendor/WeVisOne-VL/wevisone_vl/msda.py": "83f3108b106541447322d357c8cf3805fbc74d0f4508827bd8008f641e034fd8",
         "vendor/WeVisOne-VL/wevisone_vl/prompts.py": "7c0640298a66f9eb3fc5b5a453cf53e7fd503e6939e608db0b3a5727becf17f0",
         "vendor/WeVisOne-VL/wevisone_vl/visualization.py": "072f96e36a8c37170dec1a3b66215a2e18591b3c3f2ad5e248bedff75c9dc6f5",
-        "video_size.py": "fc802fb5fc269c15a833eb3028f3972e64b9196c9dae3ea52cab5c30361f62e3",
+        "video_size.py": "346cbbb4e3c33dee4f308ee539818efbdb880cff19bc0ec4a5f7a8002896e0b7",
         "wevis_nodes.py": "f3228add8347c5fd64a5003eb4e0683c9556073dfdbabd0d1554710d816399aa",
         "wevis_settings.py": "b520723adade32eeda8f743c9f5424fd3b104d02fe6accd99f48ab7ae2d711c2",
         "worker.py": "10b2f3d0b5c694c8d6c3f024d1556ae71736c154a218a6c7e704f03c69996db6"

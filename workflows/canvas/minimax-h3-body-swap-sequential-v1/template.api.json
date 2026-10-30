@@ -1,0 +1,306 @@
+{
+  "1": {
+    "inputs": {
+      "file": "darius/source.mp4"
+    },
+    "class_type": "LoadVideo",
+    "_meta": {
+      "title": "LoadVideo"
+    }
+  },
+  "3": {
+    "inputs": {
+      "image": "darius/character.png"
+    },
+    "class_type": "LoadImage",
+    "_meta": {
+      "title": "LoadImage"
+    }
+  },
+  "4": {
+    "inputs": {
+      "model": "BiRefNet-general",
+      "mask_blur": 0,
+      "mask_offset": 0,
+      "invert_output": false,
+      "refine_foreground": false,
+      "background": "Color",
+      "background_color": [
+        "30",
+        0
+      ],
+      "image": [
+        "3",
+        0
+      ]
+    },
+    "class_type": "BiRefNetRMBG",
+    "_meta": {
+      "title": "BiRefNetRMBG"
+    }
+  },
+  "5": {
+    "inputs": {
+      "images": [
+        "4",
+        0
+      ]
+    },
+    "class_type": "PreviewImage",
+    "_meta": {
+      "title": "PreviewImage"
+    }
+  },
+  "6": {
+    "inputs": {
+      "vae_name": "minimax_h3_video_vae_fp16.safetensors"
+    },
+    "class_type": "VAELoader",
+    "_meta": {
+      "title": "VAELoader"
+    }
+  },
+  "7": {
+    "inputs": {
+      "clip_name": "qwen3vl_32b_minimax_h3_nvfp4_awq.safetensors",
+      "type": "minimax",
+      "device": "default"
+    },
+    "class_type": "CLIPLoader",
+    "_meta": {
+      "title": "CLIPLoader"
+    }
+  },
+  "11": {
+    "inputs": {
+      "unet_name": "minimax_h3_ref2va_pruned_int8_convrot.safetensors",
+      "weight_dtype": "default"
+    },
+    "class_type": "UNETLoader",
+    "_meta": {
+      "title": "UNETLoader"
+    }
+  },
+  "12": {
+    "inputs": {
+      "lora_name": "minimax_h3_dmd_ref2va_8step_turbo_pruned.safetensors",
+      "strength_model": 1,
+      "model": [
+        "11",
+        0
+      ]
+    },
+    "class_type": "LoraLoaderModelOnly",
+    "_meta": {
+      "title": "LoraLoaderModelOnly"
+    }
+  },
+  "13": {
+    "inputs": {
+      "lora_name": "minimax_h3_character_swap_v1.1_ref2va_fro.safetensors",
+      "strength_model": 1,
+      "model": [
+        "12",
+        0
+      ]
+    },
+    "class_type": "LoraLoaderModelOnly",
+    "_meta": {
+      "title": "LoraLoaderModelOnly"
+    }
+  },
+  "14": {
+    "inputs": {
+      "shift_video": 12,
+      "shift_audio": 3,
+      "model": [
+        "13",
+        0
+      ]
+    },
+    "class_type": "MiniMaxH3SigmaShift",
+    "_meta": {
+      "title": "MiniMaxH3SigmaShift"
+    }
+  },
+  "15": {
+    "inputs": {
+      "head_chunks": 4,
+      "model": [
+        "14",
+        0
+      ]
+    },
+    "class_type": "MiniMaxLowVRAMAttention",
+    "_meta": {
+      "title": "MiniMaxLowVRAMAttention"
+    }
+  },
+  "16": {
+    "inputs": {
+      "chunks": 4,
+      "seq_threshold": 4352,
+      "model": [
+        "15",
+        0
+      ]
+    },
+    "class_type": "MiniMaxChunkFeedForward",
+    "_meta": {
+      "title": "MiniMaxChunkFeedForward"
+    }
+  },
+  "27": {
+    "inputs": {
+      "model": "robit/ornith-vision:9b",
+      "base_url": "http://127.0.0.1:11434",
+      "device": "GPU",
+      "context_length": 8192,
+      "unload_after": true,
+      "refresh_models": 0
+    },
+    "class_type": "DariusOllamaModel",
+    "_meta": {
+      "title": "DariusOllamaModel"
+    }
+  },
+  "28": {
+    "inputs": {
+      "system_prompt": "Describe ONLY the single replacement character in the supplied image. Return a JSON object with an attributes array containing 4-18 short appearance phrases. Use visible character type, build, face or covering, hair or fur, clothing, footwear, worn equipment, colors, materials and distinctive details. Include large armor, shoulder shells and mechanical limbs as parts of the complete character. For covered faces, hands or feet, describe the covering; do not invent anatomy beneath it. Omit unseen or uncertain details. A simple character needs only a few phrases: do not pad the answer or repeat attributes. Exclude pose, stance, facial-expression state, action, source actor, background, lighting, camera, floor and shadows. Do not identify a real person. Do not write editing instructions, subject tags, body_swap, placeholders, explanations or Markdown. The fixed adapter prompt is applied separately.",
+      "temperature": 0,
+      "seed": 123456,
+      "max_tokens": 1200,
+      "refresh_response": 0,
+      "connection": [
+        "27",
+        0
+      ],
+      "reference": [
+        "3",
+        0
+      ]
+    },
+    "class_type": "DariusOllamaH3SwapPrompt",
+    "_meta": {
+      "title": "DariusOllamaH3SwapPrompt"
+    }
+  },
+  "29": {
+    "inputs": {
+      "source": [
+        "28",
+        0
+      ]
+    },
+    "class_type": "PreviewAny",
+    "_meta": {
+      "title": "PreviewAny"
+    }
+  },
+  "30": {
+    "inputs": {
+      "preset": "gray",
+      "color": "#808080"
+    },
+    "class_type": "AILab_ColorInput",
+    "_meta": {
+      "title": "AILab_ColorInput"
+    }
+  },
+  "31": {
+    "inputs": {
+      "preset": "Balanced (640)",
+      "custom_long_edge": 896,
+      "video": [
+        "1",
+        0
+      ]
+    },
+    "class_type": "RecastH3VideoSize",
+    "_meta": {
+      "title": "RecastH3VideoSize"
+    }
+  },
+  "32": {
+    "inputs": {
+      "width": [
+        "31",
+        0
+      ],
+      "height": [
+        "31",
+        1
+      ],
+      "start_seconds": 0,
+      "total_duration_seconds": 0,
+      "chunk_seconds": 3.1,
+      "overlap_frames": 17,
+      "carry_previous_frames": true,
+      "seed": 123456,
+      "seed_mode": "fixed per section",
+      "steps": 8,
+      "sampler_name": "euler",
+      "scheduler": "simple",
+      "seam_method": "matched cut",
+      "seam_blend_frames": 2,
+      "refresh_chunks": 0,
+      "video": [
+        "1",
+        0
+      ],
+      "reference": [
+        "4",
+        0
+      ],
+      "model": [
+        "16",
+        0
+      ],
+      "clip": [
+        "7",
+        0
+      ],
+      "vae": [
+        "6",
+        0
+      ],
+      "prompt": [
+        "28",
+        0
+      ]
+    },
+    "class_type": "RecastH3Sequential",
+    "_meta": {
+      "title": "RecastH3Sequential"
+    }
+  },
+  "33": {
+    "inputs": {
+      "filename_prefix": "darius/body-swap-sequential/result",
+      "format": "mp4",
+      "format.codec": "h264",
+      "format.codec.encoding": "auto",
+      "codec": "auto",
+      "video": [
+        "32",
+        0
+      ]
+    },
+    "class_type": "SaveVideo",
+    "_meta": {
+      "title": "SaveVideo"
+    }
+  },
+  "34": {
+    "inputs": {
+      "source": [
+        "32",
+        1
+      ]
+    },
+    "class_type": "PreviewAny",
+    "_meta": {
+      "title": "PreviewAny"
+    }
+  }
+}

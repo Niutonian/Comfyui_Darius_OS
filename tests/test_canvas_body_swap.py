@@ -63,6 +63,27 @@ def test_existing_drafts_gain_body_swap_without_changing_other_modes():
     assert current.modeDrafts['animate-image'].model_dump()==old['modeDrafts']['animate-image']
 
 
+@pytest.mark.parametrize('edge',[512,640,768,896,1024,1280,1536,1920,2048,2560,3072,3840,4096])
+def test_extended_sizes_change_only_the_sizing_node(tmp_path,edge):
+    current=config();settings=settings_for(tmp_path);media={'character':'char.png','source':'clip.mp4'}
+    original,old_provenance=h3.compile_graph(settings,current,17,media)
+    payload=current.model_dump();payload['modeDrafts']['body-swap']['swapLongEdge']=edge
+    current=h3.VideoConfig.model_validate(payload)
+    graph,provenance=h3.compile_graph(settings,current,17,media)
+    assert {k:v for k,v in graph.items() if k!='31'}=={k:v for k,v in original.items() if k!='31'}
+    assert provenance['outputs']==old_provenance['outputs']
+    assert provenance['timing']==old_provenance['timing']
+    assert provenance['videoConfig']['modeDrafts']['body-swap']['swapLongEdge']==edge
+    if edge>896:
+        assert graph['31']['class_type']=='RecastH3VideoSize'
+        assert graph['31']['inputs']=={'video':['1',0],'preset':f'H3 ({edge})','custom_long_edge':edge}
+        assert provenance['videoDimensions']['maxPixels'] is None
+    else:
+        assert graph['31']['class_type']=='RecastVideoSize'
+        assert provenance['videoDimensions']['maxPixels']==458752
+    assert h3.artifacts(settings,h3.BODY_SWAP)[0]['31']['class_type']=='RecastVideoSize'
+
+
 def test_body_swap_board_round_trip_and_engine_limit(canvas_client):
     client,app,project,_=canvas_client
     b=add(client,project,settings={'adapterVersion':h3.BODY_SWAP})

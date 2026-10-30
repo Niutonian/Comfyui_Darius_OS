@@ -21,7 +21,7 @@ def config(mode="animate-image", count=1):
  c.modeDrafts[mode].inputs=[h3.MediaBinding(id=f'ref{i}',assetId=f'asset{i}',assetVersionId='a'*64,token=i+1) for i in range(count)]
  return c
 
-@pytest.mark.parametrize('mode',tuple(m for m in h3.MODES if m != 'body-swap'))
+@pytest.mark.parametrize('mode',tuple(m for m in h3.MODES if m not in h3.SWAP_MODES))
 def test_faithful_graph_bindings_and_audio_paths(tmp_path,mode):
  c=config(mode,3 if mode=='reference-video' else 1)
  c.modeDrafts[mode].camera='Slow dolly in'
@@ -73,7 +73,7 @@ def test_reference_gap_and_missing_tokens_are_not_silently_rebound(tmp_path):
  with pytest.raises(ValueError,match='unavailable media'):h3.compile_graph(settings_for(tmp_path),c,1,{'ref0':'a','ref1':'b'})
 
 
-@pytest.mark.parametrize('mode', tuple(m for m in h3.MODES if m != 'body-swap'))
+@pytest.mark.parametrize('mode', tuple(m for m in h3.MODES if m not in h3.SWAP_MODES))
 @pytest.mark.parametrize('preset', h3.PRESETS)
 @pytest.mark.parametrize('resolution', h3.RESOLUTIONS)
 def test_video_sizes_and_durations_bind_both_stages_without_changing_sources(tmp_path, mode, preset, resolution):
