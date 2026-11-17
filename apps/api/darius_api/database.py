@@ -375,6 +375,8 @@ class CanvasWorkspaceRecord(Base):
     revision: Mapped[int] = mapped_column(Integer, default=1, nullable=False)
     schema_version: Mapped[int] = mapped_column(Integer, default=1, nullable=False)
     placements_json: Mapped[list[dict[str, Any]]] = mapped_column(JSON, default=list, nullable=False)
+    # Notes and frames drawn on the project canvas (presentation only, never sent to a model).
+    annotations_json: Mapped[list[dict[str, Any]]] = mapped_column(JSON, default=list, nullable=False)
 
 
 class MossBoardRecord(Base):

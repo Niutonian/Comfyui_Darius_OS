@@ -340,3 +340,53 @@ def test_receipt_lookup_is_read_only_and_project_scoped(canvas_client):
     before = client.get(path).json()
     assert client.get(path.replace(project, "foreign-project") + "/requests/lookup-original").status_code == 404
     assert client.get(path).json() == before
+
+
+def test_notes_and_frames_save_with_layout_and_older_clients_keep_them(canvas_client):
+    client, _, project, _ = canvas_client
+    board = add(client, project)
+    workspace = client.get(root(project)).json()
+    assert workspace["annotations"] == []
+    notes = [{"id": "note-1", "kind": "note", "x": 10, "y": 20, "width": 220, "height": 160, "text": "Dawn only", "color": "sun"},
+             {"id": "frame-1", "kind": "frame", "x": -40, "y": -60, "width": 900, "height": 700, "text": "Scene 1", "color": "moss"}]
+    saved = client.post(root(project) + "/layout", json={"revision": workspace["revision"], "placements": workspace["placements"], "annotations": notes})
+    assert saved.status_code == 200, saved.text
+    assert saved.json()["annotations"] == notes
+    # A client that predates annotations moves a board; the notes survive.
+    moved = [{**workspace["placements"][0], "x": 500}]
+    kept = client.post(root(project) + "/layout", json={"revision": saved.json()["revision"], "placements": moved})
+    assert kept.status_code == 200 and kept.json()["annotations"] == notes
+    assert next(p for p in kept.json()["placements"] if p["boardId"] == board["id"])["x"] == 500
+
+
+@pytest.mark.parametrize("bad", [
+    {"id": "n", "kind": "sticker", "x": 0, "y": 0, "width": 200, "height": 100},
+    {"id": "n", "kind": "note", "x": 0, "y": 0, "width": 20, "height": 100},
+    {"id": "has space", "kind": "note", "x": 0, "y": 0, "width": 200, "height": 100},
+    {"id": "n", "kind": "note", "x": 0, "y": 0, "width": 200, "height": 100, "text": "x" * 2001},
+])
+def test_invalid_annotations_are_rejected(canvas_client, bad):
+    client, _, project, _ = canvas_client
+    add(client, project)
+    workspace = client.get(root(project)).json()
+    result = client.post(root(project) + "/layout", json={"revision": workspace["revision"], "placements": workspace["placements"], "annotations": [bad]})
+    assert result.status_code == 422
+
+
+def test_duplicate_annotation_ids_are_rejected(canvas_client):
+    client, _, project, _ = canvas_client
+    add(client, project)
+    workspace = client.get(root(project)).json()
+    note = {"id": "same", "kind": "note", "x": 0, "y": 0, "width": 200, "height": 100}
+    result = client.post(root(project) + "/layout", json={"revision": workspace["revision"], "placements": workspace["placements"], "annotations": [note, note]})
+    assert result.status_code == 422
+
+
+def test_board_reports_recent_completed_results_newest_first(canvas_client):
+    client, app, project, _ = canvas_client
+    board = add(client, project)
+    assert board["recentAssetIds"] == []
+    first = fake_result(app, project, generate(client, project, board, key="recent-first"))
+    second = fake_result(app, project, generate(client, project, board, key="recent-second"))
+    view = next(b for b in client.get(root(project)).json()["boards"] if b["id"] == board["id"])
+    assert view["recentAssetIds"] == [second, first]

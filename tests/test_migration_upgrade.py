@@ -56,3 +56,17 @@ def test_empty_install_migrates_and_matches_declared_columns(tmp_path):
     for name, table in Base.metadata.tables.items():
         assert {column.name for column in table.columns} <= {column["name"] for column in inspector.get_columns(name)}, name
     engine.dispose()
+
+
+def test_upgrade_adds_canvas_notes_and_frames_with_an_empty_default(tmp_path):
+    config = configuration(tmp_path)
+    command.upgrade(config, "e49a0d816b70")
+    engine = create_engine(config.get_main_option("sqlalchemy.url"))
+    with engine.begin() as connection:
+        connection.execute(text("INSERT INTO projects (id, name, description, creative_brief, visual_style, default_aspect_ratio, default_fps, default_resolution, created_at, updated_at) "
+            "VALUES ('p', 'P', '', '', '', '1:1', 24, '1024x1024', '2026-01-01', '2026-01-01')"))
+        connection.execute(text("INSERT INTO canvas_workspaces (project_id, revision, schema_version, placements_json) VALUES ('p', 3, 1, '[]')"))
+    command.upgrade(config, "head")
+    with engine.connect() as connection:
+        assert "annotations_json" in {column["name"] for column in inspect(connection).get_columns("canvas_workspaces")}
+        assert connection.execute(text("SELECT annotations_json FROM canvas_workspaces WHERE project_id = 'p'")).scalar() == "[]"

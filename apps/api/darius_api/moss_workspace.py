@@ -34,9 +34,30 @@ class Placement(StrictModel):
     order: int = Field(default=0, ge=0, le=10000)
 
 
+class Annotation(StrictModel):
+    """A sticky note or a titled frame on the canvas. Presentation only."""
+    id: str = Field(min_length=1, max_length=80, pattern=r"^[a-zA-Z0-9_-]+$")
+    kind: Literal["note", "frame"]
+    x: float = Field(ge=-100000, le=100000)
+    y: float = Field(ge=-100000, le=100000)
+    width: float = Field(ge=120, le=6000)
+    height: float = Field(ge=80, le=6000)
+    text: str = Field(default="", max_length=2000)
+    color: Literal["sun", "moss", "sky", "rose", "stone"] = "sun"
+
+
 class SaveLayout(StrictModel):
     revision: int = Field(ge=1)
     placements: list[Placement] = Field(max_length=256)
+    # Omitted by older clients: their saves keep the stored notes and frames.
+    annotations: list[Annotation] | None = Field(default=None, max_length=256)
+
+    @field_validator("annotations")
+    @classmethod
+    def unique_annotations(cls, value):
+        if value is not None and len({item.id for item in value}) != len(value):
+            raise ValueError("Note and frame IDs must be unique")
+        return value
 
 
 class Reference(StrictModel):
@@ -160,7 +181,7 @@ def initialize(session, project_id):
         raise HTTPException(404, "Project does not exist")
     workspace = session.get(Workspace, project_id)
     if not workspace:
-        workspace = Workspace(project_id=project_id, revision=1, placements_json=[])
+        workspace = Workspace(project_id=project_id, revision=1, placements_json=[], annotations_json=[])
         session.add(workspace); session.flush()
     known = set(session.scalars(select(Board.document_id).where(Board.project_id == project_id)))
     placements = deepcopy(workspace.placements_json)
@@ -215,7 +236,17 @@ def board_view(session, board):
         draft = image_config.drafts[image_config.activeProfile]
         first = session.get(Asset, draft.inputs[0].assetId) if draft.inputs else None
         image_size = images.output_size(image_config.activeProfile, draft, {"width": first.width, "height": first.height} if first else None)
-    return {"id": board.id, "projectId": board.project_id, "documentId": doc.id, "name": doc.name,
+    # The last few completed image results, newest first, for the card's photo pile.
+    recent = []
+    for job_id in session.scalars(select(Generation.job_id).join(Job, Job.id == Generation.job_id).where(Generation.document_id == doc.id, Job.status == "completed")
+            .order_by(Generation.created_at.desc(), Generation.id.desc()).limit(6)):
+        job = session.get(Job, job_id)
+        first = next((a for key in job.output_asset_ids if (a := session.get(Asset, key)) and a.project_id == board.project_id and a.kind == "image"), None)
+        if first and first.id not in recent:
+            recent.append(first.id)
+        if len(recent) == 3:
+            break
+    return {"id": board.id, "projectId": board.project_id, "documentId": doc.id, "name": doc.name, "recentAssetIds": recent,
         "kind": "image-recipe" if board.settings_json.get("adapterVersion") in images.PROFILES else "minimax-h3-video" if board.settings_json.get("adapterVersion") in H3_PROFILES else "fibo-t2i" if board.settings_json.get("adapterVersion", "").startswith("fibo-") else "moss-t2i", "revision": board.revision, "documentRevision": doc.revision,
         "settings": {**board.settings_json, "video":video_config.model_dump()} if video_config else board.settings_json, "archived": board.archived, "artboard": ({"width": image_size[0], "height": image_size[1], "preset": image_config.drafts[image_config.activeProfile].preset} if image_size else {"width": video_size["width"], "height": video_size["height"], "preset": video_size["preset"]} if video_size else content.artboard.model_dump()),
         "video": video_config.model_dump() if video_config else None,
@@ -229,7 +260,7 @@ def board_view(session, board):
 def workspace_view(session, workspace):
     boards = session.scalars(select(Board).where(Board.project_id == workspace.project_id).order_by(Board.id)).all()
     return {"projectId": workspace.project_id, "schemaVersion": workspace.schema_version, "revision": workspace.revision,
-        "placements": workspace.placements_json, "boards": [board_view(session, b) for b in boards],
+        "placements": workspace.placements_json, "annotations": workspace.annotations_json or [], "boards": [board_view(session, b) for b in boards],
         "capacity": 1, "queuePolicy": "Shared local GPU lease; FIFO ready jobs. External ComfyUI occupancy checked."}
 
 
@@ -265,7 +296,10 @@ def router(settings, session_factory, generate):
             ids = [p.boardId for p in payload.placements]
             if len(ids) != len(set(ids)) or set(ids) != set(session.scalars(select(Board.id).where(Board.project_id == project_id))):
                 raise HTTPException(422, "Keep exactly one placement per board; use Archive instead of deleting documents")
-            workspace.placements_json = [p.model_dump() for p in payload.placements]; workspace.revision += 1
+            workspace.placements_json = [p.model_dump() for p in payload.placements]
+            if payload.annotations is not None:
+                workspace.annotations_json = [a.model_dump() for a in payload.annotations]
+            workspace.revision += 1
             add_event(session, project_id, "canvas.workspace_saved", "workspace", project_id)
             return workspace_view(session, workspace)
 
