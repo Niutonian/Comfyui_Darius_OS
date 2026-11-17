@@ -81,3 +81,27 @@ test('the launcher lists projects as tiles', async ({ page }) => {
   await expect(page.getByText('Your projects')).toBeVisible();
   await expect(page.locator('.folder-card', { hasText: 'Moss Kingdom' })).toBeVisible();
 });
+
+test('notes, frames and several selected boards', async ({ page }, info) => {
+  desktopOnly(info);
+  await openProject(page);
+  await expect(page.getByRole('group', { name: /Frame Scene 1/ })).toBeAttached();
+  await page.getByRole('button', { name: 'Add a sticky note' }).click();
+  await expect(page.getByRole('textbox', { name: 'Note text' })).toBeVisible();
+  await page.keyboard.press('Escape');
+  await page.locator('article[data-board-id=b1]').click({ position: { x: 150, y: 220 } });
+  await page.locator('article[data-board-id=b4]').click({ position: { x: 150, y: 220 }, modifiers: ['Shift'] });
+  await expect(page.getByRole('toolbar', { name: '2 boards selected' })).toBeVisible();
+  await expect(page.getByRole('progressbar').first()).toBeVisible();
+});
+
+test('the command bar opens apps by name', async ({ page }, info) => {
+  desktopOnly(info);
+  await openProject(page);
+  await expect(page.getByRole('region', { name: 'MOSS board workspace' })).toBeVisible();
+  await page.keyboard.press('Control+k');
+  await page.getByRole('combobox', { name: /Search apps, boards and actions/ }).fill('open the library');
+  await page.keyboard.press('Enter');
+  await expect(page.getByRole('region', { name: 'Library window' })).toBeVisible();
+  await expect(page.getByText('Opened Library.')).toBeVisible();
+});

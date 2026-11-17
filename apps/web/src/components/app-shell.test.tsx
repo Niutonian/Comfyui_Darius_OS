@@ -123,3 +123,15 @@ it("uses the project history without launching a read per remembered job", () =>
   expect(useKnownJobs).not.toHaveBeenCalled();
   expect(screen.getByRole("main")).toHaveClass("space-desktop");
 });
+
+it("Ctrl+K opens the command bar, which runs desktop commands", async () => {
+  const user = userEvent.setup();
+  show();
+  await user.keyboard("{Control>}k{/Control}");
+  const bar = await screen.findByRole("dialog", { name: "Command bar" });
+  await user.type(within(bar).getByRole("combobox"), "open the library");
+  await user.keyboard("{Enter}");
+  expect(await screen.findByRole("region", { name: "Library window" })).toBeVisible();
+  expect(screen.queryByRole("dialog", { name: "Command bar" })).toBeNull();
+  expect(await screen.findByText("Opened Library.")).toBeInTheDocument();
+});

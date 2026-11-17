@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { ArrowDown, MessagesSquare, MessageSquarePlus, Mic, Search, Square, Settings2, Maximize2, X } from "lucide-react";
 import { api } from "@/lib/api-client";
@@ -29,6 +29,7 @@ import { subscribeProjectRefresh } from "@/lib/project-sync";
 import { MovableSurface } from "./movable-surface";
 import { useMobileSheetFocus } from "@/lib/use-mobile-shell";
 import { readWorkspaceValue, rememberWorkspaceValue } from "@/lib/workspace-session";
+import { registerDesktopActions, tryDesktopCommand } from "@/lib/desktop-commands";
 
 export function AssistantWorkspace({ projectId, visible, onRetry, voiceHost, workspaceHost, composerHost, stayInView, onInteract, canvasBoard, compact = false }: {
   compact?: boolean; canvasBoard?: import("@/lib/moss-workspace").SelectedBoardContext | null;
@@ -258,6 +259,12 @@ export function AssistantWorkspace({ projectId, visible, onRetry, voiceHost, wor
   }, [busy, pending, onRetry]);
 
   async function send(text: string, assets: Asset[] = [], retry = false, onDelta?: (text: string) => void, savedUser?: Message, exactReferences = false): Promise<string> {
+    // A short desktop command ("open the library", "generate this") is carried out
+    // directly, typed or spoken, and never reaches the model or the conversation.
+    if (!retry && !savedUser && !assets.length) {
+      const done = tryDesktopCommand(text);
+      if (done) { setCommandNote({ id: Date.now(), text: done }); onDelta?.(done); return done; }
+    }
     if (!projectId || inFlight.current || loading) throw new Error("Conversation is not ready");
     inFlight.current = true;
     followLatest.current = true; // Applies to voice turns as well as typed submissions.
@@ -430,6 +437,27 @@ export function AssistantWorkspace({ projectId, visible, onRetry, voiceHost, wor
     voice.clearError();
     return send(text, assets, retry);
   }
+  const [commandNote, setCommandNote] = useState<{ id: number; text: string } | null>(null);
+  useEffect(() => { if (!commandNote) return; const timer = setTimeout(() => setCommandNote(null), 4000); return () => clearTimeout(timer); }, [commandNote]);
+  // The command bar's "Ask Darius" sends through the same path as the composer.
+  const latestSubmit = useRef(submit), latestVoice = useRef(voice);
+  useLayoutEffect(() => { latestSubmit.current = submit; latestVoice.current = voice; });
+  useEffect(() => registerDesktopActions({ ask: text => { onInteract?.(); void latestSubmit.current(text).catch(() => {}); } }), [onInteract]);
+  // Tap ` (backquote) anywhere outside a text field to talk to Darius; tap again to end.
+  // While Darius speaks, the tap interrupts so you can answer.
+  useEffect(() => {
+    if (!projectId) return;
+    const key = (event: KeyboardEvent) => {
+      if (event.code !== "Backquote" || event.repeat || event.ctrlKey || event.metaKey || event.altKey) return;
+      const target = event.target as HTMLElement | null;
+      if (target?.closest("input, textarea, select, [contenteditable=true]")) return;
+      event.preventDefault();
+      const v = latestVoice.current;
+      if (v.connecting) return;
+      if (v.phase === "off") v.start(); else if (v.phase === "speaking") v.start(); else v.endConversation();
+    };
+    window.addEventListener("keydown", key); return () => window.removeEventListener("keydown", key);
+  }, [projectId]);
   const stopVoice = useRef(voice.stop);
   const stopLocalVoice = useRef(localVoice.stop);
   const stopLiveVoice = useRef(liveVoice.stop);
@@ -462,6 +490,7 @@ export function AssistantWorkspace({ projectId, visible, onRetry, voiceHost, wor
   const lastIntent = [...messages].reverse().find(message => message.role === "assistant" && message.metadata.superseded !== true && message.metadata.resolved_intent)?.metadata.resolved_intent;
   const resultFollowup = resultDraft && resultDraft.asset.project_id === projectId ? <ResultFollowup key={resultDraft.id} draft={resultDraft} busy={busy} onClose={() => setResultDraft(null)} onSend={(text, asset) => send(text, [asset], false, undefined, undefined, true)} /> : null;
   const voiceControls = <div className="voice-controls">
+        {commandNote ? <p key={commandNote.id} className="voice-quick-line voice-command-note" role="status">{commandNote.text}</p> : null}
         {compact ? <button className="mobile-conversation-menu icon-button" aria-label="Open conversation menu" aria-expanded={mobileThreadsOpen} onClick={() => setMobileThreadsOpen((open) => !open)} type="button"><MessagesSquare size={22} /></button> : null}
         <button className="secondary-button" disabled={!projectId || loading || loadError} type="button" onClick={() => { voice.stop(); setFullscreenChat(true); setFullscreenVoice(true); }}><Maximize2 size={16} />Fullscreen chat</button>
         <button className="secondary-button voice-fullscreen-launch" disabled={!projectId || loading || loadError} type="button" onClick={() => { setFullscreenChat(false); setFullscreenVoice(true); if (!busy && voice.phase === "off" && !voice.connecting) voice.start(); }}><Maximize2 size={16} />Fullscreen voice</button>

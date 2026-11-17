@@ -33,7 +33,7 @@ function exportDocument(content: CanvasContent) {
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
-export function CanvasEditor({ projectId, documentId, assets, chooser, presets, onComposerHost, onAssistantHost, assistantOpen, onToggleAssistant, onExit, board }: Props & { documentId: string; chooser: React.ReactNode; presets: { id: string; name: string; width: number; height: number }[]; onExit?: () => void; board?: MossBoard }) {
+export function CanvasEditor({ projectId, documentId, assets, chooser, presets, onComposerHost, onAssistantHost, assistantOpen, onToggleAssistant, onExit, board, startCompare }: Props & { documentId: string; chooser: React.ReactNode; presets: { id: string; name: string; width: number; height: number }[]; onExit?: () => void; board?: MossBoard; startCompare?: boolean }) {
   const client = useQueryClient(), theme = useDariusStore(state => state.theme);
   const narrow = useCanvasNarrow();
   const query = useQuery({ queryKey: ["canvas", projectId, documentId], queryFn: () => canvasApi.get(projectId, documentId), refetchInterval: documentPoll, retry: 1 });
@@ -47,7 +47,7 @@ export function CanvasEditor({ projectId, documentId, assets, chooser, presets, 
   const exitFocus = () => { if (focus) setFocus(false); else onExit?.(); };
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set()), [fitToken, setFitToken] = useState(0);
   const [size, setSize] = useState({ width: 600, height: 400 });
-  const [showLayout, setShowLayout] = useState(true), [showResult, setShowResult] = useState(true), [before, setBefore] = useState(false), [compare, setCompare] = useState(false);
+  const [showLayout, setShowLayout] = useState(true), [showResult, setShowResult] = useState(true), [before, setBefore] = useState(false), [compare, setCompare] = useState(Boolean(startCompare));
   const [error, setError] = useState(""), [warning, setWarning] = useState(""), [saving, setSaving] = useState(false), [preparingDocs, setPreparingDocs] = useWorkspaceState<Record<string, boolean>>(`canvas:${projectId}:preparing`, {}), [checking, setChecking] = useState(false), [engineStatus, setEngineStatus] = useState("");
   const generating = Boolean(preparingDocs[documentId]), setGenerating = (value: boolean) => setPreparingDocs(previous => ({ ...previous, [documentId]: value })); const [conflict, setConflict] = useState(false), [seed, setSeed] = useWorkspaceState<string>(`canvas:${documentId}:seed`, "");
   const root = useRef<HTMLDivElement>(null), current = useRef(draft), savePromise = useRef<Promise<CanvasDocument | undefined> | null>(null);

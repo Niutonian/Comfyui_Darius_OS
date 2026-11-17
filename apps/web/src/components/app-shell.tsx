@@ -2,7 +2,7 @@
 
 import { MotionConfig, useReducedMotion } from "motion/react";
 import { ListVideo, PanelRightOpen } from "lucide-react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useHealth, useProjectAssets, useProjectEventStream, useProjectJobs, useProjectWorkflows, useProjects, useWorkflows } from "@/lib/queries";
 import { gentleSpring } from "@/lib/os-motion";
 import { readAppUrl, rememberAppUrl } from "@/lib/os-navigation";
@@ -28,6 +28,8 @@ import { WindowBoundary } from "./desktop/window-boundary";
 import { WidgetColumn } from "./desktop/widget-column";
 import { DotWord } from "./desktop/dot-word";
 import { SettingsIcon } from "./desktop/icons";
+import { CommandBar } from "./desktop/command-bar";
+import { registerDesktopActions } from "@/lib/desktop-commands";
 
 function Clock() {
   const [label, setLabel] = useState("");
@@ -61,6 +63,9 @@ export function AppShell() {
   const [editingBoard, setEditingBoard] = useState(false);
   const [columnOpen, setColumnOpen] = useWorkspaceState("desktop:column", true);
   const [homeSignal, setHomeSignal] = useState(0);
+  const [commandOpen, setCommandOpen] = useState(false), [toast, setToast] = useState<{ id: number; text: string } | null>(null);
+  const announce = useCallback((text: string) => setToast({ id: Date.now(), text }), []);
+  useEffect(() => { if (!toast) return; const timer = setTimeout(() => setToast(null), 3200); return () => clearTimeout(timer); }, [toast]);
   const urlBoot = useRef(true);
   const dismissSheet = useCallback(() => { setInspectorOpen(false); setTrayOpen(false); }, [setInspectorOpen, setTrayOpen]);
   const mobile = useMobileShell(inspectorOpen ? "inspector" : trayOpen ? "jobs" : null, dismissSheet);
@@ -134,6 +139,19 @@ export function AppShell() {
     return () => window.removeEventListener("popstate", apply);
   }, [setActiveProject, setView]);
 
+  // Darius and the command bar can open, close and reveal; the canvas registers the rest.
+  const shellActions = useRef({ openApp, closeApp: (app: AppId) => { windowActions().close(scope, app); settle(); }, showCanvas: () => {} });
+  useLayoutEffect(() => { shellActions.current = { openApp, closeApp: (app: AppId) => { windowActions().close(scope, app); settle(); }, showCanvas }; });
+  useEffect(() => registerDesktopActions({
+    openApp: app => shellActions.current.openApp(app),
+    closeApp: app => shellActions.current.closeApp(app),
+    showCanvas: () => shellActions.current.showCanvas(),
+  }), []);
+  useEffect(() => {
+    const key = (event: KeyboardEvent) => { if ((event.ctrlKey || event.metaKey) && !event.altKey && event.key.toLowerCase() === "k") { event.preventDefault(); setCommandOpen(open => !open); } };
+    window.addEventListener("keydown", key); return () => window.removeEventListener("keydown", key);
+  }, []);
+
   function goHome() {
     rememberAppUrl("home", activeProjectId, "push");
     setView("home");
@@ -206,6 +224,8 @@ export function AppShell() {
         <Inspector mobileModal={mobile} assets={projectAssets.data ?? []} jobs={projectJobs} workflows={projectWorkflowQuery.data ?? []} />
         {mobile && (inspectorOpen || trayOpen) ? <button className="mobile-sheet-scrim" aria-label="Dismiss panel" onClick={dismissSheet} type="button" /> : null}
         <JobTray mobileModal={mobile} hasError={projectJobQuery.isError} jobs={projectJobs} />
+        <CommandBar open={commandOpen} onClose={() => setCommandOpen(false)} onDone={announce} projectOpen={onDesktop} />
+        {toast ? <div key={toast.id} className="dk-toast" role="status">{toast.text}</div> : null}
       </main>
     </MotionConfig>
   );

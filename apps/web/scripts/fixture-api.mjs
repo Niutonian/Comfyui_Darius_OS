@@ -3,8 +3,9 @@
 //
 //   node scripts/fixture-api.mjs [--port 8000]
 //
-// Read-only in spirit: writes answer with plausible shapes but nothing is stored.
-// Never point a real project at it.
+// Nothing is written to disk. Canvas layout (positions, notes, frames) is kept in
+// memory until the process stops; other writes are echoed back. Never point a real
+// project at it.
 import { createServer } from "node:http";
 import { fileURLToPath } from "node:url";
 
@@ -21,15 +22,18 @@ const layout = [{ id: "r1", kind: "object", rect: [120, 160, 380, 520] }, { id: 
 const board = (id, name, extra = {}) => ({ id, projectId: "p1", documentId: `doc-${id}`, name, kind: "moss-t2i", revision: 2, documentRevision: 2, settings: { adapterVersion: "moss-bboxes-v1", seed: null, references: [] },
   archived: false, artboard: { width: 1024, height: 1024, preset: "square" }, prompt: "", regionCount: 3, layout, activeResult: null, previewAssetId: null, latest: null, jobs: [], newResult: false, ...extra });
 const boards = [
-  board("b1", "Forest gate", { prompt: "An ancient gate swallowed by moss, morning fog", activeResult: run("g1", "a1"), previewAssetId: "a1" }),
+  board("b1", "Forest gate", { prompt: "An ancient gate swallowed by moss, morning fog", activeResult: run("g1", "a1"), previewAssetId: "a1", recentAssetIds: ["a1", "a3", "a5"] }),
   board("b2", "Mara portrait", { prompt: "Portrait of Mara, the keeper", activeResult: run("g2", "a2"), previewAssetId: "a2", settings: { adapterVersion: "moss-bboxes-v1", seed: null, references: [{ id: "ref1", sourceBoardId: "b1", sourceGenerationId: "g1", assetId: "a1", assetVersionId: "a1", role: "visual-note" }] } }),
   board("b3", "Lantern study", { prompt: "A lantern glowing between roots", jobs: [run("g3", "a3", { status: "running", statusMessage: "Sampling 14/28" })] }),
   board("b4", "Throne room", { kind: "fibo-t2i", settings: { adapterVersion: "fibo-dev-v1", seed: null, references: [] }, regionCount: 0, layout: [] }),
 ];
 const placements = [{ boardId: "b1", x: 40, y: 60, displayWidth: 360, displayHeight: 450, order: 0 }, { boardId: "b2", x: 520, y: 20, displayWidth: 340, displayHeight: 470, order: 1 },
   { boardId: "b3", x: 280, y: 580, displayWidth: 360, displayHeight: 420, order: 2 }, { boardId: "b4", x: 760, y: 560, displayWidth: 320, displayHeight: 400, order: 3 }];
-const workspace = { projectId: "p1", schemaVersion: 1, revision: 3, placements, boards, capacity: 1, queuePolicy: "single" };
-const jobs = [{ id: "j1", project_id: "p1", job_type: "canvas", provider: "local-comfyui", status: "running", progress: .46, status_message: "Sampling 14/28", display_name: "Lantern study", output_asset_ids: [], external_job_id: null, error_code: null, error_detail: null, created_at: now, updated_at: now }];
+const workspace = { projectId: "p1", schemaVersion: 1, revision: 3, placements, annotations: [
+  { id: "frame-scene-1", kind: "frame", x: 0, y: -10, width: 900, height: 540, text: "Scene 1 · The gate", color: "moss" },
+  { id: "note-dawn", kind: "note", x: 1120, y: 80, width: 240, height: 170, text: "The gate only opens at dawn. Keep the light low and gold.", color: "sun" },
+], boards, capacity: 1, queuePolicy: "single" };
+const jobs = [{ id: "g3-job", project_id: "p1", job_type: "canvas", provider: "local-comfyui", status: "running", progress: .46, status_message: "Sampling 14/28", display_name: "Lantern study", output_asset_ids: [], external_job_id: null, error_code: null, error_detail: null, created_at: now, updated_at: now }];
 const doc = id => ({ id, projectId: "p1", revision: 2, content: { name: "Board", globalPrompt: "", artboard: { preset: "square", width: 1024, height: 1024 }, regions: [] }, activeGenerationId: null, updatedAt: now, generations: [] });
 const timelineVersion = { id: "v2", timeline_id: "t1", version_number: 2, state: "draft", edit_summary: "", created_by: "user", created_at: now, tracks: [
   { kind: "video", clips: [{ id: "c1", source_asset_id: "a1", source_in: 0, source_out: 5, timeline_in: 0, timeline_out: 5 }, { id: "c2", source_asset_id: "a2", source_in: 0, source_out: 4, timeline_in: 5, timeline_out: 9 }, { id: "c3", source_asset_id: "a4", source_in: 0, source_out: 6, timeline_in: 9, timeline_out: 15 }] },
@@ -66,7 +70,13 @@ const routes = [
 // interface behaves normally (drawing regions, switching workflows, moving boards).
 const writes = [
   [/^\/projects\/p\d\/canvases\/(doc-\w+)\/save$/, (m, body) => ({ ...doc(m[1]), revision: (body.revision ?? 2) + 1, content: body.content ?? doc(m[1]).content })],
-  [/^\/projects\/p\d\/canvas-workspace\/layout$/, (m, body) => ({ ...workspace, revision: (body.revision ?? workspace.revision) + 1, placements: body.placements ?? workspace.placements })],
+  [/^\/projects\/p\d\/canvas-workspace\/layout$/, (m, body) => {
+    // Kept in memory so notes, frames and positions survive the next poll.
+    workspace.revision += 1;
+    if (body.placements) workspace.placements = body.placements;
+    if (body.annotations) workspace.annotations = body.annotations;
+    return workspace;
+  }],
   [/^\/projects\/p\d\/canvas-workspace\/boards\/(\w+)$/, (m, body) => { const found = boards.find(b => b.id === m[1]) ?? boards[0]; return { ...found, revision: (body.revision ?? found.revision) + 1, settings: body.settings ?? found.settings, archived: body.archived ?? found.archived }; }],
   [/^\/projects\/p\d\/canvas-workspace\/boards$/, (m, body) => {
     const id = `b${Date.now().toString(36)}`, added = board(id, body.name ?? "Untitled board", { settings: body.settings ?? board(id, "").settings, layout: [], regionCount: 0 });

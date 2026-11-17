@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { canvasApi, type CanvasDocument } from "@/lib/canvas-api";
@@ -26,8 +26,12 @@ function show() {
   return render(<QueryClientProvider client={client}><MossWorkspace projectId="project-a" assets={[]} /></QueryClientProvider>);
 }
 
+// jsdom has no PointerEvent; without it shift/button never reach pointer handlers.
+class TestPointerEvent extends MouseEvent { pointerId: number; constructor(type: string, init: PointerEventInit = {}) { super(type, init); this.pointerId = init.pointerId ?? 1; } }
 beforeEach(() => {
   clearWorkspaceSession();
+  localStorage.clear();
+  vi.stubGlobal("PointerEvent", TestPointerEvent);
   vi.stubGlobal("ResizeObserver", class { observe() {} disconnect() {} unobserve() {} });
   vi.mocked(canvasApi.engine).mockResolvedValue({ adapterVersion: MOSS, presets: [] });
   vi.mocked(canvasApi.get).mockResolvedValue(doc());
@@ -140,4 +144,40 @@ it("shows a minimap that moves the view when clicked", async () => {
   const before = container.querySelector(".moss-stage")!.getAttribute("data-pan-x");
   fireEvent.pointerDown(map, { clientX: 150, clientY: 90, pointerId: 1 });
   await waitFor(() => expect(container.querySelector(".moss-stage")!.getAttribute("data-pan-x")).not.toBe(before));
+});
+
+it("adds a sticky note from the tool bar and saves it with the layout", async () => {
+  show();
+  await screen.findByRole("button", { name: "Open board Forest gate" });
+  fireEvent.click(screen.getByRole("button", { name: "Add a sticky note" }));
+  fireEvent.change(await screen.findByRole("textbox", { name: "Note text" }), { target: { value: "Dawn only" } });
+  fireEvent.blur(screen.getByRole("textbox", { name: "Note text" }));
+  await waitFor(() => expect(mossApi.layout).toHaveBeenCalled(), { timeout: 3000 });
+  const notes = vi.mocked(mossApi.layout).mock.calls.at(-1)![3]!;
+  expect(notes).toHaveLength(1);
+  expect(notes[0]).toMatchObject({ kind: "note", text: "Dawn only", color: "sun" });
+});
+
+it("shift-click selects several boards, aligns them and generates them together", async () => {
+  vi.mocked(mossApi.get).mockResolvedValue(workspace([board(), board({ id: "board-b", documentId: "doc-b", name: "River", prompt: "A river" })]));
+  vi.mocked(prepareBoard).mockImplementation(async (_p, b) => ({ boardId: b.id, documentId: b.documentId, documentRevision: 1, boardRevision: 1, name: b.name }));
+  vi.mocked(canvasApi.generate).mockResolvedValue({ id: "gen", jobId: "job", revision: 1, seed: 1, status: "queued", statusMessage: "Queued", error: null, assetIds: [], createdAt: "", provenance: {} } as never);
+  const { container } = show();
+  await screen.findByRole("button", { name: "Open board River" });
+  const card = (id: string) => container.querySelector<HTMLElement>(`[data-board-id='${id}']`)!;
+  card("board-a").setPointerCapture = card("board-b").setPointerCapture = () => {};
+  const stage = container.querySelector<HTMLElement>(".moss-stage")!; stage.setPointerCapture = () => {};
+  fireEvent.pointerDown(card("board-a"), { button: 0, pointerId: 1 }); fireEvent.pointerUp(card("board-a"), { pointerId: 1 });
+  fireEvent.pointerDown(card("board-b"), { button: 0, pointerId: 2, shiftKey: true }); fireEvent.pointerUp(card("board-b"), { pointerId: 2 });
+  const bar = await screen.findByRole("toolbar", { name: "2 boards selected" });
+  fireEvent.click(within(bar).getByRole("button", { name: "Align top edges" }));
+  await waitFor(() => expect(card("board-b").style.top).toBe(card("board-a").style.top));
+  fireEvent.click(within(bar).getByRole("button", { name: /Generate 2/ }));
+  await waitFor(() => expect(canvasApi.generate).toHaveBeenCalledTimes(2));
+});
+
+it("shows a progress ring while a board renders", async () => {
+  vi.mocked(mossApi.get).mockResolvedValue(workspace([board({ jobs: [{ id: "g", jobId: "job-1", revision: 1, seed: 1, status: "running", statusMessage: "Sampling", error: null, assetIds: [] }] })]));
+  show();
+  expect(await screen.findByRole("progressbar")).toBeInTheDocument();
 });

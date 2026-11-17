@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { Archive, Download, Hand, Maximize, Minus, MousePointer2, Plus, Redo2, Search, Undo2, Wrench } from "lucide-react";
+import { Archive, Download, Frame, GitBranch, Hand, Maximize, Minus, MousePointer2, Plus, Redo2, Search, StickyNote, Undo2, Wrench } from "lucide-react";
 import { canvasProfiles, FIBO_DEV, H3_ANIMATE, MOSS, type CanvasProfile } from "@/lib/canvas-profile";
 import type { CanvasContent } from "@/lib/canvas-document";
 import type { MossBoard } from "@/lib/moss-workspace";
@@ -10,6 +10,7 @@ export type ToolPillProps = {
   hand: boolean; canUndo: boolean; canRedo: boolean; scale: number; creating: boolean; canPrepare: boolean;
   onHand: (hand: boolean) => void; onUndo: () => void; onRedo: () => void; onZoom: (factor: number) => void; onFitAll: () => void;
   onAdd: (profile: CanvasProfile, content?: CanvasContent) => void; onImportError: (message: string) => void; onPrepare: () => void;
+  onNote: () => void; onFrame: () => void; lineage: boolean; onLineage: () => void;
 };
 
 /** The floating bottom bar of the canvas desktop. The dark "+" adds a board. */
@@ -27,6 +28,9 @@ export function ToolPill(p: ToolPillProps) {
   return <div className="dk-tool-pill" ref={root} role="toolbar" aria-label="Canvas tools">
     <button type="button" aria-label="Select boards" title="Select (V)" aria-pressed={!p.hand} onClick={() => p.onHand(false)}><MousePointer2 size={17} /></button>
     <button type="button" aria-label="Pan workspace" title="Pan (H, or hold Space)" aria-pressed={p.hand} onClick={() => p.onHand(true)}><Hand size={17} /></button>
+    <button type="button" aria-label="Add a sticky note" title="Sticky note (N)" onClick={p.onNote}><StickyNote size={17} /></button>
+    <button type="button" aria-label="Add a frame" title="Frame: groups the selected boards" onClick={p.onFrame}><Frame size={17} /></button>
+    <button type="button" aria-label="Show where things came from" title="Lineage: which results feed which boards" aria-pressed={p.lineage} onClick={p.onLineage}><GitBranch size={17} /></button>
     <i aria-hidden="true" />
     <button type="button" aria-label="Undo workspace action" title="Undo (Ctrl+Z)" disabled={!p.canUndo} onClick={p.onUndo}><Undo2 size={17} /></button>
     <button type="button" aria-label="Redo workspace action" title="Redo (Ctrl+Shift+Z)" disabled={!p.canRedo} onClick={p.onRedo}><Redo2 size={17} /></button>

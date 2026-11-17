@@ -2,17 +2,23 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { ApiError } from "@/lib/api-client";
-import { mossApi, type BoardSettings, type MossBoard, type Placement, type ProjectWorkspace } from "@/lib/moss-workspace";
+import { mossApi, type Annotation, type BoardSettings, type MossBoard, type Placement, type ProjectWorkspace } from "@/lib/moss-workspace";
 import { useWorkspaceState } from "@/lib/workspace-session";
 
-export type Layout = { revision: number; saved: Placement[]; present: Placement[] };
-export type UndoAction = { kind: "layout"; before: Placement[]; after: Placement[] } | { kind: "board"; boardId: string; before: BoardSettings; after: BoardSettings };
+/** Board positions plus the notes and frames drawn around them: one draft, saved together. */
+export type Layout = { revision: number; saved: Placement[]; present: Placement[]; savedNotes: Annotation[]; notes: Annotation[] };
+export type UndoAction =
+  | { kind: "layout"; before: Placement[]; after: Placement[] }
+  | { kind: "notes"; before: Annotation[]; after: Annotation[]; placementsBefore?: Placement[]; placementsAfter?: Placement[] }
+  | { kind: "board"; boardId: string; before: BoardSettings; after: BoardSettings };
 export const equal = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
 export const errorText = (error: unknown) => error instanceof Error ? error.message : "The operation failed. Your board and results are retained.";
+const fromRemote = (remote: ProjectWorkspace): Layout => ({ revision: remote.revision, saved: remote.placements, present: remote.placements, savedNotes: remote.annotations ?? [], notes: remote.annotations ?? [] });
+const isDirty = (layout: Layout | null) => Boolean(layout && (!equal(layout.present, layout.saved) || !equal(layout.notes ?? [], layout.savedNotes ?? [])));
 
 /**
- * Board positions are a presentation draft: autosaved, revision-checked, and undoable
- * together with board settings changes.
+ * Positions, notes and frames are a presentation draft: autosaved, revision-checked
+ * against other devices, and undoable together with board settings changes.
  */
 export function useBoardLayout({ projectId, scope, remote, boards, setError, refresh, isEditingPosition }: {
   projectId: string; scope: string; remote: ProjectWorkspace | undefined; boards: MossBoard[];
@@ -24,7 +30,7 @@ export function useBoardLayout({ projectId, scope, remote, boards, setError, ref
   const [saving, setSaving] = useState(false), [conflict, setConflict] = useState(false);
   const currentLayout = useRef(layout), savingPromise = useRef<Promise<void> | null>(null);
   useLayoutEffect(() => { currentLayout.current = layout; }, [layout]);
-  const dirty = Boolean(layout && !equal(layout.present, layout.saved));
+  const dirty = isDirty(layout);
 
   useEffect(() => {
     if (!remote) return;
@@ -33,7 +39,7 @@ export function useBoardLayout({ projectId, scope, remote, boards, setError, ref
       if (remote.revision > local.revision) { setConflict(true); setError("Workspace positions changed during this edit. Your position draft is retained; export it or reload saved positions to resolve."); }
       return;
     }
-    if (!local || (!savingPromise.current && equal(local.present, local.saved))) setLayout({ revision: remote.revision, saved: remote.placements, present: remote.placements });
+    if (!local || (!savingPromise.current && !isDirty(local))) setLayout(fromRemote(remote));
     else if (remote.revision > local.revision && !savingPromise.current) { setConflict(true); setError("Workspace positions changed on another device. Your position draft is retained; board generation still works."); }
   // isEditingPosition reads refs and the DOM; only remote changes should resync.
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -42,10 +48,11 @@ export function useBoardLayout({ projectId, scope, remote, boards, setError, ref
   async function saveLayout() {
     if (savingPromise.current) return savingPromise.current;
     const local = currentLayout.current;
-    if (!local || equal(local.present, local.saved) || conflict) return;
+    if (!local || !isDirty(local) || conflict) return;
     setSaving(true);
-    const work = mossApi.layout(projectId, local.revision, local.present).then(next => {
-      setLayout(previous => previous ? { ...previous, revision: next.revision, saved: local.present } : previous);
+    const notes = local.notes ?? [];
+    const work = mossApi.layout(projectId, local.revision, local.present, notes).then(next => {
+      setLayout(previous => previous ? { ...previous, revision: next.revision, saved: local.present, savedNotes: notes } : previous);
       client.setQueryData(["moss-workspace", projectId], next);
     }).catch(e => { setError(errorText(e)); if (e instanceof ApiError && e.status === 409) setConflict(true); throw e; })
       .finally(() => { savingPromise.current = null; setSaving(false); });
@@ -54,17 +61,34 @@ export function useBoardLayout({ projectId, scope, remote, boards, setError, ref
   useEffect(() => { if (!dirty || saving || conflict) return; const timer = setTimeout(() => { void saveLayout().catch(() => {}); }, 650); return () => clearTimeout(timer); });
 
   function record(action: UndoAction) { setHistory(h => ({ past: [...h.past.slice(-49), action], future: [] })); }
-  function move(placement: Placement) {
-    if (!layout) return;
-    const next = layout.present.map(p => p.boardId === placement.boardId ? placement : p);
+  /** Move one or several boards as one undoable step. */
+  function move(...placements: Placement[]) {
+    if (!layout || !placements.length) return;
+    const byId = new Map(placements.map(p => [p.boardId, p]));
+    const next = layout.present.map(p => byId.get(p.boardId) ?? p);
     if (!equal(next, layout.present)) { record({ kind: "layout", before: layout.present, after: next }); setLayout({ ...layout, present: next }); }
   }
+  /** Change notes and frames (optionally moving boards with a frame) as one undoable step. */
+  function changeNotes(notes: Annotation[], placements?: Placement[]) {
+    if (!layout) return;
+    const before = layout.notes ?? [];
+    const byId = new Map((placements ?? []).map(p => [p.boardId, p]));
+    const present = placements?.length ? layout.present.map(p => byId.get(p.boardId) ?? p) : layout.present;
+    if (equal(notes, before) && equal(present, layout.present)) return;
+    record({ kind: "notes", before, after: notes, ...(placements?.length ? { placementsBefore: layout.present, placementsAfter: present } : {}) });
+    setLayout({ ...layout, notes, present });
+  }
   /** Replace positions with a saved workspace (after an add, or a conflict reload). */
-  function adopt(workspace: ProjectWorkspace) { setLayout({ revision: workspace.revision, saved: workspace.placements, present: workspace.placements }); }
+  function adopt(workspace: ProjectWorkspace) { setLayout(fromRemote(workspace)); }
   async function undoAction(forward: boolean) {
     const action = forward ? history.future[0] : history.past.at(-1); if (!action) return;
     try {
       if (action.kind === "layout") setLayout(l => l ? { ...l, present: l.present.map(p => (forward ? action.after : action.before).find(old => old.boardId === p.boardId) ?? p) } : l);
+      else if (action.kind === "notes") setLayout(l => {
+        if (!l) return l;
+        const placements = forward ? action.placementsAfter : action.placementsBefore;
+        return { ...l, notes: forward ? action.after : action.before, present: placements ? l.present.map(p => placements.find(old => old.boardId === p.boardId) ?? p) : l.present };
+      });
       else {
         const board = boards.find(b => b.id === action.boardId); if (!board) throw new Error("Board no longer exists");
         const saved = await mossApi.save(projectId, board, forward ? action.after : action.before);
@@ -74,5 +98,5 @@ export function useBoardLayout({ projectId, scope, remote, boards, setError, ref
     } catch (e) { setError(errorText(e)); }
   }
   function clearHistory() { setHistory({ past: [], future: [] }); }
-  return { layout, currentLayout, dirty, saving, conflict, setConflict, saveLayout, move, adopt, record, history, undoAction, clearHistory };
+  return { layout, currentLayout, dirty, saving, conflict, setConflict, saveLayout, move, changeNotes, adopt, record, history, undoAction, clearHistory };
 }
