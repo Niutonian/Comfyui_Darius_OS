@@ -1,0 +1,294 @@
+/*
+ * Darius desktop: the project canvas is the desktop surface, tools are windows over it.
+ * Loaded last. Uses the theme tokens from studio.css so light and dark both follow.
+ */
+
+.app-shell.dk-shell {
+  --rail-w: 68px;
+  --column-w: 332px;
+  --gutter: 14px;
+  --radius-card: 22px;
+  --dk-panel: color-mix(in srgb, var(--surface) 94%, transparent);
+  --dk-raised: var(--surface-raised);
+  --dk-ink: var(--text);
+  --dk-ink-soft: color-mix(in srgb, var(--text) 8%, transparent);
+  --shadow-soft: 0 1px 0 rgba(255, 255, 255, .55) inset, 0 14px 36px rgba(39, 56, 41, .10), 0 2px 6px rgba(39, 56, 41, .05);
+  --shadow-float: 0 1px 0 rgba(255, 255, 255, .6) inset, 0 26px 70px rgba(30, 44, 33, .18), 0 4px 14px rgba(30, 44, 33, .08);
+  --dot-grid: radial-gradient(circle, color-mix(in srgb, var(--text) 20%, transparent) 1px, transparent 1.4px);
+  /* Where maximized windows sit: between the rail and the widget column. */
+  --dk-left: calc(var(--gutter) * 2 + var(--rail-w));
+  --dk-right: calc(var(--gutter) * 2 + var(--column-w));
+  height: 100dvh; min-height: 0; overflow: hidden;
+  background: var(--os-bg);
+}
+.app-shell.dk-shell.theme-dark {
+  --shadow-soft: 0 1px 0 rgba(255, 255, 255, .04) inset, 0 14px 36px rgba(0, 0, 0, .32);
+  --shadow-float: 0 1px 0 rgba(255, 255, 255, .05) inset, 0 26px 70px rgba(0, 0, 0, .5);
+}
+.app-shell.dk-shell.column-collapsed { --column-w: 64px; }
+.dk-shell button { cursor: pointer; }
+
+/* ---------- Desktop layout ---------- */
+.dk-desktop {
+  position: fixed; inset: 0;
+  display: grid; grid-template-columns: var(--rail-w) minmax(0, 1fr) var(--column-w);
+  gap: var(--gutter); padding: var(--gutter);
+  transition: grid-template-columns .28s cubic-bezier(.2, .8, .2, 1);
+}
+.dk-stage { position: relative; min-width: 0; min-height: 0; border-radius: 26px; overflow: hidden; background: var(--surface-canvas); box-shadow: var(--shadow-soft); isolation: isolate; }
+
+/* The board workspace fills the stage; its chrome floats over the dot grid. */
+.dk-stage > .canvas-workspace { position: absolute; inset: 0; background: transparent; border: 0; }
+.dk-stage .moss-workspace > .moss-body { position: absolute; inset: 0; }
+.dk-stage .moss-stage {
+  background-color: var(--surface-canvas);
+  background-image: var(--dot-grid);
+  background-size: calc(24px * var(--zoom, 1)) calc(24px * var(--zoom, 1));
+  background-position: var(--pan-x, 0) var(--pan-y, 0);
+}
+.dk-stage .moss-workspace > .canvas-notice { position: absolute; z-index: 6; top: 72px; left: 50%; transform: translateX(-50%); width: min(620px, calc(100% - 32px)); border-radius: 14px; box-shadow: var(--shadow-soft); }
+
+/* ---------- Top bar (inside the stage) ---------- */
+.dk-topbar { position: absolute; z-index: 8; top: 14px; left: 16px; right: 16px; display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; pointer-events: none; }
+.dk-topbar > * { pointer-events: auto; }
+.dk-project-chip { display: flex; align-items: center; gap: 8px; padding: 4px; border-radius: 16px; background: var(--dk-panel); box-shadow: var(--shadow-soft); backdrop-filter: blur(16px); }
+.dk-project-chip .project-trigger { width: min(230px, 26vw); }
+.dk-system { display: flex; align-items: center; gap: 6px; padding: 5px 6px 5px 10px; border-radius: 16px; background: var(--dk-ink); color: var(--surface); box-shadow: var(--shadow-soft); }
+.dk-system .icon-button, .dk-system .health-button, .dk-system .system-clock { color: color-mix(in srgb, var(--surface) 78%, transparent); }
+.dk-system .icon-button:hover { background: color-mix(in srgb, var(--surface) 14%, transparent); color: var(--surface); }
+.dk-system .health-button { border-color: color-mix(in srgb, var(--surface) 22%, transparent); background: transparent; }
+.dk-system .system-clock { padding: 0 6px; font-size: 12px; }
+.dk-system-jobs { position: relative; }
+.dk-system-jobs i { position: absolute; top: 6px; right: 6px; width: 7px; height: 7px; border-radius: 50%; background: var(--active-soft); box-shadow: 0 0 0 2px var(--dk-ink); animation: pulse 1.4s infinite; }
+
+/* Board finder: top centre of the canvas. */
+.dk-finder { position: absolute; z-index: 7; top: 14px; left: 268px; display: flex; align-items: center; gap: 4px; padding: 4px; border-radius: 15px; background: var(--dk-panel); box-shadow: var(--shadow-soft); backdrop-filter: blur(16px); }
+.dk-finder label { display: flex; align-items: center; gap: 6px; padding: 0 4px 0 10px; color: var(--muted); }
+.dk-shell .dk-finder input { width: 150px; border: 0; background: transparent; padding: 7px 2px; }
+.dk-shell .dk-finder select { width: 120px; border: 0; background: var(--dk-ink-soft); border-radius: 10px; padding: 7px 8px; font-size: 12px; }
+.dk-finder button { display: inline-flex; align-items: center; gap: 6px; border: 0; background: transparent; color: var(--muted); padding: 7px 10px; border-radius: 10px; font-size: 12px; }
+.dk-finder button:hover, .dk-finder button[aria-pressed="true"] { background: var(--active-soft); color: var(--text); }
+
+/* ---------- Tool pill (bottom centre) ---------- */
+.dk-tool-pill { position: absolute; z-index: 7; bottom: 16px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 3px; padding: 5px; border-radius: 18px; background: var(--dk-panel); box-shadow: var(--shadow-float); backdrop-filter: blur(16px); }
+.dk-tool-pill > button { display: grid; place-items: center; width: 38px; height: 38px; border: 0; border-radius: 12px; background: transparent; color: var(--muted); }
+.dk-tool-pill > button:hover:not(:disabled) { background: var(--dk-ink-soft); color: var(--text); }
+.dk-tool-pill > button[aria-pressed="true"] { background: var(--active-soft); color: var(--active); }
+.dk-shell.theme-dark .dk-tool-pill > button[aria-pressed="true"] { color: var(--text); }
+.dk-tool-pill > i { width: 1px; height: 20px; margin: 0 4px; background: var(--line); }
+.dk-tool-zoom { min-width: 42px; text-align: center; font-size: 11px; font-variant-numeric: tabular-nums; color: var(--muted); }
+.dk-tool-pill > .dk-tool-add { width: 42px; height: 42px; margin-left: 6px; border-radius: 13px; background: var(--dk-ink); color: var(--surface); }
+.dk-tool-pill > .dk-tool-add:hover:not(:disabled) { background: var(--active); color: var(--text-on-active); }
+.dk-tool-menu { position: absolute; bottom: calc(100% + 10px); right: 0; width: 260px; max-height: min(70dvh, 520px); overflow: auto; display: grid; gap: 2px; padding: 8px; border-radius: 18px; background: var(--surface-raised); box-shadow: var(--shadow-float); border: 1px solid var(--line); }
+.dk-tool-menu .dk-menu-label { padding: 8px 10px 4px; font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.dk-tool-menu button { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; text-align: left; border: 0; border-radius: 11px; background: transparent; padding: 8px 10px; color: var(--text); font-size: 13px; }
+.dk-tool-menu button small { flex-basis: 100%; color: var(--muted); font-size: 11px; }
+.dk-tool-menu button:hover:not(:disabled) { background: var(--active-soft); }
+.dk-tool-menu > i { height: 1px; margin: 6px 4px; background: var(--line); }
+
+.dk-canvas-status { position: absolute; z-index: 6; left: 18px; bottom: 22px; display: grid; gap: 2px; font-size: 10.5px; color: var(--muted); pointer-events: none; }
+
+/* Board cards: soft, rounded, like objects resting on the canvas. */
+.dk-stage .moss-board { border-radius: var(--radius-card); border-color: color-mix(in srgb, var(--control-border) 55%, transparent); box-shadow: var(--shadow-soft); }
+.dk-stage .moss-board.selected { box-shadow: 0 0 0 2px var(--active), var(--shadow-float); }
+.dk-stage .moss-board.is-dragging { box-shadow: var(--shadow-float); }
+.dk-stage .moss-edges .moss-edge path { stroke: color-mix(in srgb, var(--text) 45%, transparent); stroke-width: 1.6; stroke-dasharray: 4 6; fill: none; opacity: 1; }
+.dk-stage .moss-edges .moss-edge circle { fill: var(--surface); stroke: color-mix(in srgb, var(--text) 55%, transparent); stroke-width: 1.6; }
+.dk-stage .moss-empty { gap: 12px; }
+.dk-stage .moss-empty h3 { font-size: 22px; letter-spacing: -.02em; }
+
+/* ---------- Icon rail ---------- */
+.dk-rail { min-height: 0; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 12px 0; border-radius: 24px; background: var(--dk-panel); box-shadow: var(--shadow-soft); overflow: hidden auto; scrollbar-width: none; }
+.dk-rail-home { display: grid; place-items: center; width: 46px; height: 46px; margin-bottom: 4px; border: 0; border-radius: 50%; background: #182317; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .08); }
+.dk-rail-home .liquid-orb { width: 34px; height: 34px; }
+.dk-rail-app { position: relative; display: grid; place-items: center; flex: 0 0 auto; width: 44px; height: 44px; border: 0; border-radius: 14px; background: transparent; color: var(--muted); transition: background .15s, color .15s; }
+.dk-rail-app:hover { background: var(--dk-ink-soft); color: var(--text); }
+.dk-rail-app.is-focused { background: var(--active-soft); color: var(--active); }
+.dk-shell.theme-dark .dk-rail-app.is-focused { color: var(--text); }
+.dk-rail-app > i { position: absolute; left: -2px; top: 50%; width: 5px; height: 5px; margin-top: -2.5px; border-radius: 50%; background: var(--active); }
+.dk-rail-app.is-minimized > i { background: transparent; box-shadow: inset 0 0 0 1.4px var(--muted); }
+.dk-rail-apps { display: flex; flex-direction: column; gap: 4px; }
+.dk-rail-rule { width: 24px; height: 1px; margin: 6px 0; background: var(--line); flex: 0 0 auto; }
+.dk-rail-spacer { flex: 1; min-height: 8px; }
+
+/* ---------- Widget column ---------- */
+.dk-column { position: relative; min-width: 0; min-height: 0; display: flex; flex-direction: column; gap: var(--gutter); }
+.dk-column-toggle { position: absolute; z-index: 2; top: 10px; right: 10px; background: var(--dk-panel); box-shadow: var(--shadow-soft); }
+.dk-column-panel { flex: 1 1 auto; min-height: 0; display: flex; }
+.dk-column-panel[hidden] { display: none; }
+.dk-tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding-top: 48px; }
+.dk-tile { display: flex; flex-direction: column; gap: 10px; min-height: 128px; padding: 12px; border: 0; border-radius: 20px; text-align: left; background: var(--dk-panel); color: var(--text); box-shadow: var(--shadow-soft); transition: transform .18s, box-shadow .18s; overflow: hidden; }
+.dk-tile:hover { transform: translateY(-2px); box-shadow: var(--shadow-float); }
+.dk-tile > header { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+.dk-tile > header > span { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 650; }
+.dk-tile > header > b { min-width: 22px; padding: 2px 7px; border-radius: 999px; background: var(--dk-ink); color: var(--surface); font-size: 11px; text-align: center; }
+.dk-tile > header > b.is-alert { background: var(--danger); }
+.dk-tile-body { flex: 1; min-height: 0; display: flex; flex-direction: column; justify-content: flex-end; gap: 6px; }
+.dk-tile-body small { color: var(--muted); font-size: 11px; line-height: 1.4; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.dk-tile-body img { width: 100%; height: 64px; object-fit: cover; border-radius: 12px; }
+.dk-tile-quote { font-style: italic; }
+.dk-meter { height: 4px; border-radius: 99px; background: var(--dk-ink-soft); overflow: hidden; }
+.dk-meter b { display: block; height: 100%; background: var(--active); }
+.dk-tile-faces { display: flex; }
+.dk-tile-faces i { display: grid; place-items: center; width: 28px; height: 28px; margin-right: -6px; border-radius: 50%; border: 2px solid var(--surface); background: var(--active-soft); color: var(--active); font-style: normal; font-size: 12px; font-weight: 700; }
+
+/* Selected board panel (portalled from the canvas). */
+.dk-board-panel { flex: 1; min-height: 0; display: flex; flex-direction: column; border-radius: var(--radius-card); background: var(--dk-panel); box-shadow: var(--shadow-soft); overflow: hidden; }
+.dk-board-panel > header { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 10px; border-bottom: 1px solid var(--line); }
+.dk-board-panel [role="tablist"] { display: flex; gap: 4px; padding: 3px; border-radius: 12px; background: var(--dk-ink-soft); }
+.dk-board-panel [role="tab"] { display: inline-flex; align-items: center; gap: 6px; border: 0; border-radius: 9px; padding: 6px 12px; background: transparent; color: var(--muted); font-size: 12px; font-weight: 600; }
+.dk-board-panel [role="tab"][aria-selected="true"] { background: var(--surface-raised); color: var(--text); box-shadow: 0 1px 3px rgba(0, 0, 0, .08); }
+.dk-column:has(.dk-column-panel:not([hidden])) > .dk-column-toggle { display: none; }
+.dk-board-panel-body { flex: 1; min-height: 0; overflow: auto; padding: 4px 14px 16px; }
+.dk-board-panel-body :where(input:not([type=checkbox]):not([type=radio]):not([type=range]), select, textarea) { width: 100%; }
+.dk-board-panel-body label { display: grid; gap: 6px; color: var(--muted); font-size: 11px; margin-top: 10px; }
+.dk-board-panel-body .moss-inspector, .dk-board-panel-body .canvas-board-history { display: grid; gap: 8px; }
+
+/* Darius: always present. */
+.dk-darius { position: relative; flex: 0 0 auto; display: grid; gap: 10px; padding: 14px; border-radius: 26px; color: #f2f6ee; overflow: hidden;
+  background: radial-gradient(120% 80% at 50% 0%, color-mix(in srgb, var(--active) 70%, #9fcf7a) 0%, transparent 62%), linear-gradient(170deg, #22392a, #121c16 78%);
+  box-shadow: var(--shadow-float); }
+.dk-darius > header { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.dk-darius .dot-word { color: #f2f6ee; opacity: .92; }
+.dk-darius-chat { display: inline-flex; align-items: center; gap: 6px; border: 0; padding: 6px 10px; border-radius: 999px; background: rgba(255, 255, 255, .12); color: inherit; font-size: 11.5px; font-weight: 600; }
+.dk-darius-chat:hover, .dk-darius-chat[aria-pressed="true"] { background: rgba(255, 255, 255, .22); }
+.dk-darius-orb { display: grid; place-items: center; height: 118px; }
+.dk-darius-orb .liquid-orb { width: 112px; height: 112px; filter: drop-shadow(0 12px 30px rgba(170, 230, 130, .25)); }
+.dk-darius-voice .voice-controls { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; justify-content: center; }
+.dk-darius-voice .voice-controls > button { min-height: 34px; padding: 0 12px; border-radius: 999px; font-size: 12px; border: 0; background: rgba(255, 255, 255, .12); color: inherit; }
+.dk-darius-voice .voice-controls > button:hover:not(:disabled) { background: rgba(255, 255, 255, .22); }
+.dk-darius-voice .voice-controls > button[aria-label="Start voice conversation"], .dk-darius-voice .voice-controls > button[aria-label="End voice conversation"] { order: -1; flex-basis: 100%; min-height: 40px; background: #f2f6ee; color: #182317; font-weight: 700; }
+.dk-darius-voice .voice-controls > button[aria-label="End voice conversation"] { background: #ffd9d4; }
+.dk-darius-voice .voice-controls :is(.voice-phase, small, [role="status"]) { flex-basis: 100%; text-align: center; color: rgba(242, 246, 238, .72); font-size: 11px; }
+.dk-darius-voice .voice-phase:empty { display: none; }
+.voice-quick-line { flex-basis: 100%; margin: 0; padding: 8px 10px; border-radius: 12px; background: rgba(0, 0, 0, .22); font-size: 12px; line-height: 1.45; max-height: 68px; overflow: auto; }
+.dk-darius-composer[hidden] { display: none; }
+.dk-darius-composer .composer-surface { display: block !important; }
+.app-shell.os-desktop .dk-darius-composer .composer-wrap { position: relative; inset: auto; width: auto; max-height: none; margin: 0; padding: 0; border: 0; border-radius: 16px; background: transparent; transform: none; }
+.dk-darius-composer .composer { border-radius: 16px; background: rgba(255, 255, 255, .94); color: #182317; border: 0; }
+.dk-shell.theme-dark .dk-darius-composer .composer { background: rgba(10, 16, 13, .7); color: var(--text); }
+
+.dk-darius > header { min-width: 0; }
+.dk-darius .dot-word { flex: 0 0 auto; }
+/* While a board panel is open, Darius tucks into one row: orb, voice. */
+.dk-column:has(.dk-column-panel:not([hidden])) .dk-darius { grid-template-columns: 52px minmax(0, 1fr); align-items: center; padding: 10px 12px; border-radius: 22px; }
+.dk-column:has(.dk-column-panel:not([hidden])) .dk-darius > header, .dk-column:has(.dk-column-panel:not([hidden])) .dk-darius-composer { display: none; }
+.dk-column:has(.dk-column-panel:not([hidden])) .dk-darius-orb { height: 52px; }
+.dk-column:has(.dk-column-panel:not([hidden])) .dk-darius-orb .liquid-orb { width: 50px; height: 50px; }
+.dk-column:has(.dk-column-panel:not([hidden])) .dk-darius-voice .voice-controls > :is(.secondary-button, .primary-button):not([aria-label$="voice conversation"]) { display: none; }
+
+/* Collapsed column: Darius shrinks to an orb and a voice button. */
+.column-collapsed .dk-column { align-items: center; }
+.column-collapsed .dk-column-toggle { position: static; }
+.column-collapsed .dk-darius { margin-top: auto; padding: 8px; border-radius: 22px; width: 100%; }
+.column-collapsed .dk-darius > header, .column-collapsed .dk-darius-composer, .column-collapsed .dk-darius-voice .voice-controls > :not([aria-label="Start voice conversation"]):not([aria-label="End voice conversation"]) { display: none; }
+.column-collapsed .dk-darius-orb { height: 44px; }
+.column-collapsed .dk-darius-orb .liquid-orb { width: 44px; height: 44px; }
+.column-collapsed .dk-darius-voice .voice-controls > button { padding: 0; min-height: 36px; font-size: 0; }
+.column-collapsed .dk-darius-voice .voice-controls > button svg { width: 16px; height: 16px; }
+
+/* ---------- Windows ---------- */
+.dk-windows { position: fixed; inset: 0; z-index: 30; pointer-events: none; }
+.dk-window {
+  position: fixed; left: var(--x); top: var(--y); width: var(--w); height: var(--h);
+  max-width: calc(100vw - var(--dk-left) - var(--gutter)); max-height: calc(100dvh - var(--gutter) * 2);
+  display: flex; flex-direction: column; pointer-events: auto;
+  border-radius: 24px; border: 1px solid var(--line); background: var(--surface); color: var(--text);
+  box-shadow: var(--shadow-soft); overflow: hidden;
+  animation: dk-window-in .22s cubic-bezier(.2, .8, .2, 1);
+}
+.dk-window[hidden] { display: none; }
+.dk-window.is-focused { box-shadow: var(--shadow-float); }
+.dk-window.is-maximized { left: var(--dk-left); top: var(--gutter); right: var(--dk-right); bottom: var(--gutter); width: auto; height: auto; max-width: none; border-radius: 26px; }
+.dk-window.is-dragging { transition: none; user-select: none; }
+@keyframes dk-window-in { from { opacity: 0; transform: translateY(10px) scale(.985); } }
+.dk-window-bar { flex: 0 0 auto; display: flex; align-items: center; gap: 10px; height: 46px; padding: 0 8px 0 14px; cursor: grab; user-select: none; border-bottom: 1px solid var(--line); background: var(--surface); }
+.dk-window.is-maximized .dk-window-bar { cursor: default; }
+.dk-window:not(.is-focused) .dk-window-bar { color: var(--muted); }
+.dk-window-icon { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 9px; background: var(--active-soft); color: var(--active); }
+.dk-shell.theme-dark .dk-window-icon { color: var(--text); }
+.dk-window-bar strong { flex: 1; min-width: 0; font-size: 13px; font-weight: 650; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dk-window-controls { display: flex; gap: 2px; }
+.dk-window-controls button { display: grid; place-items: center; width: 30px; height: 30px; border: 0; border-radius: 10px; background: transparent; color: var(--muted); }
+.dk-window-controls button:hover { background: var(--dk-ink-soft); color: var(--text); }
+.dk-window-controls button:last-child:hover { background: color-mix(in srgb, var(--danger) 16%, transparent); color: var(--danger); }
+.dk-window-body { position: relative; flex: 1; min-height: 0; display: flex; flex-direction: column; overflow: hidden; container-type: inline-size; }
+.dk-window-body > * { flex: 1; min-height: 0; }
+.dk-window-body > .view, .dk-app-scroll { overflow: auto; }
+.dk-window-body > .view { padding: 20px 24px; }
+.dk-app-scroll { padding: 18px 22px; }
+.dk-window-resize { position: absolute; right: 2px; bottom: 2px; width: 18px; height: 18px; cursor: nwse-resize; border-radius: 0 0 20px 0;
+  background: linear-gradient(135deg, transparent 52%, var(--line-light) 53%, var(--line-light) 60%, transparent 61%, transparent 70%, var(--line-light) 71%, var(--line-light) 78%, transparent 79%); }
+
+/* Library window */
+.library-app { overflow: auto; padding: 14px 18px 18px; border: 0; border-radius: 0; background: transparent; box-shadow: none; }
+.library-app-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+
+/* Chat window: conversation list beside the stream, composer below. */
+.dk-chat { display: grid; grid-template-rows: minmax(0, 1fr) auto; min-height: 0; }
+.dk-chat-conversation { min-height: 0; display: flex; overflow: hidden; }
+.dk-chat-conversation .assistant-workspace { flex: 1; display: grid; grid-template-columns: 220px minmax(0, 1fr); min-height: 0; overflow: hidden; padding: 0; }
+.dk-chat-conversation .talk-thread-list { min-height: 0; overflow: auto; padding: 12px 10px; border-right: 1px solid var(--line); }
+.dk-chat-conversation .talk-conversation-column { min-height: 0; height: auto; display: flex; flex-direction: column; overflow: hidden; }
+.dk-chat-conversation .talk-stream { flex: 1 1 0; min-height: 0; height: auto; overflow-y: auto; padding: 16px 18px; overscroll-behavior: contain; }
+.dk-chat-composer { padding: 10px 14px 14px; border-top: 1px solid var(--line); }
+.dk-chat-composer .composer-surface { display: block !important; }
+.app-shell.os-desktop .dk-chat-composer .composer-wrap { position: relative; inset: auto; width: auto; max-height: none; margin: 0 auto; padding: 0; border: 0; background: transparent; transform: none; max-width: 760px; }
+.dk-window.app-chat { min-width: 0; }
+@container (max-width: 640px) { .dk-chat-conversation .assistant-workspace { grid-template-columns: 1fr; } }
+
+/* ---------- Launcher (no project open) ---------- */
+.dk-launcher { position: fixed; inset: 0; display: flex; flex-direction: column; background-color: var(--os-bg); background-image: var(--dot-grid); background-size: 26px 26px; }
+.dk-launcher > .dk-topbar { position: relative; top: auto; left: auto; right: auto; padding: 16px 20px 0; align-items: center; }
+.dk-brand { display: flex; align-items: center; gap: 14px; color: var(--text); }
+.dk-brand span { font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+.dk-launcher-actions { display: flex; align-items: center; gap: 6px; margin-left: auto; padding: 4px; border-radius: 16px; background: var(--dk-panel); box-shadow: var(--shadow-soft); }
+.dk-launcher .home-desktop { position: relative; flex: 1; min-height: 0; overflow: auto; padding: 32px clamp(16px, 4vw, 64px); }
+.dk-launcher-composer { flex: 0 0 auto; width: min(760px, calc(100% - 32px)); margin: 0 auto 18px; }
+.dk-launcher-composer .composer-surface { display: block !important; }
+.app-shell.os-desktop .dk-launcher-composer .composer-wrap { position: relative; inset: auto; width: auto; margin: 0; border: 1px solid var(--line); border-radius: 20px; background: var(--surface); box-shadow: var(--shadow-soft); transform: none; }
+
+/* ---------- Overlays keep floating above the desktop ---------- */
+.dk-shell .inspector { z-index: 60; border-radius: 22px; box-shadow: var(--shadow-float); }
+/* The Queue tile and the jobs button open the tray; its old bottom strip is not needed. */
+.dk-shell .job-tray:not(.open) { display: none; }
+.app-shell.dk-shell .job-tray.open { position: fixed; z-index: 60; top: auto; right: auto; left: var(--dk-left); bottom: var(--gutter); width: min(520px, calc(100vw - var(--dk-left) - var(--dk-right))); height: min(440px, 60dvh); border: 1px solid var(--line); border-radius: 22px; background: var(--surface); box-shadow: var(--shadow-float); overflow: hidden; }
+.app-shell.dk-shell .job-tray.open .tray-handle { display: none; }
+@media (max-width: 1180px) { .dk-finder button span { display: none; } .dk-shell .dk-finder input { width: 110px; } }
+
+/* ---------- Phone: windows become sheets, the rail becomes a dock ---------- */
+@media (max-width: 760px), (max-width: 1000px) and (max-height: 500px) {
+  .app-shell.dk-shell { --rail-w: 0px; --gutter: 8px; --dk-left: 0px; --dk-right: 0px; }
+  .dk-desktop { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); padding: 0 0 calc(64px + env(safe-area-inset-bottom)); gap: 0; }
+  .dk-stage { border-radius: 0; box-shadow: none; }
+  .dk-rail { position: fixed; z-index: 70; left: 8px; right: 8px; bottom: calc(6px + env(safe-area-inset-bottom)); height: 56px; flex-direction: row; padding: 0 8px; border-radius: 20px; overflow: auto hidden; box-shadow: var(--shadow-float); }
+  .dk-rail-apps { flex-direction: row; }
+  .dk-rail-home { flex: 0 0 auto; width: 40px; height: 40px; margin: 0 4px 0 0; }
+  .dk-rail-rule { width: 1px; height: 24px; margin: 0 4px; }
+  .dk-rail-spacer { display: none; }
+  .dk-rail-app > i { left: 50%; top: auto; bottom: 1px; margin: 0 0 0 -2.5px; }
+  .dk-column { position: fixed; z-index: 65; right: 10px; bottom: calc(72px + env(safe-area-inset-bottom)); width: auto; }
+  .dk-column-toggle, .dk-column-panel, .dk-tiles { display: none !important; }
+  /* A window is a full sheet on a phone; Darius moves into it (chat) or waits on the canvas. */
+  .dk-shell[class*=" focus-"] .dk-column { display: none; }
+  .dk-darius { padding: 6px; border-radius: 999px; }
+  .dk-darius > header, .dk-darius-composer, .dk-darius-voice .voice-controls > :not([aria-label="Start voice conversation"]):not([aria-label="End voice conversation"]):not(.mobile-conversation-menu) { display: none; }
+  .dk-darius { display: flex; align-items: center; }
+  .dk-darius-orb { height: 40px; width: 40px; }
+  .dk-darius-orb .liquid-orb { width: 40px; height: 40px; }
+  .dk-darius-voice .voice-controls > button[aria-label="Start voice conversation"], .dk-darius-voice .voice-controls > button[aria-label="End voice conversation"] { flex-basis: auto; min-height: 36px; }
+  .dk-topbar { top: calc(8px + env(safe-area-inset-top)); left: 8px; right: 8px; }
+  .dk-system .system-clock, .dk-system .inspector-launch { display: none; }
+  .dk-finder { display: none; }
+  .dk-stage .moss-mobile-list { padding-top: calc(64px + env(safe-area-inset-top)); padding-bottom: 80px; }
+  .dk-tool-pill { display: none; }
+  .dk-canvas-status { display: none; }
+  .dk-window, .dk-window.is-maximized { left: 0; top: 0; right: 0; bottom: calc(64px + env(safe-area-inset-bottom)); width: auto; height: auto; max-width: none; max-height: none; border-radius: 0 0 22px 22px; border: 0; }
+  .dk-window:not(.is-focused) { display: none; }
+  .dk-window-resize { display: none; }
+  .dk-window-bar { padding-top: env(safe-area-inset-top); height: calc(50px + env(safe-area-inset-top)); cursor: default; }
+  .dk-chat-conversation .assistant-workspace { grid-template-columns: 1fr; }
+  .dk-chat-conversation .talk-thread-list { display: none; }
+  .dk-chat-conversation .mobile-threads-open .talk-thread-list { display: block; }
+}
+@media (prefers-reduced-motion: reduce) { .dk-window { animation: none; } .dk-desktop { transition: none; } }

@@ -79,9 +79,7 @@ export function HomeDesktop({ onNewProject }: { onNewProject: () => void }) {
   }, [sorted.length]);
 
   function open(projectId: string) {
-    const nextView = useDariusStore.getState().lastView;
-    const view = nextView === "home" || nextView === "settings" ? "talk" : nextView;
-    rememberAppUrl(view, projectId, "push");
+    rememberAppUrl("create", projectId, "push");
     openProject(projectId);
   }
 

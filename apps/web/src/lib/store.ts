@@ -56,12 +56,8 @@ export const useDariusStore = create<DariusState>()(
       trayOpen: false,
       lastView: "talk",
       setView: (view) => set((state) => ({ view, lastView: view === "home" || view === "settings" ? state.lastView : view })),
-      openProject: (id) => set((state) => ({
-        activeProjectId: id,
-        ...projectContext(state, id),
-        view: state.lastView === "home" || state.lastView === "settings" ? "talk" : state.lastView,
-        lastView: state.lastView === "home" || state.lastView === "settings" ? "talk" : state.lastView,
-      })),
+      // A project opens onto its canvas desktop; windows it had open are restored there.
+      openProject: (id) => set((state) => ({ activeProjectId: id, ...projectContext(state, id), view: "create" })),
       setTheme: (theme) => set({ theme }),
       setDariusMood: (dariusMood) => set({ dariusMood }),
       setProjects: (projects) =>

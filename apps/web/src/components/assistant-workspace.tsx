@@ -48,7 +48,7 @@ export function AssistantWorkspace({ projectId, visible, onRetry, voiceHost, wor
   const [mobileThreadsOpen, setMobileThreadsOpen] = useState(false);
   const closeThreads = useCallback(() => setMobileThreadsOpen(false), []);
   useMobileSheetFocus(compact && visible && mobileThreadsOpen ? ".talk-thread-list" : null, closeThreads);
-  const presentation = useAssetPresentation(projectId, activeThread, visible);
+  const presentation = useAssetPresentation(projectId, activeThread, Boolean(projectId));
   const originatingMessages = useRef(new Set<string>());
   const presentReply = useRef(presentation.present);
   const stopClassicRef = useRef<() => void>(() => {});
@@ -365,13 +365,9 @@ export function AssistantWorkspace({ projectId, visible, onRetry, voiceHost, wor
   const setDariusMood = useDariusStore((state) => state.setDariusMood);
   const mood: DariusMood = busy || voice.phase === "thinking" ? "thinking" : voice.phase === "listening" ? "listening" : voice.phase === "speaking" ? "speaking" : "idle";
   useEffect(() => {
-    if (!visible) {
-      setDariusMood("idle");
-      return;
-    }
     setDariusMood(mood);
     return () => setDariusMood("idle");
-  }, [mood, visible, setDariusMood]);
+  }, [mood, setDariusMood]);
   async function openThread(id: string) {
     setMobileThreadsOpen(false);
     if (!projectId || busy || loading || id === conversation.current) return;
@@ -442,12 +438,9 @@ export function AssistantWorkspace({ projectId, visible, onRetry, voiceHost, wor
     stopLocalVoice.current = localVoice.stop;
     stopLiveVoice.current = liveVoice.stop;
   });
-  useEffect(() => {
-    if (visible) return;
-    stopVoice.current();
-    const frame = requestAnimationFrame(() => setFullscreenVoice(false));
-    return () => cancelAnimationFrame(frame);
-  }, [visible]);
+  // Voice is always available from the Darius card, so hiding the chat window does not
+  // end a conversation. Switching project remounts this component, which stops it.
+  useEffect(() => () => stopVoice.current(), []);
   useEffect(() => { if (liveVoiceEnabled) stopLocalVoice.current(); else stopLiveVoice.current(); }, [liveVoiceEnabled]);
 
   function voiceMessageResults(message: Message) {
@@ -481,6 +474,7 @@ export function AssistantWorkspace({ projectId, visible, onRetry, voiceHost, wor
         {!liveVoiceEnabled && localVoice.waitingForReply ? <span role="status">Your next message is held until the current reply finishes.</span> : null}
         {!liveVoiceEnabled && voice.phase === "speaking" ? <small>{voiceBackend === "pipecat" ? "Speak naturally to interrupt the voice. Your task continues in chat." : "Say “Darius, stop” to interrupt. The task continues in chat."}</small> : null}
         {!liveVoiceEnabled && voice.phase === "thinking" && !busy ? <button className="secondary-button" onClick={localVoice.start} type="button">Continue listening</button> : null}
+        {!visible && voice.phase !== "off" && (voice.transcript || streamedReply) ? <p className="voice-quick-line" aria-live="polite">{voice.phase === "listening" ? voice.transcript : streamedReply}</p> : null}
         <span className="voice-phase" role="status">{voice.phase === "listening" ? liveVoiceEnabled ? "Listening · GPT-Live 1" : "Listening…" : voice.phase === "thinking" ? busy ? "Thinking…" : liveVoiceEnabled ? "GPT-Live is thinking…" : "Preparing local voice…" : voice.phase === "speaking" ? "Darius is speaking…" : voice.armed ? "Listening for Darius · local" : ""}</span>
   </div>;
 
@@ -563,9 +557,9 @@ export function AssistantWorkspace({ projectId, visible, onRetry, voiceHost, wor
     </div> : null;
   const viewer = presentation.gallery ? presentation.gallery.mode === "gallery" ? <VoiceGallery assets={presentation.gallery.assets} onSelect={presentation.select} onClose={presentation.close} /> : <AssetViewer asset={presentation.gallery.assets[presentation.gallery.index]} navigationAssets={presentation.gallery.assets} playback={presentation.playback} onGallery={presentation.browse} onSelect={presentation.select} onClose={presentation.close} /> : null;
   return <>
-    {visible && !fullscreenVoice ? viewer : null}
-    {visible && !fullscreenVoice && presentation.error ? <p role="alert" className="form-error">{presentation.error}</p> : null}
-    {visible && fullscreenVoice ? createPortal(<FullscreenVoice initialChat={fullscreenChat} draftKey={`${projectId}:${activeThread ?? "new"}`} phase={voice.phase} connecting={voice.connecting} busy={busy} transcript={voice.transcript} reply="" messages={messages} streamedReply={streamedReply}
+    {!fullscreenVoice ? viewer : null}
+    {!fullscreenVoice && presentation.error ? <p role="alert" className="form-error">{presentation.error}</p> : null}
+    {fullscreenVoice ? createPortal(<FullscreenVoice initialChat={fullscreenChat} draftKey={`${projectId}:${activeThread ?? "new"}`} phase={voice.phase} connecting={voice.connecting} busy={busy} transcript={voice.transcript} reply="" messages={messages} streamedReply={streamedReply}
       sessionName={threads.find((thread) => thread.id === activeThread)?.title ?? "New conversation"} projectName={voiceProjectName} loading={loading}
       contextPanel={projectId ? <ConversationContext key={projectId} projectId={projectId} busy={busy} lastIntent={lastIntent} /> : null}
       transcribing={!liveVoiceEnabled && localVoice.transcribing} waitingForReply={!liveVoiceEnabled && localVoice.waitingForReply}
@@ -578,10 +572,10 @@ export function AssistantWorkspace({ projectId, visible, onRetry, voiceHost, wor
 
       {pending ? <div className="task-controls"><span role="status">{taskState.replaceAll("_", " ")}</span>{busy && !["pause_requested", "paused", "cancelled"].includes(taskState) ? <button type="button" className="secondary-button" disabled={controlling} onClick={() => void controlTask("pause")}>Pause task</button> : null}{taskState !== "cancelled" ? <button type="button" className="secondary-button" disabled={controlling} onClick={() => void controlTask("cancel")}>Cancel task</button> : null}{!busy && taskState !== "cancelled" ? <button type="button" className="secondary-button" onClick={() => void submit("", [], true).catch(() => {})}>Resume saved task</button> : null}</div> : null}
     </>} />, document.body) : null}
-    {visible && voiceHost ? createPortal(voiceControls, voiceHost) : null}
+    {voiceHost && !(compact && visible) ? createPortal(voiceControls, voiceHost) : null}
     {workspaceHost ? createPortal(conversationPanel, workspaceHost) : conversationPanel}
     <MovableSurface target={composerHost}>
-    <Composer key={`${projectId}:${activeThread ?? "new"}`} draftKey={`${projectId}:${activeThread ?? "new"}`} targetLabel={threads.find(thread => thread.id === activeThread)?.title ?? "New conversation"} compact={compact || !visible || Boolean(workspaceHost)} onBeginTyping={() => voice.stop()} toolbarActions={visible ? <><span className="project-images-host" ref={setImageTriggerHost} /><details className="conversation-settings"><summary aria-label="Conversation settings" title="Conversation settings"><Settings2 size={18} /></summary><div className="conversation-settings-panel"><label className="wake-word-setting"><input type="checkbox" checked={liveVoiceEnabled} disabled={!projectId || loading || busy || liveVoice.connecting} onChange={(event) => setLiveVoiceEnabled(event.target.checked)} />Use GPT-Live 1 cloud voice</label><small>Uses OpenAI GPT-Live 1 for full-duplex voice. Audio is billed by session duration; your API key stays on the server.</small><label className="wake-word-setting"><input type="checkbox" checked={!liveVoiceEnabled && voice.armed} disabled={liveVoiceEnabled || voiceBackend === "pipecat" || (!voice.armed && (!projectId || loading || busy || voice.connecting))} onChange={(event) => event.target.checked ? localVoice.arm() : localVoice.stop()} />Listen for &quot;Darius&quot; locally</label><small>Wake-word activation uses Classic voice. Pipecat sessions start with the microphone button.</small><small>After activation, your commands and project context go to your configured AI.</small></div></details></> : null} beforeComposer={<>{canvasBoard ? <small className="moss-composer-target">Context: {canvasBoard.name} · Read-only. Use in board applies a prompt; Generate stays on the board.</small> : null}{visible ? <><div className="composer-voice-controls">{voiceControls}</div>{projectId ? <AssistantReferences key={`references-${projectId}`} projectId={projectId} busy={busy} triggerHost={imageTriggerHost} /> : null}</> : null}</>} disabled={!projectId || loading || busy || voice.phase !== "off" || voice.connecting || loadError} onSubmit={(text, assets) => void submit(text, assets).catch(() => {})} projectId={projectId} />
+    <Composer key={`${projectId}:${activeThread ?? "new"}`} draftKey={`${projectId}:${activeThread ?? "new"}`} targetLabel={threads.find(thread => thread.id === activeThread)?.title ?? "New conversation"} compact={compact || !visible} onBeginTyping={() => voice.stop()} toolbarActions={visible ? <><span className="project-images-host" ref={setImageTriggerHost} /><details className="conversation-settings"><summary aria-label="Conversation settings" title="Conversation settings"><Settings2 size={18} /></summary><div className="conversation-settings-panel"><label className="wake-word-setting"><input type="checkbox" checked={liveVoiceEnabled} disabled={!projectId || loading || busy || liveVoice.connecting} onChange={(event) => setLiveVoiceEnabled(event.target.checked)} />Use GPT-Live 1 cloud voice</label><small>Uses OpenAI GPT-Live 1 for full-duplex voice. Audio is billed by session duration; your API key stays on the server.</small><label className="wake-word-setting"><input type="checkbox" checked={!liveVoiceEnabled && voice.armed} disabled={liveVoiceEnabled || voiceBackend === "pipecat" || (!voice.armed && (!projectId || loading || busy || voice.connecting))} onChange={(event) => event.target.checked ? localVoice.arm() : localVoice.stop()} />Listen for &quot;Darius&quot; locally</label><small>Wake-word activation uses Classic voice. Pipecat sessions start with the microphone button.</small><small>After activation, your commands and project context go to your configured AI.</small></div></details></> : null} beforeComposer={<>{canvasBoard ? <small className="moss-composer-target">Context: {canvasBoard.name} · Read-only. Use in board applies a prompt; Generate stays on the board.</small> : null}{visible ? <>{compact || !voiceHost ? <div className="composer-voice-controls">{voiceControls}</div> : null}{projectId ? <AssistantReferences key={`references-${projectId}`} projectId={projectId} busy={busy} triggerHost={imageTriggerHost} /> : null}</> : null}</>} disabled={!projectId || loading || busy || voice.phase !== "off" || voice.connecting || loadError} onSubmit={(text, assets) => void submit(text, assets).catch(() => {})} projectId={projectId} />
     </MovableSurface>
   </>;
 }

@@ -26,7 +26,7 @@ test('reviews a chat prompt and applies it without rendering', async ({ page, sa
 test('recovers a lost queue acknowledgement and shows the completed board', async ({ page, sandbox }) => {
   sandbox.loseNextReply();
   await page.goto('/?app=create&project=' + sandbox.project.id);
-  await page.getByRole('navigation', { name: 'Library sections' }).getByRole('button', { name: 'Canvas', exact: true }).click();
+  await expect(page.getByRole('region', { name: 'MOSS board workspace' })).toBeVisible();
   await page.getByRole('button', { name: 'Generate', exact: true }).first().click();
   await expect.poll(() => sandbox.lookupCount()).toBeGreaterThan(0);
   expect(sandbox.submissions).toHaveLength(1);
@@ -53,7 +53,7 @@ test('fullscreen chat stays readable and can send another turn', async ({ page, 
 test('Qwen Edit opens the shared thumbnail chooser without submitting', async ({ page, sandbox }) => {
  sandbox.configureEdit();
  await page.goto('/?app=create&project=' + sandbox.project.id);
- await page.getByRole('navigation', { name: 'Library sections' }).getByRole('button', { name: 'Canvas', exact: true }).click();
+ await expect(page.getByRole('region', { name: 'MOSS board workspace' })).toBeVisible();
  await page.getByRole('button', { name: /^Open board/ }).first().click();
  await page.getByRole('button', { name: 'Choose image inputs', exact: true }).click();
  const picker = page.getByRole('group', { name: 'Project image inputs' });
@@ -69,7 +69,7 @@ test('video failure opens its saved preview and prepares CPU recovery without re
  sandbox.configureVideoFailure();
  page.on('dialog', dialog => dialog.accept());
  await page.goto('/?app=create&project=' + sandbox.project.id);
- await page.getByRole('navigation', { name: 'Library sections' }).getByRole('button', { name: 'Canvas', exact: true }).click();
+ await expect(page.getByRole('region', { name: 'MOSS board workspace' })).toBeVisible();
  await page.getByRole('button', { name: /^Open board/ }).first().click();
  const recovery = page.getByRole('region', { name: 'Video recovery' }).first();
  await expect(recovery).toContainText('Preview saved; final upscale ran out of GPU memory.');

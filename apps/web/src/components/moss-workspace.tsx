@@ -1,5 +1,6 @@
 "use client";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
+import { createPortal } from "react-dom";
 import { Layers3 } from "lucide-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { workspacePoll } from "@/lib/live-poll";
@@ -7,7 +8,6 @@ import { canvasApi } from "@/lib/canvas-api";
 import { requestBoardSetup } from "@/lib/board-setup";
 import { useWorkspaceState } from "@/lib/workspace-session";
 import { subscribeProjectRefresh } from "@/lib/project-sync";
-import { useDariusStore } from "@/lib/store";
 import { mossApi, prepareBoard, fitPlacements, fitCardToArtwork, worldPoint, type Placement, type MossBoard, type BoardSettings, type ProjectWorkspace, type SelectedBoardContext, type ImageProfile } from "@/lib/moss-workspace";
 import { H3_ANIMATE, MOSS, type CanvasProfile } from "@/lib/canvas-profile";
 import { loadCanvasIntent } from "@/lib/canvas-intent";
@@ -20,7 +20,8 @@ import { CanvasUtilityPanel, useCanvasNarrow, type CanvasUtilityTab } from "./ca
 import { BoardPreview } from "./canvas/board-preview";
 import { BoardCard, inView } from "./canvas/board-card";
 import { BoardHistory, BoardInspector, type VideoRole } from "./canvas/board-inspector";
-import { WorkspaceToolbar } from "./canvas/workspace-toolbar";
+import { BoardFinder, ToolPill } from "./canvas/tool-pill";
+import { BoardPanel } from "./canvas/board-panel";
 import { useBoardCamera, type Camera } from "./canvas/use-board-camera";
 import { errorText, useBoardLayout } from "./canvas/use-board-layout";
 import { useBoardGeneration } from "./canvas/use-board-generation";
@@ -28,11 +29,16 @@ import { useBoardGeneration } from "./canvas/use-board-generation";
 const isField = (target: EventTarget | null) => target instanceof HTMLElement && Boolean(target.closest("input,textarea,select,[contenteditable=true]"));
 type Gesture = { pointerId: number; x: number; y: number; moved: boolean } & ({ type: "pan"; camera: Camera } | { type: "board"; scale: number; placement: Placement; next: Placement });
 
-export function MossWorkspace({ projectId, assets, onBoardContext, expanded = false, onToggleExpanded, onExitWorkspace, ...hosts }: CanvasHosts & { projectId: string; assets: Asset[]; onBoardContext?: (context: SelectedBoardContext | null) => void; expanded?: boolean; onToggleExpanded?: () => void; onExitWorkspace?: () => void }) {
-  const client = useQueryClient(), projectName = useDariusStore(s => s.projects.find(p => p.id === projectId)?.name ?? "Project");
+/**
+ * The project canvas: an infinite desktop of independent boards. On wide screens the
+ * selected board's panel is portalled into the shell's right column (`panelHost`).
+ */
+export function MossWorkspace({ projectId, assets, onBoardContext, panelHost, ...hosts }: CanvasHosts & { projectId: string; assets: Asset[]; onBoardContext?: (context: SelectedBoardContext | null) => void; panelHost?: HTMLElement | null }) {
+  const client = useQueryClient();
   const scope = `moss:${projectId}`;
   const narrow = useCanvasNarrow();
   const [panelOpen, setPanelOpen] = useState<boolean | null>(null), [panelTab, setPanelTab] = useState<CanvasUtilityTab>("board");
+  const docked = Boolean(panelHost) && !narrow;
   const query = useQuery({ queryKey: ["moss-workspace", projectId], queryFn: () => mossApi.get(projectId), refetchInterval: workspacePoll });
   const engine = useQuery({ queryKey: ["canvas-engine"], queryFn: () => canvasApi.engine() });
   const [selectedId, setSelectedId] = useWorkspaceState<string | null>(`${scope}:selected`, null);
@@ -140,18 +146,16 @@ export function MossWorkspace({ projectId, assets, onBoardContext, expanded = fa
     if (isField(e.target)) return;
     if (e.code === "Space") { e.preventDefault(); setSpace(true); }
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z") { e.preventDefault(); void undoAction(e.shiftKey); }
-    if (e.key === "Escape" && hosts.assistantOpen) { hosts.onToggleAssistant?.(); }
+    if (!e.ctrlKey && !e.metaKey && !e.altKey && e.key.toLowerCase() === "v") setHand(false);
+    if (!e.ctrlKey && !e.metaKey && !e.altKey && e.key.toLowerCase() === "h") setHand(true);
+    if (e.key === "Escape") { if (hosts.assistantOpen) hosts.onToggleAssistant?.(); else if (docked && selectedId) setSelectedId(null); }
   }} onKeyUp={e => { if (e.code === "Space") setSpace(false); }} onBlur={e => { if (!e.currentTarget.contains(e.relatedTarget)) setSpace(false); }}>
-    <WorkspaceToolbar projectName={projectName} boards={boards} selectedId={selectedId} search={search} archives={archives} creating={creating} hand={hand}
-      canUndo={Boolean(history.past.length)} canRedo={Boolean(history.future.length)} scale={camera.scale} panelExpanded={(panelOpen ?? !narrow) || Boolean(hosts.assistantOpen)} expanded={expanded}
-      onSearch={setSearch} onJump={jump} onToggleArchives={() => setArchives(v => !v)} onAdd={(profile, content) => void add({ profile, content })} onImportError={setError}
-      onPrepare={() => { if (selected) void requestBoardSetup(selected.settings.adapterVersion).catch(error => setError(errorText(error))); }}
-      onHand={setHand} onUndo={() => void undoAction(false)} onRedo={() => void undoAction(true)} onZoom={zoomBy} onTogglePanel={() => setPanelOpen(value => !(value ?? !narrow))}
-      onFitAll={() => setCamera(fitPlacements(layout?.present.filter(p => visibleBoards.some(b => b.id === p.boardId)) ?? [], size))} onExit={onExitWorkspace} onToggleExpanded={onToggleExpanded} />
+    <BoardFinder boards={boards} selectedId={selectedId} search={search} archives={archives} onSearch={setSearch} onJump={jump} onToggleArchives={() => setArchives(v => !v)} />
     {(error || query.isError) ? <div className="canvas-notice is-error" role="alert">{error || (query.data ? "Status updates are interrupted. Last known results are shown; retry to reconnect." : "Workspace could not load")}
       {conflict ? <><button onClick={exportPositions}>Export positions</button><button onClick={() => void reloadPositions()}>Reload positions</button></> : <button onClick={() => { setError(""); refresh(); }}>Retry</button>}</div> : null}
 
     <div className="moss-body"><div className={`moss-stage ${hand || space ? "is-panning" : ""} ${middlePanning ? "is-middle-panning" : ""}`} ref={attach} tabIndex={-1} data-scale={camera.scale} data-pan-x={camera.x} data-pan-y={camera.y}
+      style={{ "--pan-x": `${camera.x}px`, "--pan-y": `${camera.y}px`, "--zoom": camera.scale } as CSSProperties}
       onPointerDown={e => {
         if (e.button !== 0 && e.button !== 1 || gesture.current) return;
         suppressBoardClick.current = false;
@@ -175,12 +179,16 @@ export function MossWorkspace({ projectId, assets, onBoardContext, expanded = fa
         if (g.type === "pan") setCamera({ ...g.camera, x: g.camera.x + dx, y: g.camera.y + dy });
         else { g.next = { ...g.placement, x: Math.max(-100000, Math.min(100000, g.placement.x + dx / g.scale)), y: Math.max(-100000, Math.min(100000, g.placement.y + dy / g.scale)) }; setDragged(g.next); }
       }}
-      onPointerUp={e => { const g = gesture.current; if (!g || g.pointerId !== e.pointerId) return; if (g.type === "board" && g.moved) move(g.next); else if (g.type === "board") setPanelOpen(true); gesture.current = null; setDragged(null); }}
+      onPointerUp={e => { const g = gesture.current; if (!g || g.pointerId !== e.pointerId) return; if (g.type === "board" && g.moved) move(g.next); else if (g.type === "board") setPanelOpen(true); else if (!g.moved && docked) setSelectedId(null); gesture.current = null; setDragged(null); }}
       onPointerCancel={() => { gesture.current = null; setDragged(null); }} onLostPointerCapture={() => { gesture.current = null; setDragged(null); }}
       onClickCapture={e => { if (suppressBoardClick.current) { e.preventDefault(); e.stopPropagation(); } }}
       onDoubleClick={e => { if (suppressBoardClick.current || (e.target as Element).closest("button,video,a")) return; const board = boards.find(b => b.id === pointerBoard.current); if (board) open(board); }}>
       <div className="moss-world" style={{ transform: `translate(${camera.x}px,${camera.y}px) scale(${camera.scale})` }}>
-        <svg className="moss-edges" aria-hidden="true">{boards.filter(b => !b.archived).flatMap(target => target.settings.references.map(ref => { const a = layout?.present.find(p => p.boardId === ref.sourceBoardId), b = layout?.present.find(p => p.boardId === target.id); if (!a || !b) return null; return <path key={`${target.id}:${ref.id}`} d={`M ${a.x + a.displayWidth} ${a.y + a.displayHeight/2} C ${a.x + a.displayWidth+100} ${a.y+a.displayHeight/2}, ${b.x-100} ${b.y+b.displayHeight/2}, ${b.x} ${b.y+b.displayHeight/2}`} />; }))}</svg>
+        <svg className="moss-edges" aria-hidden="true">{boards.filter(b => !b.archived).flatMap(target => target.settings.references.map(ref => {
+          const a = layout?.present.find(p => p.boardId === ref.sourceBoardId), b = layout?.present.find(p => p.boardId === target.id); if (!a || !b) return null;
+          const from = { x: a.x + a.displayWidth, y: a.y + a.displayHeight / 2 }, to = { x: b.x, y: b.y + b.displayHeight / 2 };
+          return <g key={`${target.id}:${ref.id}`} className="moss-edge"><path d={`M ${from.x} ${from.y} C ${from.x + 100} ${from.y}, ${to.x - 100} ${to.y}, ${to.x} ${to.y}`} /><circle cx={from.x} cy={from.y} r={5} /><circle cx={to.x} cy={to.y} r={5} /></g>;
+        }))}</svg>
         {visibleBoards.map(board => {
           const placement = dragged?.boardId === board.id ? dragged : layout?.present.find(p => p.boardId === board.id); if (!placement) return null;
           return <BoardCard key={board.id} board={board} placement={placement} scale={camera.scale} visible={inView(placement, camera, size)} selected={selectedId === board.id} dragging={dragged?.boardId === board.id}
@@ -191,8 +199,15 @@ export function MossWorkspace({ projectId, assets, onBoardContext, expanded = fa
       {!boards.length && !query.isLoading ? <div className="moss-empty"><Layers3 size={36} /><h3>One project. Room for many ideas.</h3><p>Arrange independent MOSS or FIBO boards, then open any board to compose.</p><button className="primary-button" onClick={() => void add()}>Add your first MOSS board</button></div> : null}
     </div>
     <div className="moss-mobile-list">{visibleBoards.map(b => <article key={b.id}><button onClick={() => { setSelectedId(b.id); setPanelTab("board"); setPanelOpen(true); }}><strong>{b.name}</strong><small>{gen.statusFor(b)} · {b.artboard.width} × {b.artboard.height}</small></button>{selectedId === b.id ? <div className="moss-mobile-artwork" style={{ aspectRatio: `${b.artboard.width} / ${b.artboard.height}` }}><BoardPreview board={b} /></div> : null}<button className="secondary-button" disabled={b.archived} onClick={() => open(b)}>Open board</button><button className="primary-button" disabled={!gen.canGenerate(b)} onClick={() => void gen.generate(b)}>{gen.generateLabel(b)}</button></article>)}</div>
-    <CanvasUtilityPanel open={panelOpen ?? !narrow} tab={panelTab} onTabChange={value => { setPanelTab(value); setPanelOpen(true); }} onClose={() => setPanelOpen(false)} context={selected ? `Board: ${selected.name}` : "Project conversation · no board selected"} primary={boardPanel} history={historyPanel} hosts={hosts} />
-    </div><footer className="canvas-footer moss-statusbar"><span>{saving ? "Saving positions…" : dirty ? "Unsaved positions" : "Workspace saved"}</span><span>{gen.preparingCount} preparing · {activeJobs.filter(j => j.status === "running").length} active · {activeJobs.filter(j => j.status === "queued").length} queued · GPU capacity {query.data?.capacity ?? 1}</span></footer>
+    {docked ? createPortal(selected ? <BoardPanel name={selected.name} tab={panelTab === "history" ? "history" : "board"} onTab={setPanelTab} onClose={() => setSelectedId(null)} board={boardPanel} history={historyPanel} /> : null, panelHost!)
+      : <CanvasUtilityPanel open={panelOpen ?? !narrow} tab={panelTab} onTabChange={value => { setPanelTab(value); setPanelOpen(true); }} onClose={() => setPanelOpen(false)} context={selected ? `Board: ${selected.name}` : "Project conversation · no board selected"} primary={boardPanel} history={historyPanel} hosts={hosts} />}
+    </div>
+    <ToolPill hand={hand} canUndo={Boolean(history.past.length)} canRedo={Boolean(history.future.length)} scale={camera.scale} creating={creating} canPrepare={Boolean(selected)}
+      onHand={setHand} onUndo={() => void undoAction(false)} onRedo={() => void undoAction(true)} onZoom={zoomBy}
+      onFitAll={() => setCamera(fitPlacements(layout?.present.filter(p => visibleBoards.some(b => b.id === p.boardId)) ?? [], size))}
+      onAdd={(profile, content) => void add({ profile, content })} onImportError={setError}
+      onPrepare={() => { if (selected) void requestBoardSetup(selected.settings.adapterVersion).catch(error => setError(errorText(error))); }} />
+    <footer className="dk-canvas-status" role="status"><span>{saving ? "Saving positions…" : dirty ? "Unsaved positions" : "Workspace saved"}</span><span>{gen.preparingCount} preparing · {activeJobs.filter(j => j.status === "running").length} active · {activeJobs.filter(j => j.status === "queued").length} queued · GPU capacity {query.data?.capacity ?? 1}</span></footer>
   </section>;
 }
 function historyReplace(url: URL) { window.history.replaceState(window.history.state, "", url); }

@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen, within } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { CreateView, groupLibrary } from "./create-view";
+import { LibraryApp, groupLibrary } from "./library-app";
 import { useDariusStore } from "@/lib/store";
 import type { Asset, Character, Scene } from "@/lib/types";
 
@@ -26,7 +26,7 @@ beforeEach(() => { useDariusStore.setState({ activeProjectId: "library-project" 
 it("keeps only original media in library cards, counts, navigation, role stacks and search", () => {
   const originals = [media("Full-size render", "generation"), media("Original video", "generation", "video")];
   const client = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } });
-  render(<QueryClientProvider client={client}><CreateView assets={[...originals, media("Render thumbnail", "derivative"), media("Video proxy", "derivative", "video")]} isLoading={false} hasError={false} /></QueryClientProvider>);
+  render(<QueryClientProvider client={client}><LibraryApp assets={[...originals, media("Render thumbnail", "derivative"), media("Video proxy", "derivative", "video")]} isLoading={false} hasError={false} /></QueryClientProvider>);
   expect(screen.getByRole("button", { name: "Inspect Full size render" })).toBeVisible();
   expect(screen.getByRole("button", { name: "Inspect Original video" })).toBeVisible();
   expect(screen.queryByText("Render thumbnail")).toBeNull();
@@ -43,8 +43,8 @@ it("keeps only original media in library cards, counts, navigation, role stacks 
 
 it("treats a project with only cached previews as an empty library", () => {
   const client = new QueryClient();
-  render(<QueryClientProvider client={client}><CreateView assets={[media("Cached thumbnail", "derivative")]} isLoading={false} hasError={false} /></QueryClientProvider>);
-  expect(screen.getByText("Your canvas is ready")).toBeVisible();
+  render(<QueryClientProvider client={client}><LibraryApp assets={[media("Cached thumbnail", "derivative")]} isLoading={false} hasError={false} /></QueryClientProvider>);
+  expect(screen.getByText("Your library is ready")).toBeVisible();
   expect(screen.queryByText("Cached thumbnail")).toBeNull();
 });
 

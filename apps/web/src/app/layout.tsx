@@ -22,6 +22,7 @@ import "./moss-workspace.css";
 import "./canvas-refinement.css";
 import "./creative-helper.css";
 import "./board-setup.css";
+import "./desktop.css";
 import { AppProviders } from "./providers";
 
 export const metadata: Metadata = {

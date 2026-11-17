@@ -11,7 +11,7 @@ import { VideoCardPreview, isVideoBoard } from "../video-board";
 export function useThumbnail(assetId: string | null | undefined, enabled = true) {
   return useQuery({
     queryKey: ["moss-thumbnail", assetId], enabled: Boolean(assetId) && enabled, staleTime: Infinity, retry: 1,
-    queryFn: async () => (await request<{ derivatives: Asset[] }>(`/assets/${encodeURIComponent(assetId!)}/derivatives?thumbnail_only=true`, { method: "POST" })).derivatives.find(a => a.metadata.derivative_type === "thumbnail")?.id,
+    queryFn: async () => (await request<{ derivatives: Asset[] }>(`/assets/${encodeURIComponent(assetId!)}/derivatives?thumbnail_only=true`, { method: "POST" })).derivatives.find(a => a.metadata.derivative_type === "thumbnail")?.id ?? null,
   });
 }
 

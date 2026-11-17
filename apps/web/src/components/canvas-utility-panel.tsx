@@ -27,7 +27,8 @@ export function CanvasUtilityPanel({ open, tab, onTabChange, onClose, primaryLab
     document.addEventListener("pointerdown", leave);
     return () => document.removeEventListener("pointerdown", leave);
   }, [narrow, visible, dismiss]);
-  const tabs = [["board", primaryLabel, Layers3], ["chat", "Chat", MessageCircle], ["history", "History", History]] as const;
+  // Chat lives in its own desktop window; the tab only appears where a chat is hosted here.
+  const tabs = ([["board", primaryLabel, Layers3], ["chat", "Chat", MessageCircle], ["history", "History", History]] as const).filter(([key]) => key !== "chat" || Boolean(onToggleAssistant));
   function select(next: CanvasUtilityTab) {
     onTabChange(next);
     if (Boolean(assistantOpen) !== (next === "chat")) onToggleAssistant?.();
@@ -36,7 +37,7 @@ export function CanvasUtilityPanel({ open, tab, onTabChange, onClose, primaryLab
     <header className="canvas-utility-header">
       <div role="tablist" aria-label="Canvas utility views" onKeyDown={event => {
         const index = tabs.findIndex(([key]) => key === active);
-        const next = event.key === "Home" ? 0 : event.key === "End" ? 2 : event.key === "ArrowRight" ? (index + 1) % 3 : event.key === "ArrowLeft" ? (index + 2) % 3 : -1;
+        const count = tabs.length, next = event.key === "Home" ? 0 : event.key === "End" ? count - 1 : event.key === "ArrowRight" ? (index + 1) % count : event.key === "ArrowLeft" ? (index + count - 1) % count : -1;
         if (next < 0) return;
         event.preventDefault(); event.stopPropagation(); select(tabs[next][0]);
         event.currentTarget.querySelectorAll<HTMLButtonElement>('[role="tab"]')[next]?.focus();
@@ -45,10 +46,10 @@ export function CanvasUtilityPanel({ open, tab, onTabChange, onClose, primaryLab
     </header>
     <section className="canvas-utility-content" role="tabpanel" id={`${id}-board-content`} aria-labelledby={`${id}-board`} hidden={active !== "board"}>{primary}</section>
     <section className="canvas-utility-content" role="tabpanel" id={`${id}-history-content`} aria-labelledby={`${id}-history`} hidden={active !== "history"}>{active === "history" ? history : null}</section>
-    <section className="canvas-utility-chat" role="tabpanel" id={`${id}-chat-content`} aria-labelledby={`${id}-chat`} hidden={active !== "chat"}>
+    {onToggleAssistant ? <section className="canvas-utility-chat" role="tabpanel" id={`${id}-chat-content`} aria-labelledby={`${id}-chat`} hidden={active !== "chat"}>
       <div className="canvas-chat-target"><MessageCircle size={14} /><div><strong>Project chat</strong><span>{context}</span></div></div>
       <div ref={onAssistantHost} className="canvas-assistant-host" />
       <div ref={onComposerHost} className="canvas-composer-host" />
-    </section>
+    </section> : null}
   </aside>;
 }
