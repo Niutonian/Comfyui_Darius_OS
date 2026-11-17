@@ -62,9 +62,28 @@ const routes = [
   [/^\/projects\/p\d\/local-rendering$/, () => ({ enabled: false })],
 ];
 
+// Writes echo back what a real save would return, without storing anything, so the
+// interface behaves normally (drawing regions, switching workflows, moving boards).
+const writes = [
+  [/^\/projects\/p\d\/canvases\/(doc-\w+)\/save$/, (m, body) => ({ ...doc(m[1]), revision: (body.revision ?? 2) + 1, content: body.content ?? doc(m[1]).content })],
+  [/^\/projects\/p\d\/canvas-workspace\/layout$/, (m, body) => ({ ...workspace, revision: (body.revision ?? workspace.revision) + 1, placements: body.placements ?? workspace.placements })],
+  [/^\/projects\/p\d\/canvas-workspace\/boards\/(\w+)$/, (m, body) => { const found = boards.find(b => b.id === m[1]) ?? boards[0]; return { ...found, revision: (body.revision ?? found.revision) + 1, settings: body.settings ?? found.settings, archived: body.archived ?? found.archived }; }],
+  [/^\/projects\/p\d\/canvas-workspace\/boards$/, (m, body) => {
+    const id = `b${Date.now().toString(36)}`, added = board(id, body.name ?? "Untitled board", { settings: body.settings ?? board(id, "").settings, layout: [], regionCount: 0 });
+    return { boardId: id, workspace: { ...workspace, revision: workspace.revision + 1, boards: [...boards, added], placements: [...placements, { boardId: id, x: body.x ?? 0, y: body.y ?? 0, displayWidth: 360, displayHeight: 450, order: placements.length }] } };
+  }],
+];
+const readBody = req => new Promise(resolve => { let raw = ""; req.on("data", chunk => { raw += chunk; }); req.on("end", () => { try { resolve(raw ? JSON.parse(raw) : {}); } catch { resolve({}); } }); });
+
 export function startFixtureApi(port = 8000, host = "127.0.0.1") {
-  const server = createServer((req, res) => {
+  const server = createServer(async (req, res) => {
     const url = new URL(req.url, "http://fixture"), path = url.pathname.replace(/^\/api\/v1/, "");
+    if (req.method !== "GET") {
+      for (const [pattern, handler] of writes) {
+        const m = path.match(pattern);
+        if (m) { const body = await readBody(req); res.writeHead(200, { "content-type": "application/json" }); res.end(JSON.stringify(handler(m, body))); return; }
+      }
+    }
     if (path === "/events/stream") {
       res.writeHead(200, { "content-type": "text/event-stream", "cache-control": "no-cache" }); res.write(": fixture\n\n");
       const ping = setInterval(() => res.write(": ping\n\n"), 15000); req.on("close", () => clearInterval(ping)); return;
