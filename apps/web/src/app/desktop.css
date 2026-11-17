@@ -91,6 +91,8 @@
 /* An open board grows out of its card and fills the stage; the canvas stays live below. */
 .board-zoom-layer { position: absolute; z-index: 9; left: 0; top: 0; overflow: hidden; background: var(--surface); box-shadow: var(--shadow-float); will-change: transform, width, height; }
 .board-zoom-layer > .canvas-workspace, .board-zoom-layer > .dk-window-error { position: absolute; inset: 0; }
+.board-zoom-preview { position: absolute; inset: 0; display: grid; background: var(--surface-canvas); }
+.board-zoom-preview .moss-preview { height: 100%; }
 .dk-stage .moss-workspace[aria-hidden="true"] .dk-tool-pill, .dk-stage .moss-workspace[aria-hidden="true"] .dk-finder { opacity: 0; transition: opacity .2s; }
 .dk-window-error.is-compact { position: relative; flex: 1; gap: 6px; padding: 16px; font-size: 12px; }
 

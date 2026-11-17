@@ -39,7 +39,8 @@ export function CanvasEditor({ projectId, documentId, assets, chooser, presets, 
   const query = useQuery({ queryKey: ["canvas", projectId, documentId], queryFn: () => canvasApi.get(projectId, documentId), refetchInterval: documentPoll, retry: 1 });
   const [draft, setStoredDraft] = useWorkspaceState<Draft | null>(`canvas:${projectId}:${documentId}:draft`, null);
   const [selected, setSelected] = useWorkspaceState<string | null>(`canvas:${projectId}:${documentId}:selected`, null);
-  const [viewport, setViewport] = useWorkspaceState<CanvasViewport>(`canvas:${projectId}:${documentId}:viewport`, { x: 0, y: 0, scale: 0 });
+  // Each open fits the artboard to the space it actually has.
+  const [viewport, setViewport] = useState<CanvasViewport>({ x: 0, y: 0, scale: 0 });
   const [tool, setTool] = useState<CanvasTool>("select"), [kind, setKind] = useState<RegionKind>("object"), [drawParent, setDrawParent] = useState<string | null>(null);
   const [focus, setFocus] = useState(false), [layersOpen, setLayersOpen] = useState(false), [inspectorOpen, setInspectorOpen] = useState<boolean | null>(null), [historyOpen, setHistoryOpen] = useState(false);
   // Esc steps back one level: fullscreen focus, then the zoomed-in board, then the canvas.

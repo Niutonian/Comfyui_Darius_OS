@@ -86,15 +86,21 @@ export default function CanvasStage(props: Props) {
     next.src = props.imageUrl;
     return () => { cancelled = true; };
   }, [props.imageUrl]);
-  const fit = useRef(-1);
+  // Fit the artboard when asked (fitToken), on first show, and again whenever the
+  // stage resizes while the view is still the last automatic fit (nobody zoomed or
+  // panned since). A view fitted to a still-growing panel never sticks.
+  const fit = useRef(-1), autoFit = useRef<CanvasViewport | null>(null);
   useEffect(() => {
-    if (viewport.scale !== 0 && fit.current === props.fitToken) return;
-    if (viewport.scale !== 0 && fit.current === -1) { fit.current = props.fitToken; return; }
     if (size.width < 2 || size.height < 2) return;
+    const untouched = autoFit.current !== null && autoFit.current.x === viewport.x && autoFit.current.y === viewport.y && autoFit.current.scale === viewport.scale;
+    if (viewport.scale !== 0 && fit.current === props.fitToken && !untouched) return;
+    if (viewport.scale !== 0 && fit.current === -1) { fit.current = props.fitToken; return; }
     fit.current = props.fitToken;
     const scale = Math.max(.08, Math.min((size.width - 72) / content.artboard.width, (size.height - 64) / content.artboard.height, 1));
-    onViewport({ scale, x: (size.width - content.artboard.width * scale) / 2, y: (size.height - content.artboard.height * scale) / 2 });
-  }, [props.fitToken, size, content.artboard.width, content.artboard.height, viewport.scale, onViewport]);
+    const next = { scale, x: (size.width - content.artboard.width * scale) / 2, y: (size.height - content.artboard.height * scale) / 2 };
+    autoFit.current = next;
+    if (next.x !== viewport.x || next.y !== viewport.y || next.scale !== viewport.scale) onViewport(next);
+  }, [props.fitToken, size, content.artboard.width, content.artboard.height, viewport.x, viewport.y, viewport.scale, onViewport]);
   const point = () => {
     const p = stage.current?.getPointerPosition();
     return p ? { x: (p.x - viewport.x) / viewport.scale, y: (p.y - viewport.y) / viewport.scale } : null;

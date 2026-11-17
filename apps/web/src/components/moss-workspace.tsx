@@ -203,9 +203,11 @@ export function MossWorkspace({ projectId, assets, onBoardContext, onEditingChan
     requestAnimationFrame(step);
   }
   // Where the open board's card sat on screen, and the camera to return to.
+  const [grown, setGrown] = useState<string | null>(null);
   const [zoom, setZoom] = useState<{ origin: { x: number; y: number; width: number; height: number }; before: Camera } | null>(null);
   function open(board: MossBoard) {
     setSelectedId(board.id); if (board.archived) return;
+    setGrown(null);
     const placement = layout?.present.find(p => p.boardId === board.id);
     if (placement) {
       setZoom({ origin: { x: placement.x * camera.scale + camera.x, y: placement.y * camera.scale + camera.y, width: placement.displayWidth * camera.scale, height: placement.displayHeight * camera.scale }, before: camera });
@@ -280,8 +282,9 @@ export function MossWorkspace({ projectId, assets, onBoardContext, onEditingChan
     initial={origin ? { x: origin.x, y: origin.y, width: origin.width, height: origin.height, opacity: .4, borderRadius: 22 } : false}
     animate={{ x: 0, y: 0, width: size.width, height: size.height, opacity: 1, borderRadius: 26 }}
     exit={origin ? { x: origin.x, y: origin.y, width: origin.width, height: origin.height, opacity: 0, borderRadius: 22 } : { opacity: 0 }}
-    transition={{ type: "spring", stiffness: 260, damping: 32, mass: .9 }}>
-    <WindowBoundary title={editing.name} onClose={closeEditor} closeLabel="Back to the canvas">{editor}</WindowBoundary>
+    transition={{ type: "spring", stiffness: 260, damping: 32, mass: .9 }} onAnimationComplete={() => setGrown(editing.id)}>
+    {/* The editor mounts once the layer is full size, so it measures the real space. */}
+    {grown === editing.id || !origin ? <WindowBoundary title={editing.name} onClose={closeEditor} closeLabel="Back to the canvas">{editor}</WindowBoundary> : <div className="board-zoom-preview"><BoardPreview board={editing} large /></div>}
   </motion.div> : null}</AnimatePresence>;
   return <><section className="canvas-workspace moss-workspace canvas-refined" aria-label="MOSS board workspace" tabIndex={0} inert={Boolean(editing)} aria-hidden={editing ? true : undefined} onKeyDown={e => {
     if (isField(e.target)) return;
