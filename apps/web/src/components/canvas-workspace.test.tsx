@@ -4,7 +4,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { beforeEach, expect, it, vi } from "vitest";
 import { canvasApi, type CanvasDocument } from "@/lib/canvas-api";
 import { emptyCanvas } from "@/lib/canvas-document";
-import { CanvasWorkspace } from "./canvas-workspace";
+import { CanvasEditor } from "./canvas-workspace";
 
 vi.mock("next/dynamic", () => ({ default: () => function Stage() { return <div data-testid="canvas-stage" />; } }));
 vi.mock("@/lib/project-sync", () => ({ subscribeProjectRefresh: () => () => {} }));
@@ -19,7 +19,7 @@ beforeEach(() => {
 });
 async function open() {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } });
-  render(<QueryClientProvider client={client}><CanvasWorkspace projectId="project-a" assets={[]} /></QueryClientProvider>);
+  render(<QueryClientProvider client={client}><CanvasEditor projectId="project-a" documentId="canvas-a" assets={[]} chooser={null} presets={[]} /></QueryClientProvider>);
   await screen.findByRole("textbox", { name: "Canvas name" });
   return client;
 }

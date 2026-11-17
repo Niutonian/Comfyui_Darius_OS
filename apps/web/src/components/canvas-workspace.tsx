@@ -7,10 +7,9 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowDown, ArrowLeft, ArrowUp, Check, ChevronDown, ChevronRight, Copy, Download, Eye, EyeOff, Focus, Hand, History, Layers3, LockKeyhole, Maximize, Minus, MousePointer2, Plus, Redo2, Save, Scan, Sparkles, Trash2, Undo2, UnlockKeyhole, X } from "lucide-react";
 import { ApiError, API_BASE } from "@/lib/api-client";
 import { definitiveGenerationError, canvasApi, type CanvasDocument } from "@/lib/canvas-api";
-import { commit, descendants, duplicateRegion, emptyCanvas, localRect, parentRect, redo, removeRegion, reparentRegion, reorderRegion, resolveRegions, sameContent, undo, updateRect, type CanvasContent, type CanvasHistory, type CanvasRegion, type CanvasViewport, type Rect, type RegionKind } from "@/lib/canvas-document";
+import { commit, descendants, duplicateRegion, localRect, parentRect, redo, removeRegion, reparentRegion, reorderRegion, resolveRegions, sameContent, undo, updateRect, type CanvasContent, type CanvasHistory, type CanvasRegion, type CanvasViewport, type Rect, type RegionKind } from "@/lib/canvas-document";
 import { useWorkspaceState } from "@/lib/workspace-session";
 import { useDariusStore } from "@/lib/store";
-import { subscribeProjectRefresh } from "@/lib/project-sync";
 import type { Asset } from "@/lib/types";
 import type { CanvasTool } from "./canvas-stage";
 import { CanvasProfileControls, CanvasGenerationDetails } from "./canvas-profile-controls";
@@ -18,6 +17,7 @@ import { canvasProfiles, MOSS, type CanvasProfile } from "@/lib/canvas-profile";
 import { registerCanvasSaver, mossApi, type MossBoard } from "@/lib/moss-workspace";
 import { loadCanvasIntent } from "@/lib/canvas-intent";
 import { CanvasUtilityPanel, useCanvasNarrow } from "./canvas-utility-panel";
+import { documentPoll } from "@/lib/live-poll";
 
 const CanvasStage = dynamic(() => import("./canvas-stage"), { ssr: false, loading: () => <div className="canvas-loading" role="status">Preparing your artboard…</div> });
 export type CanvasHosts = { onComposerHost?: (host: HTMLDivElement | null) => void; onAssistantHost?: (host: HTMLDivElement | null) => void; assistantOpen?: boolean; onToggleAssistant?: () => void };
@@ -33,52 +33,10 @@ function exportDocument(content: CanvasContent) {
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
-export function CanvasWorkspace(props: Props) {
-  const client = useQueryClient();
-  const [activeId, setActiveId] = useWorkspaceState<string | null>(`canvas:${props.projectId}:open`, null);
-  const [error, setError] = useState(""), [creating, setCreating] = useState(false);
-  const imports = useRef<HTMLInputElement>(null);
-  const canvases = useQuery({ queryKey: ["canvases", props.projectId], queryFn: () => canvasApi.list(props.projectId), refetchInterval: 15000 });
-  const engine = useQuery({ queryKey: ["canvas-engine"], queryFn: () => canvasApi.engine() });
-  useEffect(() => subscribeProjectRefresh(props.projectId, change => {
-    if (change.full || change.types.some(type => /^(canvas\.|generation\.|job\.)/.test(type))) {
-      void client.invalidateQueries({ queryKey: ["canvases", props.projectId] });
-      void client.invalidateQueries({ queryKey: ["canvas", props.projectId] });
-    }
-  }), [client, props.projectId]);
-  useEffect(() => { if (!activeId && canvases.data?.length) setActiveId(canvases.data[0].id); }, [activeId, canvases.data, setActiveId]);
-  async function create(content = emptyCanvas()) {
-    setCreating(true); setError("");
-    try { const doc = await canvasApi.create(props.projectId, content); client.setQueryData(["canvas", props.projectId, doc.id], doc); setActiveId(doc.id); await canvases.refetch(); }
-    catch (error) { setError(message(error)); } finally { setCreating(false); }
-  }
-  const chooser = <div className="canvas-document-actions">
-    <label><span className="sr-only">Saved canvases</span><select value={activeId ?? ""} onChange={event => setActiveId(event.target.value || null)}><option value="">Open saved canvas…</option>{canvases.data?.map(doc => <option key={doc.id} value={doc.id}>{doc.name}</option>)}</select></label>
-    <button type="button" className="icon-button" aria-label="New canvas" title="New empty canvas" disabled={creating} onClick={() => void create()}><Plus size={17} /></button>
-    <button type="button" className="icon-button" aria-label="Import Canvas document" title="Import Darius Canvas JSON" onClick={() => imports.current?.click()}><Download size={17} style={{ transform: "rotate(180deg)" }} /></button>
-    <input ref={imports} hidden type="file" accept=".json,application/json" aria-label="Canvas document JSON" onChange={async event => {
-      const file = event.target.files?.[0]; event.target.value = "";
-      if (!file) return;
-      if (file.size > 256000) { setError("Canvas JSON is limited to 256 KB"); return; }
-      try { await create(JSON.parse(await file.text()) as CanvasContent); } catch (error) { setError(message(error)); }
-    }} />
-  </div>;
-  return <section className="canvas-entry" aria-label="Darius Canvas">
-    {error ? <p className="form-error" role="alert">{error}</p> : null}
-    {canvases.isError ? <p role="alert">Saved canvases could not load. <button type="button" onClick={() => void canvases.refetch()}>Retry</button></p> : null}
-    {activeId ? <CanvasEditor key={`${props.projectId}:${activeId}`} {...props} documentId={activeId} chooser={chooser} presets={engine.data?.presets ?? []} /> : <div className="canvas-first-run">
-      {chooser}<span className="canvas-first-mark"><Scan size={42} strokeWidth={1.2} /></span><span className="eyebrow">Create / Canvas</span><h2>A little space for a bigger idea.</h2>
-      <p>Arrange objects, characters and exact text. MOSS turns your layout into one composition, while your regions stay editable.</p>
-      <button type="button" className="primary-button" disabled={creating} onClick={() => void create()}><Plus size={17} />New empty canvas</button>
-      <small>No sample layout is loaded automatically. Generating redraws the whole image.</small>
-    </div>}
-  </section>;
-}
-
 export function CanvasEditor({ projectId, documentId, assets, chooser, presets, onComposerHost, onAssistantHost, assistantOpen, onToggleAssistant, onExit, board }: Props & { documentId: string; chooser: React.ReactNode; presets: { id: string; name: string; width: number; height: number }[]; onExit?: () => void; board?: MossBoard }) {
   const client = useQueryClient(), theme = useDariusStore(state => state.theme);
   const narrow = useCanvasNarrow();
-  const query = useQuery({ queryKey: ["canvas", projectId, documentId], queryFn: () => canvasApi.get(projectId, documentId), refetchInterval: 2500, retry: 1 });
+  const query = useQuery({ queryKey: ["canvas", projectId, documentId], queryFn: () => canvasApi.get(projectId, documentId), refetchInterval: documentPoll, retry: 1 });
   const [draft, setStoredDraft] = useWorkspaceState<Draft | null>(`canvas:${projectId}:${documentId}:draft`, null);
   const [selected, setSelected] = useWorkspaceState<string | null>(`canvas:${projectId}:${documentId}:selected`, null);
   const [viewport, setViewport] = useWorkspaceState<CanvasViewport>(`canvas:${projectId}:${documentId}:viewport`, { x: 0, y: 0, scale: 0 });

@@ -14,6 +14,7 @@ import type { Asset } from "@/lib/types";
 import type { CanvasHosts } from "./canvas-workspace";
 import { ProjectImagePicker } from "./project-image-picker";
 import { CanvasUtilityPanel, useCanvasNarrow, type CanvasUtilityTab } from "./canvas-utility-panel";
+import { documentPoll } from "@/lib/live-poll";
 const CanvasStage = dynamic(() => import("./canvas-stage"), { ssr: false });
 
 export const imageRecipes: ImageProfile[] = [IMAGE_FLUX, IMAGE_KREA, IMAGE_QWEN, IMAGE_EDIT];
@@ -102,7 +103,7 @@ export function ImageRecipeEditor({ board, assets, projectId, onExit, onGenerate
  const [, setInputPicker] = useImageInputPicker(board);
  function chooseInputs() { setOpen(true); setTab("board"); if (hosts.assistantOpen) hosts.onToggleAssistant?.(); setInputPicker(old => ({ open: true, request: old.request + 1 })); }
  const { form, uploading } = useImageDraft(board), profile = form.activeProfile, draft = form.drafts[profile];
- const doc = useQuery({ queryKey: ["canvas", projectId, board.documentId], queryFn: () => canvasApi.get(projectId, board.documentId), refetchInterval: 2500 });
+ const doc = useQuery({ queryKey: ["canvas", projectId, board.documentId], queryFn: () => canvasApi.get(projectId, board.documentId), refetchInterval: documentPoll });
  const result = doc.data?.generations.find(g => g.id === doc.data?.activeGenerationId), assetId = result?.assetIds[0], inputKey = JSON.stringify([profile, draft.inputs]);
  const [display, setDisplay] = useState({ kind: "result", inputKey, resultId: result?.id });
  if (display.resultId !== result?.id) setDisplay({ kind: "result", inputKey, resultId: result?.id });

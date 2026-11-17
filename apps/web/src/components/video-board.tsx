@@ -12,6 +12,7 @@ import type { Asset } from "@/lib/types";
 import type { CanvasHosts } from "./canvas-workspace";
 import { ProjectImagePicker } from "./project-image-picker";
 import { CanvasUtilityPanel, useCanvasNarrow, type CanvasUtilityTab } from "./canvas-utility-panel";
+import { documentPoll } from "@/lib/live-poll";
 
 export const videoModes: { id: VideoMode; name: string; profile: typeof H3_ANIMATE | typeof H3_CAMERA | typeof H3_REFERENCE | typeof H3_BODY_SWAP | typeof H3_BODY_SWAP_SEQUENTIAL }[] = [
  { id: "body-swap", name: "Body swap", profile: H3_BODY_SWAP }, { id: "body-swap-sequential", name: "Body swap · Sequential", profile: H3_BODY_SWAP_SEQUENTIAL }, { id: "animate-image", name: "Animate image", profile: H3_ANIMATE }, { id: "camera-direction", name: "Camera direction", profile: H3_CAMERA }, { id: "reference-video", name: "Reference video", profile: H3_REFERENCE },
@@ -124,7 +125,7 @@ export function VideoCardPreview({ board, visible = true }: { board: MossBoard; 
 
 export function VideoBoardEditor({ board, assets, projectId, onExit, onGenerate, ...hosts }: CanvasHosts & { board: MossBoard; assets: Asset[]; projectId: string; onExit: () => void; onGenerate: () => Promise<void> }) {
  const client = useQueryClient(), narrow = useCanvasNarrow(), [open, setOpen] = useState(!narrow), [tab, setTab] = useState<CanvasUtilityTab>("board"), [error, setError] = useState("");
- const doc = useQuery({ queryKey: ["canvas", projectId, board.documentId], queryFn: () => canvasApi.get(projectId, board.documentId), refetchInterval: 2500 });
+ const doc = useQuery({ queryKey: ["canvas", projectId, board.documentId], queryFn: () => canvasApi.get(projectId, board.documentId), refetchInterval: documentPoll });
  const { form, setForm, setBaseRevision } = useVideoBoardDraft(board);
  const [uploading] = useWorkspaceState(`h3:${board.projectId}:${board.id}:uploading`, false);
  const latest = doc.data?.generations[0];
