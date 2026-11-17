@@ -24,6 +24,7 @@ import { MossWorkspace } from "./moss-workspace";
 import { IconRail } from "./desktop/icon-rail";
 import { DesktopWindow } from "./desktop/desktop-window";
 import { AppContent, type AppContext } from "./desktop/app-content";
+import { WindowBoundary } from "./desktop/window-boundary";
 import { WidgetColumn } from "./desktop/widget-column";
 import { DotWord } from "./desktop/dot-word";
 import { SettingsIcon } from "./desktop/icons";
@@ -188,7 +189,9 @@ export function AppShell() {
             onToggleMaximize={() => windowActions().toggleMaximize(scope, window.app)}
             onClose={() => { windowActions().close(scope, window.app); settle(); }}
             onPlace={rect => windowActions().place(scope, window.app, rect, viewport())}>
-            <AppContent app={window.app} context={appContext} onConversationHost={setConversationHost} onComposerHost={setComposerHost} />
+            <WindowBoundary title={desktopApps[window.app].title} onClose={() => { windowActions().close(scope, window.app); settle(); }}>
+              <AppContent app={window.app} context={appContext} onConversationHost={setConversationHost} onComposerHost={setComposerHost} />
+            </WindowBoundary>
           </DesktopWindow>)}
         </div>
         <AssistantWorkspace key={`assistant:${activeProjectId ?? "no-project"}`} projectId={activeProjectId} compact={mobile}

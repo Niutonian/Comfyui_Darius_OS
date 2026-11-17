@@ -220,6 +220,11 @@
 .dk-window-resize { position: absolute; right: 2px; bottom: 2px; width: 18px; height: 18px; cursor: nwse-resize; border-radius: 0 0 20px 0;
   background: linear-gradient(135deg, transparent 52%, var(--line-light) 53%, var(--line-light) 60%, transparent 61%, transparent 70%, var(--line-light) 71%, var(--line-light) 78%, transparent 79%); }
 
+.dk-window-error { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; padding: 32px; text-align: center; }
+.dk-window-error p { margin: 0; color: var(--muted); max-width: 420px; }
+.dk-window-error code { max-width: 100%; padding: 6px 10px; border-radius: 10px; background: var(--dk-ink-soft); font-size: 11px; overflow-wrap: anywhere; }
+.dk-window-error > div { display: flex; gap: 8px; margin-top: 6px; }
+
 /* Library window */
 .library-app { overflow: auto; padding: 14px 18px 18px; border: 0; border-radius: 0; background: transparent; box-shadow: none; }
 .library-app-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
