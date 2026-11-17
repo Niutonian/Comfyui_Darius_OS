@@ -27,7 +27,7 @@ function tabIndex(id: string) {
 function FolderFace({ project, cover, meta, tab, count }: { project: Project; cover?: Asset; meta: string; tab: number; count?: number }) {
   return <>
     <span className={`lp-tile lp-tone-${tab}`}>
-      {cover ? <img alt="" src={api.assetContentUrl(cover.id)} /> : <DotWord text={project.name.trim().slice(0, 1) || "D"} height={72} className="lp-initial" />}
+      {cover ? <img alt="" src={api.assetContentUrl(cover.id)} /> : <span aria-hidden="true"><DotWord text={project.name.trim().slice(0, 1) || "D"} height={72} className="lp-initial" /></span>}
       {count !== undefined ? <span className="lp-badge">{count}</span> : null}
     </span>
     <span className="lp-copy"><strong>{project.name}</strong><small>{meta}</small></span>

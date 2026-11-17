@@ -81,6 +81,23 @@ The web app normally uses a same-origin proxy; browser-side provider keys are un
 
 The launcher applies migrations, builds the web app, starts the API/web services and opens **http://127.0.0.1:3000**. API documentation is at **http://127.0.0.1:8000/docs**. Installed optional voice services are detected automatically. Logs and process information are written under ignored `data/`.
 
+### Interface without the backend
+
+To work on the interface without the API, ComfyUI or any model, run the web app against fictional fixture data. Nothing is stored:
+
+```powershell
+npm run dev:fixture --prefix apps/web
+```
+
+Open **http://127.0.0.1:3000/?app=create&project=p1**. The same fixture drives a desktop smoke suite (every window, zoom into a board, right-click menus, Edit, launcher, phone layout); it fails on any page error and saves a screenshot per check under `test-results/desktop`:
+
+```powershell
+$env:DARIUS_NEXT_DIST_DIR = ".next-check"; npm run build --prefix apps/web
+$env:PW_CHANNEL = "chrome"; npm run test:desktop --prefix tests/browser
+```
+
+The fixture listens on port 8000 for the smoke suite, so stop a running Darius API first.
+
 Normal startup does not launch a persistent general worker. Explicit Canvas Generate actions can start execution workers on demand. Chat develops ideas and prompt text; it does not submit render jobs. To drain other approved queued work continuously:
 
 ```powershell

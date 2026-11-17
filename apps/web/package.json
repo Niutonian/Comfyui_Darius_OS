@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "next dev",
+    "dev:fixture": "node scripts/dev-fixture.mjs",
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",

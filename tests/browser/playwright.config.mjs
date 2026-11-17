@@ -2,7 +2,7 @@ import { defineConfig } from '@playwright/test';
 import { fileURLToPath } from 'node:url';
 const root = fileURLToPath(new URL('../../', import.meta.url));
 export default defineConfig({
-  testDir: '.', testMatch: '*.spec.mjs', fullyParallel: false, workers: 1,
+  testDir: '.', testMatch: '*.spec.mjs', testIgnore: 'desktop/**', fullyParallel: false, workers: 1,
   timeout: 45_000, globalTimeout: 300_000, forbidOnly: !!process.env.CI,
   retries: 0, reporter: 'list', outputDir: '../../test-results/browser',
   use: { baseURL: 'http://127.0.0.1:3100', serviceWorkers: 'block', trace: 'retain-on-failure' },
