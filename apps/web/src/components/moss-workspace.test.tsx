@@ -83,3 +83,23 @@ it("prepares the board before submitting a generation", async () => {
   expect(call[2]).toBe(3);
   expect(call[4]).toBe(7);
 });
+
+it("keeps the canvas mounted underneath an open board", async () => {
+  vi.mocked(prepareBoard).mockResolvedValue({ boardId: "board-a", documentId: "doc-a", documentRevision: 1, boardRevision: 1, name: "Forest gate" });
+  const { container } = show();
+  fireEvent.click(await screen.findByRole("button", { name: "Open board Forest gate" }));
+  await screen.findByRole("dialog", { name: "Board editor stub" });
+  expect(container.querySelector("[aria-label='MOSS board workspace']")).toHaveAttribute("aria-hidden", "true");
+  fireEvent.click(screen.getByRole("button", { name: "Leave editor" }));
+  await waitFor(() => expect(screen.getByRole("region", { name: "MOSS board workspace" })).not.toHaveAttribute("aria-hidden"));
+});
+
+it("contains a board whose settings cannot render instead of crashing the canvas", async () => {
+  vi.spyOn(console, "error").mockImplementation(() => {});
+  vi.mocked(mossApi.get).mockResolvedValue(workspace([board({ kind: "image-recipe", settings: { adapterVersion: "qwen21-edit-v1", seed: null, references: [] } })]));
+  show();
+  fireEvent.click(await screen.findByText("A moss covered gate"));
+  expect(await screen.findByText("This board's settings stopped working")).toBeInTheDocument();
+  expect(screen.getByRole("region", { name: "MOSS board workspace" })).toBeInTheDocument();
+  expect(screen.getByRole("toolbar", { name: "Canvas tools" })).toBeInTheDocument();
+});

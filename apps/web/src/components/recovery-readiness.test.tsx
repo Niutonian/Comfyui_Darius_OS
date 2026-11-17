@@ -1,5 +1,5 @@
 import React from "react";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor, within } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { beforeEach, expect, it, vi } from "vitest";
 import { ImageRecipeEditor, imageRecipeDefaults } from "./image-recipe-board";
@@ -27,7 +27,7 @@ it("Qwen Edit main chooser opens project thumbnails, binds the pinned version an
  expect(picker).toBeVisible();
  expect(screen.queryByRole("button", { name: "Foreign image" })).toBeNull();
  expect(screen.queryByRole("button", { name: "Thumbnail" })).toBeNull();
- fireEvent.click(screen.getByRole("button", { name: "Selected image Selected image" }));
+ fireEvent.click(within(picker).getByRole("button", { name: "Selected image" }));
  await waitFor(() => expect(screen.queryByRole("group", { name: "Project image inputs" })).toBeNull());
  expect(screen.getByRole("img", { name: "Image 1" })).toHaveAttribute("src", "/media/Selected image");
  expect(generate).not.toHaveBeenCalled();

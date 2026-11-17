@@ -144,7 +144,7 @@ export default function CanvasStage(props: Props) {
           shadowColor="#24392b" shadowBlur={18} shadowOpacity={.12} />
         {image && props.showResult ? <CanvasImage image={image} width={image.width * imageScale} height={image.height * imageScale}
           x={(content.artboard.width - image.width * imageScale) / 2} y={(content.artboard.height - image.height * imageScale) / 2} listening={false} /> : null}
-        {!content.regions.length && !image ? <Text text="A little space for an idea.\n\nDraw your first region, or describe the whole composition." x={content.artboard.width * .15} y={content.artboard.height * .4}
+        {!content.regions.length && !image ? <Text text={"A little space for an idea.\n\nDraw your first region, or describe the whole composition."} x={content.artboard.width * .15} y={content.artboard.height * .4}
           width={content.artboard.width * .7} align="center" fontSize={18 / s} lineHeight={1.7} fill="#788576" listening={false} /> : null}
         {props.showLayout ? resolved.filter(value => !value.hidden).map(value => <RegionShape key={value.region.id} value={value} selected={props.selectedId === value.region.id}
           scale={s} tool={tool} registerNode={registerNode} onSelect={() => { const p = point(); props.onSelect(p ? hit(p)?.region.id ?? value.region.id : value.region.id); }} onRect={rect => props.onRect(value.region.id, rect)} />) : null}

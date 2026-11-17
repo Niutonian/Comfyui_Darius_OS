@@ -88,6 +88,12 @@
 
 .dk-canvas-status { position: absolute; z-index: 6; left: 18px; bottom: 22px; display: grid; gap: 2px; font-size: 10.5px; color: var(--muted); pointer-events: none; }
 
+/* An open board grows out of its card and fills the stage; the canvas stays live below. */
+.board-zoom-layer { position: absolute; z-index: 9; left: 0; top: 0; overflow: hidden; background: var(--surface); box-shadow: var(--shadow-float); will-change: transform, width, height; }
+.board-zoom-layer > .canvas-workspace, .board-zoom-layer > .dk-window-error { position: absolute; inset: 0; }
+.dk-stage .moss-workspace[aria-hidden="true"] .dk-tool-pill, .dk-stage .moss-workspace[aria-hidden="true"] .dk-finder { opacity: 0; transition: opacity .2s; }
+.dk-window-error.is-compact { position: relative; flex: 1; gap: 6px; padding: 16px; font-size: 12px; }
+
 /* Board cards: soft, rounded, like objects resting on the canvas. */
 .dk-stage .moss-board { border-radius: var(--radius-card); border-color: color-mix(in srgb, var(--control-border) 55%, transparent); box-shadow: var(--shadow-soft); }
 .dk-stage .moss-board.selected { box-shadow: 0 0 0 2px var(--active), var(--shadow-float); }
@@ -163,6 +169,7 @@
 .dk-darius-voice .voice-phase:empty { display: none; }
 .voice-quick-line { flex-basis: 100%; margin: 0; padding: 8px 10px; border-radius: 12px; background: rgba(0, 0, 0, .22); font-size: 12px; line-height: 1.45; max-height: 68px; overflow: auto; }
 .dk-darius-composer[hidden] { display: none; }
+.dk-darius-composer .moss-composer-target, .dk-darius-composer .composer-voice-controls { display: none; }
 .dk-darius-composer .composer-surface { display: block !important; }
 .app-shell.os-desktop .dk-darius-composer .composer-wrap { position: relative; inset: auto; width: auto; max-height: none; margin: 0; padding: 0; border: 0; border-radius: 16px; background: transparent; transform: none; }
 .dk-darius-composer .composer { border-radius: 16px; background: rgba(255, 255, 255, .94); color: #182317; border: 0; }

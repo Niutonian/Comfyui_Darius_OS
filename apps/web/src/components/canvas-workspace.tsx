@@ -41,8 +41,9 @@ export function CanvasEditor({ projectId, documentId, assets, chooser, presets, 
   const [selected, setSelected] = useWorkspaceState<string | null>(`canvas:${projectId}:${documentId}:selected`, null);
   const [viewport, setViewport] = useWorkspaceState<CanvasViewport>(`canvas:${projectId}:${documentId}:viewport`, { x: 0, y: 0, scale: 0 });
   const [tool, setTool] = useState<CanvasTool>("select"), [kind, setKind] = useState<RegionKind>("object"), [drawParent, setDrawParent] = useState<string | null>(null);
-  const [focus, setFocus] = useState(Boolean(onExit)), [layersOpen, setLayersOpen] = useState(false), [inspectorOpen, setInspectorOpen] = useState<boolean | null>(null), [historyOpen, setHistoryOpen] = useState(false);
-  const exitFocus = () => { if (onExit) onExit(); else setFocus(false); };
+  const [focus, setFocus] = useState(false), [layersOpen, setLayersOpen] = useState(false), [inspectorOpen, setInspectorOpen] = useState<boolean | null>(null), [historyOpen, setHistoryOpen] = useState(false);
+  // Esc steps back one level: fullscreen focus, then the zoomed-in board, then the canvas.
+  const exitFocus = () => { if (focus) setFocus(false); else onExit?.(); };
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set()), [fitToken, setFitToken] = useState(0);
   const [size, setSize] = useState({ width: 600, height: 400 });
   const [showLayout, setShowLayout] = useState(true), [showResult, setShowResult] = useState(true), [before, setBefore] = useState(false), [compare, setCompare] = useState(false);
@@ -260,7 +261,7 @@ export function CanvasEditor({ projectId, documentId, assets, chooser, presets, 
   const whole = <div className={`canvas-workspace canvas-editor-refined ${focus ? "is-focus app-shell os-desktop space-create theme-" + theme : ""} ${layersOpen ? "show-layers" : ""} ${(inspectorOpen ?? !narrow) ? "show-inspector" : ""}`} ref={root} tabIndex={0}
     role={focus ? "dialog" : "region"} aria-modal={focus || undefined} aria-label={focus ? "Canvas focus workspace" : "Canvas editor"} onKeyDown={keyboard}>
     <header className="canvas-header"><div className="canvas-heading">
-      {focus ? <button type="button" className="icon-button" aria-label={onExit ? "Back to board workspace" : "Exit canvas focus"} onClick={exitFocus}><ArrowLeft size={18} /></button> : null}
+      {focus || onExit ? <button type="button" className="icon-button" aria-label={onExit ? "Back to board workspace" : "Exit canvas focus"} onClick={() => { if (onExit) onExit(); else setFocus(false); }}><ArrowLeft size={18} /></button> : null}
       <div><span className="eyebrow">{onExit ? "Project / Workspace / Board" : focus ? "Darius / Canvas" : "Create / Canvas"}</span><input aria-label="Canvas name" value={content.name} maxLength={200} onChange={event => rename(event.target.value)} /></div>
       <span className={`canvas-save-state ${dirty ? "is-dirty" : ""}`} role="status" title={saving ? "Saving…" : dirty ? "Unsaved edits" : `Saved revision ${draft.revision}`}><Check size={13} />{saving ? "Saving" : dirty ? "Unsaved" : `Saved · r${draft.revision}`}</span>
     </div><div className="canvas-header-actions">

@@ -5,6 +5,7 @@ import { canvasProfiles } from "@/lib/canvas-profile";
 import type { MossBoard, Placement } from "@/lib/moss-workspace";
 import { VideoCardPreview, isVideoBoard } from "../video-board";
 import { BoardPreview } from "./board-preview";
+import { WindowBoundary } from "../desktop/window-boundary";
 
 export type BoardCardProps = {
   board: MossBoard; placement: Placement; scale: number; visible: boolean;
@@ -25,7 +26,7 @@ export function BoardCard({ board, placement, scale, visible, selected, dragging
       <button className="icon-button moss-duplicate" aria-label={`Duplicate board ${board.name}`} title="Duplicate this board independently" disabled={creating || board.archived} onClick={e => { e.stopPropagation(); onDuplicate(); }}><Copy size={15} /></button>
       <button className="icon-button moss-fit-artwork" aria-label={`Fit card to artwork for ${board.name}`} title="Fit this card to the image proportions" onClick={e => { e.stopPropagation(); onFitArtwork(); }}><Maximize size={15} /></button>
     </header>
-    {isVideoBoard(board) ? <VideoCardPreview board={board} visible={visible} /> : visible ? <BoardPreview board={board} /> : <div className="moss-distant">{board.artboard.width} × {board.artboard.height} · {status}</div>}
+    <WindowBoundary title="Preview" compact>{isVideoBoard(board) ? <VideoCardPreview board={board} visible={visible} /> : visible ? <BoardPreview board={board} /> : <div className="moss-distant">{board.artboard.width} × {board.artboard.height} · {status}</div>}</WindowBoundary>
     {error ? <div className="moss-board-notice" role="status">{error}</div> : null}
     <div className="moss-card-copy"><small>{board.artboard.width} × {board.artboard.height} · {board.regionCount} regions</small><p>{board.prompt || "Open this board to shape your first composition."}</p>
       <small>{board.activeResult ? `${board.jobs.length ? "Previous result" : "Generated from"} r${board.activeResult.revision} · seed ${board.activeResult.seed}` : "No generated result"}{board.activeResult && board.activeResult.revision !== board.documentRevision ? ` · Draft r${board.documentRevision} has newer edits` : ""}{board.newResult ? " · New result in history" : ""}</small>

@@ -58,6 +58,7 @@ export function AppShell() {
   const [composerHost, setComposerHost] = useState<HTMLDivElement | null>(null);
   const [panelHost, setPanelHost] = useState<HTMLDivElement | null>(null);
   const [canvasBoard, setCanvasBoard] = useState<SelectedBoardContext | null>(null);
+  const [editingBoard, setEditingBoard] = useState(false);
   const [columnOpen, setColumnOpen] = useWorkspaceState("desktop:column", true);
   const [homeSignal, setHomeSignal] = useState(0);
   const urlBoot = useRef(true);
@@ -167,9 +168,9 @@ export function AppShell() {
               <div className="dk-project-chip"><ProjectSelector homeSignal={homeSignal} compact={mobile} /></div>
               {systemCluster}
             </header>
-            <MossWorkspace key={activeProjectId} projectId={activeProjectId!} assets={projectAssets.data ?? []} onBoardContext={setCanvasBoard} panelHost={panelHost} />
+            <MossWorkspace key={activeProjectId} projectId={activeProjectId!} assets={projectAssets.data ?? []} onBoardContext={setCanvasBoard} onEditingChange={setEditingBoard} panelHost={panelHost} />
           </div>
-          <WidgetColumn projectId={activeProjectId!} assets={projectAssets.data ?? []} jobs={projectJobs} mood={dariusMood} open={columnOpen} boardSelected={Boolean(canvasBoard)} chatOpen={chatVisible}
+          <WidgetColumn projectId={activeProjectId!} assets={projectAssets.data ?? []} jobs={projectJobs} mood={dariusMood} open={columnOpen} boardSelected={Boolean(canvasBoard) && !editingBoard} chatOpen={chatVisible}
             onToggle={() => setColumnOpen(open => !open)} onApp={openApp} onJobs={() => { setInspectorOpen(false); setTrayOpen(true); }}
             onPanelHost={setPanelHost} onVoiceHost={setVoiceHost} onComposerHost={setQuickHost} />
         </div> : <div className="dk-launcher">
