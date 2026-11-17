@@ -94,6 +94,28 @@
 .dk-stage .moss-workspace[aria-hidden="true"] .dk-tool-pill, .dk-stage .moss-workspace[aria-hidden="true"] .dk-finder { opacity: 0; transition: opacity .2s; }
 .dk-window-error.is-compact { position: relative; flex: 1; gap: 6px; padding: 16px; font-size: 12px; }
 
+/* Right-click menu */
+.dk-context-menu { position: absolute; z-index: 12; min-width: 236px; max-height: min(70dvh, 520px); overflow: auto; display: grid; gap: 1px; padding: 6px; border-radius: 16px; background: var(--surface-raised); border: 1px solid var(--line); box-shadow: var(--shadow-float); animation: dk-menu-in .12s ease-out; }
+@keyframes dk-menu-in { from { opacity: 0; transform: scale(.97); } }
+.dk-context-menu button { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 10px; border: 0; border-radius: 10px; background: transparent; padding: 8px 10px; color: var(--text); font-size: 13px; text-align: left; }
+.dk-context-menu button small { color: var(--muted); font-size: 11px; }
+.dk-context-menu button:is(:hover, :focus-visible):not(:disabled) { background: var(--active-soft); outline: none; }
+.dk-context-menu button.is-danger { color: var(--danger); }
+.dk-context-menu button:disabled { opacity: .45; }
+.dk-context-menu .dk-menu-label { padding: 6px 10px 3px; font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.dk-context-menu > i { height: 1px; margin: 4px 6px; background: var(--line); }
+
+/* Minimap */
+.dk-minimap { position: absolute; z-index: 6; right: 16px; bottom: 16px; border-radius: 16px; background: var(--dk-panel); box-shadow: var(--shadow-soft); backdrop-filter: blur(14px); cursor: crosshair; touch-action: none; }
+.dk-minimap rect { fill: color-mix(in srgb, var(--text) 22%, transparent); }
+.dk-minimap rect.is-selected { fill: var(--active); }
+.dk-minimap rect.is-busy { animation: pulse 1.4s infinite; }
+.dk-minimap .dk-minimap-view { fill: color-mix(in srgb, var(--active) 8%, transparent); stroke: var(--active); stroke-width: 1.4; }
+
+/* Drop target */
+.dk-stage .moss-board.is-drop-target { box-shadow: 0 0 0 3px var(--active), 0 0 0 9px color-mix(in srgb, var(--active) 18%, transparent), var(--shadow-float); }
+.dk-chat:has(*) { position: relative; }
+
 /* Board cards: soft, rounded, like objects resting on the canvas. */
 .dk-stage .moss-board { border-radius: var(--radius-card); border-color: color-mix(in srgb, var(--control-border) 55%, transparent); box-shadow: var(--shadow-soft); }
 .dk-stage .moss-board.selected { box-shadow: 0 0 0 2px var(--active), var(--shadow-float); }
@@ -295,6 +317,7 @@
   .dk-stage .moss-mobile-list { padding-top: calc(64px + env(safe-area-inset-top)); padding-bottom: 80px; }
   .dk-tool-pill { display: none; }
   .dk-canvas-status { display: none; }
+  .dk-minimap, .dk-context-menu { display: none; }
   .dk-window, .dk-window.is-maximized { left: 0; top: 0; right: 0; bottom: calc(64px + env(safe-area-inset-bottom)); width: auto; height: auto; max-width: none; max-height: none; border-radius: 0 0 22px 22px; border: 0; }
   .dk-window:not(.is-focused) { display: none; }
   .dk-window-resize { display: none; }

@@ -12,11 +12,10 @@ import { assetName } from "@/lib/chat-labels";
 import { EmptyState, LoadingState } from "./states";
 import { AssetPreview } from "./asset-preview";
 import { LocalRenderSetting } from "./local-render-setting";
+import { ASSET_MIME } from "@/lib/canvas-drop";
 
 type LibraryLayout = "table" | "stacks";
 type GroupBy = "kind" | "scene" | "role" | "character";
-/** Library assets can be dragged onto the canvas, a board or the chat. */
-export const ASSET_MIME = "application/x-darius-asset";
 
 export function groupLibrary(assets: Asset[], characters: Character[], scenes: Scene[], groupBy: GroupBy) {
   const sceneName = (id: string | null) => scenes.find((scene) => scene.id === id)?.title ?? "Unplaced";

@@ -9,15 +9,15 @@ import { WindowBoundary } from "../desktop/window-boundary";
 
 export type BoardCardProps = {
   board: MossBoard; placement: Placement; scale: number; visible: boolean;
-  selected: boolean; dragging: boolean; busy: boolean; status: string; error: string;
+  selected: boolean; dragging: boolean; dropTarget?: boolean; busy: boolean; status: string; error: string;
   generateLabel: string; canGenerate: boolean; creating: boolean;
   onSelect: () => void; onDuplicate: () => void; onFitArtwork: () => void; onOpen: () => void; onGenerate: () => void;
 };
 
 /** A board as it sits on the desktop. Positioned in world units; the camera scales the world. */
-export function BoardCard({ board, placement, scale, visible, selected, dragging, busy, status, error, generateLabel, canGenerate, creating, onSelect, onDuplicate, onFitArtwork, onOpen, onGenerate }: BoardCardProps) {
+export function BoardCard({ board, placement, scale, visible, selected, dragging, dropTarget, busy, status, error, generateLabel, canGenerate, creating, onSelect, onDuplicate, onFitArtwork, onOpen, onGenerate }: BoardCardProps) {
   const profile = canvasProfiles[board.settings.adapterVersion];
-  const classes = ["moss-board", scale < .65 && "is-compact", placement.displayWidth * scale < 160 && "is-tiny", busy && "is-busy", error && "has-error", board.activeResult && "has-result", dragging && "is-dragging", selected && "selected"].filter(Boolean).join(" ");
+  const classes = ["moss-board", scale < .65 && "is-compact", placement.displayWidth * scale < 160 && "is-tiny", busy && "is-busy", error && "has-error", board.activeResult && "has-result", dragging && "is-dragging", selected && "selected", dropTarget && "is-drop-target"].filter(Boolean).join(" ");
   return <article className={classes} data-board-id={board.id}
     style={{ left: placement.x, top: placement.y, width: placement.displayWidth, height: placement.displayHeight, zIndex: dragging ? 3 : selected ? 2 : 1, "--board-label-scale": 1 / scale } as CSSProperties}
     title="Drag the image or title to move this board. Double-click to edit." onClick={onSelect}>

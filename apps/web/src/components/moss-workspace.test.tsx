@@ -103,3 +103,41 @@ it("contains a board whose settings cannot render instead of crashing the canvas
   expect(screen.getByRole("region", { name: "MOSS board workspace" })).toBeInTheDocument();
   expect(screen.getByRole("toolbar", { name: "Canvas tools" })).toBeInTheDocument();
 });
+
+it("adds a board where you right-click the canvas", async () => {
+  vi.mocked(mossApi.add).mockResolvedValue({ boardId: "board-b", workspace: workspace([board()]) });
+  const { container } = show();
+  await screen.findByRole("button", { name: "Open board Forest gate" });
+  const stage = container.querySelector<HTMLElement>(".moss-stage")!;
+  fireEvent.contextMenu(stage, { clientX: 500, clientY: 300 });
+  fireEvent.click(await screen.findByRole("menuitem", { name: /FIBO board/ }));
+  await waitFor(() => expect(mossApi.add).toHaveBeenCalled());
+  const input = vi.mocked(mossApi.add).mock.calls[0][1];
+  expect(input.settings?.adapterVersion).toBe("fibo-dev-v1");
+  // The default camera is x 80, y 60, scale 0.8 and the stage sits at 0,0 in jsdom.
+  expect([input.x, input.y]).toEqual([(500 - 80) / .8, (300 - 60) / .8]);
+});
+
+it("turns a library image dropped on empty canvas into an edit board with that input", async () => {
+  vi.mocked(mossApi.add).mockResolvedValue({ boardId: "board-b", workspace: workspace([board()]) });
+  const asset = { id: "lib-1", project_id: "project-a", kind: "image", role: "generation", content_hash: "h", metadata: { display_name: "Gate study" } } as never;
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } });
+  const { container } = render(<QueryClientProvider client={client}><MossWorkspace projectId="project-a" assets={[asset]} /></QueryClientProvider>);
+  await screen.findByRole("button", { name: "Open board Forest gate" });
+  const data = { types: ["application/x-darius-asset"], getData: () => "lib-1", files: [] as File[], dropEffect: "" };
+  fireEvent.drop(container.querySelector(".moss-stage")!, { dataTransfer: data, clientX: 200, clientY: 200 });
+  await waitFor(() => expect(mossApi.add).toHaveBeenCalled());
+  const input = vi.mocked(mossApi.add).mock.calls[0][1];
+  expect(input.name).toBe("Gate study edit");
+  expect(input.settings?.image?.drafts["qwen21-edit-v1"].inputs.map(i => i.assetId)).toEqual(["lib-1"]);
+});
+
+it("shows a minimap that moves the view when clicked", async () => {
+  const { container } = show();
+  await screen.findByRole("button", { name: "Open board Forest gate" });
+  const map = screen.getByRole("img", { name: /Canvas overview/ });
+  map.setPointerCapture = () => {};
+  const before = container.querySelector(".moss-stage")!.getAttribute("data-pan-x");
+  fireEvent.pointerDown(map, { clientX: 150, clientY: 90, pointerId: 1 });
+  await waitFor(() => expect(container.querySelector(".moss-stage")!.getAttribute("data-pan-x")).not.toBe(before));
+});
