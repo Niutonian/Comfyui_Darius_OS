@@ -278,6 +278,35 @@
 .dk-brand span { font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
 .dk-launcher-actions { display: flex; align-items: center; gap: 6px; margin-left: auto; padding: 4px; border-radius: 16px; background: var(--dk-panel); box-shadow: var(--shadow-soft); }
 .dk-launcher .home-desktop { position: relative; flex: 1; min-height: 0; overflow: auto; padding: 32px clamp(16px, 4vw, 64px); }
+/* Project tiles, like files resting on the desk. */
+.dk-launcher .home-desktop { --folder-w: 196px; --folder-h: 252px; --folder-gap-x: 40px; --folder-gap-y: 36px; }
+.dk-launcher .project-folder { position: relative; }
+.dk-launcher :is(.folder-card, .new-folder, .folder-ghost) { display: flex; flex-direction: column; align-items: stretch; gap: 12px; width: 100%; height: auto; padding: 0; border: 0; background: transparent; box-shadow: none; text-align: left; color: var(--text); }
+.dk-launcher .lp-tile { position: relative; display: grid; place-items: center; aspect-ratio: 1; border-radius: 30px; overflow: hidden; box-shadow: var(--shadow-soft); transition: transform .2s cubic-bezier(.2, .8, .2, 1), box-shadow .2s; }
+.dk-launcher .lp-tile img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.dk-launcher .lp-tone-0 { background: linear-gradient(150deg, #cfe3b6, #5f8f63); }
+.dk-launcher .lp-tone-1 { background: linear-gradient(150deg, #d7e6e2, #4f7d76); }
+.dk-launcher .lp-tone-2 { background: linear-gradient(150deg, #efe2c4, #8a7a4c); }
+.dk-launcher .lp-tone-3 { background: linear-gradient(150deg, #e3dcea, #6e6590); }
+.dk-launcher .lp-tone-4 { background: linear-gradient(150deg, #dfe8d0, #344839); }
+.dk-launcher .lp-initial { color: rgba(255, 255, 255, .92); filter: drop-shadow(0 2px 8px rgba(0, 0, 0, .18)); }
+.dk-launcher .lp-badge { position: absolute; left: 12px; bottom: 12px; min-width: 26px; padding: 3px 9px; border-radius: 999px; background: rgba(12, 20, 14, .72); color: #fff; font-size: 11px; font-weight: 700; text-align: center; backdrop-filter: blur(8px); }
+.dk-launcher .lp-copy { display: grid; gap: 2px; padding: 0 6px; text-align: center; }
+.dk-launcher .lp-copy strong { font-size: 14px; font-weight: 650; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dk-launcher .lp-copy small { color: var(--muted); font-size: 11px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dk-launcher .folder-card:hover .lp-tile, .dk-launcher .new-folder:hover .lp-tile { transform: translateY(-4px); box-shadow: var(--shadow-float); }
+.dk-launcher .project-folder.selected .lp-tile { box-shadow: 0 0 0 3px var(--active), var(--shadow-float); }
+.dk-launcher .lp-new { background: color-mix(in srgb, var(--surface) 60%, transparent); border: 1.5px dashed color-mix(in srgb, var(--text) 22%, transparent); box-shadow: none; }
+.dk-launcher .lp-new > span { display: grid; place-items: center; width: 56px; height: 56px; border-radius: 50%; background: var(--text); color: var(--surface); }
+.dk-launcher .folder-slot { border-radius: 30px; aspect-ratio: 1; height: auto; }
+.dk-launcher .folder-actions { position: absolute; left: 50%; top: calc(var(--folder-w) - 52px); bottom: auto; transform: translateX(-50%); display: flex; gap: 4px; padding: 4px; border-radius: 14px; background: var(--surface-raised); box-shadow: var(--shadow-float); white-space: nowrap; }
+.dk-launcher .folder-actions button { display: inline-flex; align-items: center; gap: 6px; border: 0; border-radius: 10px; padding: 7px 11px; background: transparent; color: var(--text); font-size: 12px; font-weight: 600; }
+.dk-launcher .folder-actions button:first-child { background: var(--text); color: var(--surface); }
+.dk-launcher-intro { padding: 30px clamp(16px, 4vw, 64px) 0; text-align: center; }
+.dk-launcher-intro h1 { margin: 0; font-size: clamp(28px, 4vw, 44px); letter-spacing: -.04em; font-weight: 600; }
+.dk-launcher-intro p { margin: 6px 0 0; color: var(--muted); }
+@media (max-width: 760px) { .dk-launcher .home-desktop { --folder-w: 150px; --folder-h: 206px; --folder-gap-x: 14px; --folder-gap-y: 22px; } }
+
 .dk-launcher-composer { flex: 0 0 auto; width: min(760px, calc(100% - 32px)); margin: 0 auto 18px; }
 .dk-launcher-composer .composer-surface { display: block !important; }
 .app-shell.os-desktop .dk-launcher-composer .composer-wrap { position: relative; inset: auto; width: auto; margin: 0; border: 1px solid var(--line); border-radius: 20px; background: var(--surface); box-shadow: var(--shadow-soft); transform: none; }

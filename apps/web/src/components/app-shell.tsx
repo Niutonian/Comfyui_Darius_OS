@@ -180,6 +180,7 @@ export function AppShell() {
             <div className="dk-launcher-actions"><ProjectSelector homeSignal={homeSignal} compact={mobile} /><button type="button" className="icon-button" aria-label="Settings" onClick={() => openApp("settings")}><SettingsIcon size={18} /></button></div>
             {systemCluster}
           </header>
+          <div className="dk-launcher-intro"><h1>Your projects</h1><p>Open one to step onto its canvas, or start something new.</p></div>
           <HomeDesktop onNewProject={() => setHomeSignal((signal) => signal + 1)} />
           <div className="dk-launcher-composer" ref={setHomeHost} />
         </div>}

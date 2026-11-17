@@ -13,6 +13,7 @@ import { useDariusStore } from "@/lib/store";
 import { MOBILE_MEDIA } from "@/lib/use-mobile-shell";
 import type { Asset, Project, Scene } from "@/lib/types";
 import { useWorkspaceScroll, useWorkspaceState } from "@/lib/workspace-session";
+import { DotWord } from "./desktop/dot-word";
 
 function coverAsset(assets: Asset[] | undefined) {
   return assets?.find((asset) => asset.kind === "image" && asset.role !== "derivative");
@@ -22,14 +23,14 @@ function tabIndex(id: string) {
   return [...id].reduce((sum, char) => sum + char.charCodeAt(0), 0) % 5;
 }
 
-function FolderFace({ project, cover, meta, tab }: { project: Project; cover?: Asset; meta: string; tab: number }) {
+/** A project as a file tile: its latest image (or a moss gradient and dot initial), a count badge, the name. */
+function FolderFace({ project, cover, meta, tab, count }: { project: Project; cover?: Asset; meta: string; tab: number; count?: number }) {
   return <>
-    <span className={`folder-tab folder-tab-${tab}`} />
-    <span className="folder-body">
-      <span className="folder-cover">{cover ? <img alt="" src={api.assetContentUrl(cover.id)} /> : <span>{project.name.slice(0, 1).toUpperCase()}</span>}</span>
-      <strong>{project.name}</strong>
-      <small>{meta}</small>
+    <span className={`lp-tile lp-tone-${tab}`}>
+      {cover ? <img alt="" src={api.assetContentUrl(cover.id)} /> : <DotWord text={project.name.trim().slice(0, 1) || "D"} height={72} className="lp-initial" />}
+      {count !== undefined ? <span className="lp-badge">{count}</span> : null}
     </span>
+    <span className="lp-copy"><strong>{project.name}</strong><small>{meta}</small></span>
   </>;
 }
 
@@ -164,14 +165,14 @@ export function HomeDesktop({ onNewProject }: { onNewProject: () => void }) {
       if (drag?.id === project.id) return <div className="folder-slot" key={project.id} aria-hidden="true" />;
       return <article className={`project-folder ${selected ? "selected" : ""}`} key={project.id}>
         <motion.button className="folder-card" layoutId={selected && !drag ? `project-shell-${project.id}` : undefined} aria-keyshortcuts="Alt+ArrowLeft Alt+ArrowRight Alt+ArrowUp Alt+ArrowDown" aria-roledescription="Draggable project folder" aria-pressed={selected} onClick={() => { if (suppressClick.current) { suppressClick.current = false; return; } setSelectedProject(project.id); }} onDoubleClick={() => { if (suppressClick.current) return; open(project.id); }} onKeyDown={(event) => { if (!event.altKey || !event.key.startsWith("Arrow")) return; event.preventDefault(); nudge(project.id, event.key); }} onPointerDown={(event) => beginDrag(event, project.id)} type="button">
-          <FolderFace project={project} cover={coverAsset(assetById.get(project.id))} meta={metaFor(project)} tab={tabIndex(project.id)} />
+          <FolderFace project={project} cover={coverAsset(assetById.get(project.id))} meta={metaFor(project)} tab={tabIndex(project.id)} count={assetById.get(project.id)?.length} />
         </motion.button>
         {selected ? <div className="folder-actions">
           <button onClick={() => open(project.id)} type="button"><FolderOpen size={14} /> Open</button>
           <button onClick={() => { setSelection({ type: "project", id: project.id }); setInspectorOpen(true); }} type="button"><Info size={14} /> Details</button>
         </div> : null}
       </article>;
-    })}<button className="project-folder new-folder" onClick={onNewProject} type="button"><span className="folder-tab" /><span className="folder-body"><Plus size={18} /><strong>New project</strong><small>Start a creative space</small></span></button></div> : <div className="home-empty"><div className="home-empty-icon"><FolderOpen size={24} /></div><h2>Your desktop is empty</h2><p>Create a project to start building a world with Darius.</p><button className="primary-button" onClick={onNewProject} type="button"><Plus size={15} /> New project</button></div>}
+    })}<button className="project-folder new-folder" onClick={onNewProject} type="button"><span className="lp-tile lp-new"><span><Plus size={22} /></span></span><span className="lp-copy"><strong>New project</strong><small>Start a creative space</small></span></button></div> : <div className="home-empty"><div className="home-empty-icon"><FolderOpen size={24} /></div><h2>Your desktop is empty</h2><p>Create a project to start building a world with Darius.</p><button className="primary-button" onClick={onNewProject} type="button"><Plus size={15} /> New project</button></div>}
     {drag && dragging ? <div className="folder-ghost" style={{ left: drag.x, top: drag.y }}><FolderFace project={dragging} cover={coverAsset(assetById.get(dragging.id))} meta={metaFor(dragging)} tab={tabIndex(dragging.id)} /></div> : null}
   </section>;
 }
