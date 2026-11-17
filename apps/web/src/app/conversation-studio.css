@@ -2,7 +2,6 @@
 .talk-conversation-column { min-height: 0; min-width: 0; height: 100%; flex: 1; display: flex; flex-direction: column; overflow: hidden; }
 .talk-conversation-column > .conversation-context { flex: 0 0 auto; width: calc(100% - 36px); margin: 6px auto 10px; }
 .talk-conversation-column > .talk-stream { flex: 1; min-height: 0; }
-.os-desktop .desk-assistant-host .talk-conversation-column > .talk-stream { height: auto; }
 .conversation-context { position: relative; z-index: 3; min-width: 0; max-width: 850px; margin: 0 auto 18px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 16px; background: var(--surface, var(--panel-2)); box-shadow: 0 4px 20px color-mix(in srgb, var(--text) 3%, transparent); }
 .conversation-context-heading, .conversation-context-heading > span { display: flex; align-items: center; gap: 8px; min-width: 0; }
 .conversation-context-heading { justify-content: space-between; }

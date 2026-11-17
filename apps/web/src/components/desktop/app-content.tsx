@@ -31,7 +31,7 @@ export function AppContent({ app, context, onConversationHost, onComposerHost }:
   if (!projectId) return <EmptyState title="Choose a project" description="Open a project from the launcher to use this app." />;
   if (app === "library") return <LibraryApp assets={assets} isLoading={context.assetsLoading} hasError={context.assetsError} />;
   if (app === "map") return <MapView key={`map:${projectId}`} assets={assets} workflows={context.workflows} onOrganizeStory={() => context.openApp("characters")} />;
-  if (app === "edit") return <EditView key={`edit:${projectId}`} assets={assets} assistantOpen={false} onToggleAssistant={() => context.openApp("chat")} onAssistantHost={() => {}} onComposerHost={() => {}} />;
+  if (app === "edit") return <EditView key={`edit:${projectId}`} assets={assets} onOpenChat={() => context.openApp("chat")} />;
   const body = app === "ideas" ? <CreativeIdeas key={projectId} projectId={projectId} />
     : app === "characters" || app === "scenes" ? <ProductionStructure assets={assets} focus={app} projectId={projectId} />
     : app === "shots" ? <ShotProductionBoard key={projectId} projectId={projectId} assets={assets} />

@@ -19,42 +19,7 @@
 .app-shell.os-desktop.space-home .composer-wrap { grid-column: 1 / -1; justify-self: center; width: min(760px, calc(100% - 24px)); border: 1px solid var(--line); border-radius: 20px; box-shadow: var(--shadow-window); }
 .app-shell.os-desktop.space-home .app-window-body { display: contents; }
 .app-shell.os-desktop.space-home .home-desktop { min-height: 0; }
-.app-shell.os-desktop.space-edit .app-window-body { display: flex; }
-.app-shell.os-desktop.space-edit .app-window-body > .composer-surface { display: none; }
-.app-shell.os-desktop.space-edit .desk-assistant-composer .composer-wrap { max-height: 220px; padding: 6px; border-radius: 0; }
-.app-shell.os-desktop.space-edit .desk-assistant-host .assistant-workspace { height: 100%; min-height: 0; }
-.app-shell.os-desktop.space-edit .desk-assistant-host .talk-conversation-column { height: 100%; min-height: 0; }
-.app-shell.os-desktop.space-edit .desk-assistant-host .talk-stream { min-height: 0; }
 .app-shell.os-desktop .main-stage.desktop-surface { min-height: 0; }
-.app-shell.os-desktop .app-frame .director-desk { height: 100%; min-height: 0; display: flex; flex-direction: column; overflow: auto; padding: 10px 14px; gap: 8px; }
-.director-desk .desk-heading { margin: 0; flex: 0 0 auto; }
-.director-desk .desk-heading > div:first-child { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
-.director-desk .desk-heading-actions { width: 100%; justify-content: flex-end; }
-.director-desk .desk-workspace { flex: 1 1 260px; min-height: 170px; max-height: 46%; align-items: stretch; }
-.director-desk .desk-library, .director-desk .desk-clip-inspector, .director-desk .desk-assistant { min-height: 0; height: 100%; max-height: none; margin-top: 0; }
-.director-desk .desk-library-scroll { flex: 1; min-height: 0; overflow: auto; }
-.director-desk .desk-panel-title { padding: 8px 10px; }
-.director-desk .desk-library .desk-tabs { padding: 0 6px 6px; overflow-x: auto; flex-shrink: 0; }
-.director-desk .desk-library .desk-tabs button { white-space: nowrap; font-size: 10px; padding: 6px; }
-.app-shell.os-desktop .director-desk .desk-search input { padding: 0; border: 0; background: transparent; font-size: 11px; }
-.director-desk .desk-stage { display: flex; flex-direction: column; min-height: 0; }
-.director-desk .desk-stage-tools { flex: 0 0 auto; min-height: 28px; padding-bottom: 4px; }
-.director-desk :is(.desk-player, .desk-source) { display: flex; flex-direction: column; flex: 1; min-height: 0; }
-.director-desk .desk-screen { flex: 1 1 120px; height: auto; min-height: 60px; }
-.director-desk .desk-screen:fullscreen { height: 100%; }
-.director-desk .desk-clip-inspector { overflow: auto; padding: 10px; }
-.director-desk .desk-clip-inspector:not(:has(.clip-fields)) { align-content: start; }
-.director-desk .desk-edit-tools { flex: 0 0 auto; margin: 0; gap: 4px 8px; padding: 6px; }
-.director-desk .desk-timeline { flex: 1 0 170px; min-height: 170px; margin: 0; display: flex; flex-direction: column; }
-.director-desk .desk-timeline-scroll { overflow: auto; min-height: 0; flex: 1; }
-.director-desk .desk-timeline-heading { padding: 8px 12px; }
-.director-desk .desk-footer { flex: 0 0 auto; padding: 4px 0; gap: 4px; }
-.director-desk .desk-shortcuts { max-height: 180px; overflow: auto; flex: 0 0 auto; margin: 0; }
-.director-desk .desk-sound-note { padding-bottom: 5px; }
-.director-desk .desk-player-heading { min-height: 26px; padding: 5px 10px; }
-.director-desk .desk-library-hint { padding: 5px 10px; }
-.director-desk .desk-transport { padding: 4px 10px; }
-.director-desk .desk-mobile-panels { display: none; }
 .app-shell.os-desktop .inspector { animation: panel-reveal 180ms ease-out; }
 @keyframes panel-reveal { from { opacity: 0; transform: translateX(8px); } to { opacity: 1; transform: none; } }
 .app-shell.os-desktop .app-frame .settings-focused { display: flex; flex-direction: column; overflow: hidden; padding: 18px; }
@@ -112,12 +77,6 @@
   .app-shell.os-desktop .workspace { padding-top: 84px; padding-bottom: 78px; }
   .app-shell.os-desktop .topbar.system-bar { top: 12px; height: 54px; }
   .app-shell.os-desktop .composer-wrap { max-height: 38dvh; }
-  .director-desk .desk-workspace { grid-template-columns: 180px minmax(0, 1fr); }
-  .director-desk .desk-workspace.has-assistant { grid-template-columns: 160px minmax(0, 1fr) 280px; }
-  .director-desk .desk-clip-inspector { grid-column: auto; }
-  .director-desk .desk-workspace.has-clip-inspector { grid-template-columns: 160px minmax(0, 1fr) 185px; }
-  .director-desk .desk-assistant { grid-column: auto; }
-  .director-desk .desk-player-heading, .director-desk .desk-sound-note, .director-desk .desk-library-hint { display: none; }
 }
 @media (max-width: 760px), (max-width: 1000px) and (max-height: 500px) {
   .app-shell.os-desktop .workspace { padding: 0; }
@@ -156,21 +115,5 @@
   .structure-focus-scenes .structure-columns { grid-template-columns: minmax(0, 1fr); }
   .structure-focus-scenes #structure-shots { border-left: 0; }
   .app-shell.os-desktop .is-collapsed .mobile-compose-toggle { width: 44px; justify-content: center; padding: 0; }
-  .app-shell.os-desktop .app-frame .director-desk { overflow: auto; padding: 6px; gap: 6px; }
-  .director-desk .desk-mobile-panels { display: flex; gap: 8px; }
-  .director-desk .desk-mobile-panels button { flex: 1; }
-  .director-desk .desk-workspace, .director-desk .desk-workspace.has-clip-inspector, .director-desk .desk-workspace.has-assistant { display: flex; flex-direction: column; flex: 1 0 210px; max-height: 40%; min-height: 180px; }
-  .director-desk .desk-library, .director-desk .desk-clip-inspector { display: none; }
-  .director-desk .desk-workspace.show-media .desk-library, .director-desk .desk-workspace.show-inspector .desk-clip-inspector { display: flex; flex-direction: column; }
-  .director-desk .desk-workspace.show-media .desk-stage, .director-desk .desk-workspace.show-inspector .desk-stage { display: none; }
-  .director-desk .desk-library .desk-media-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  .director-desk .desk-stage { height: 100%; }
-  .director-desk .desk-timeline { flex: 1 0 170px; }
-  .director-desk .desk-edit-tools { max-height: 54px; overflow: auto; }
-  .director-desk .desk-heading-actions button { min-height: 40px; padding: 6px 10px; }
-  .director-desk .desk-footer > div > button { flex: 1 1 auto; min-height: 40px; font-size: 11px; padding: 6px; }
-  .director-desk .desk-footer > div:last-child:has(> span) { display: none; }
-  .director-desk .desk-track, .director-desk .desk-track-lane { min-height: 72px; }
-  .director-desk .desk-film-item { height: 64px; }
 }
 @media (prefers-reduced-motion: reduce) { .app-shell.os-desktop .inspector { animation: none; } }

@@ -230,17 +230,12 @@
   .os-desktop .asset-card { min-width: 0; border-radius: 20px; overflow: hidden; }
   .os-desktop .create-heading-actions { display: flex; flex-wrap: wrap; padding-inline: 12px; }
   .os-desktop.space-create .app-frame .view-heading { display: none; }
-  .os-desktop .desk-heading > div:first-child { display: none; }
   .os-desktop .proposal-card { padding: 16px; border-radius: 22px; }
   .os-desktop .proposal-inputs, .os-desktop .structure-editor-grid { grid-template-columns: minmax(0, 1fr); }
   .os-desktop .app-frame .story-map-view { height: 100%; min-height: 0; padding-bottom: 0; overflow: hidden; }
   .os-desktop .story-canvas { min-height: 180px; }
   .os-desktop .map-toolbar { padding: 8px 12px; gap: 8px; }
   .os-desktop .map-toolbar-actions { overflow-x: auto; max-width: 100%; }
-  .os-desktop .director-desk { padding-bottom: 96px; }
-  .os-desktop .desk-heading-actions, .os-desktop .desk-transport { flex-wrap: wrap; }
-  .os-desktop .desk-heading-actions :is(input, select) { max-width: 100%; }
-  .os-desktop .desk-timeline { touch-action: pan-x pan-y; }
 
   html[data-mobile-keyboard="true"] .os-desktop .bottom-controls,
   html[data-mobile-keyboard="true"] .os-desktop .mobile-chat-fab,
