@@ -91,7 +91,7 @@ body { font-family: "Segoe UI", Arial, sans-serif; }
 .project-menu { transform-origin: top left; animation: os-pop-in .28s cubic-bezier(.16, 1, .3, 1) both; }
 .inspector { animation: os-inspector-in .38s cubic-bezier(.16, 1, .3, 1) both; }
 @media (prefers-reduced-motion: reduce) { .project-menu, .inspector { animation: none; } }
-.project-option-actions { display: inline-flex; align-items: center; gap: 4px; margin-left: auto; }
+.project-option > .project-option-actions { display: inline-flex; flex-direction: row; align-items: center; gap: 4px; margin-left: auto; flex-shrink: 0; }
 .project-option-actions .icon-button, .danger-icon { color: var(--muted); padding: 4px; }
 .project-option-actions .icon-button:hover, .danger-icon:hover { color: #a34f45; }
 .project-option-edit { cursor: default; gap: 6px; }
