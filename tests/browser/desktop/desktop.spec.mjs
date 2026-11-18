@@ -105,3 +105,13 @@ test('the command bar opens apps by name', async ({ page }, info) => {
   await expect(page.getByRole('region', { name: 'Library window' })).toBeVisible();
   await expect(page.getByText('Opened Library.')).toBeVisible();
 });
+
+test('on a phone, an opened board fills the screen', async ({ page }, info) => {
+  phoneOnly(info);
+  await page.goto('/?app=create&project=p1&board=b1');
+  const editor = page.getByRole('group', { name: 'Forest gate editor' });
+  await expect(editor).toBeVisible();
+  const box = await editor.boundingBox();
+  expect(box.width).toBeGreaterThan(380);
+  expect(box.height).toBeGreaterThan(600);
+});

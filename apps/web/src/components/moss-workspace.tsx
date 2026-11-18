@@ -308,7 +308,8 @@ export function MossWorkspace({ projectId, assets, onBoardContext, onEditingChan
   const editor = !editing ? null : isImageRecipeBoard(editing) ? <ImageRecipeEditor key={editing.id} board={editing} projectId={projectId} assets={assets} onExit={closeEditor} onGenerate={() => gen.generate(editing)} onVideo={() => void bindImageToVideo(editing, "new", "animate-image")} {...hosts} />
     : isVideoBoard(editing) ? <VideoBoardEditor key={editing.id} board={editing} projectId={projectId} assets={assets} onExit={closeEditor} onGenerate={() => gen.generate(editing)} {...hosts} />
     : <CanvasEditor key={`${projectId}:${editing.documentId}`} projectId={projectId} documentId={editing.documentId} assets={assets} {...hosts} chooser={null} presets={engine.data?.presets ?? []} onExit={closeEditor} board={editing} startCompare={compareOnOpen === editing.id} />;
-  const origin = zoom?.origin ?? null;
+  // On phones the canvas is hidden (size 0): the editor simply fills the stage.
+  const measured = size.width > 0 && size.height > 0, origin = measured ? zoom?.origin ?? null : null;
   const editingId = editing?.id ?? null;
   useEffect(() => { onEditingChange?.(Boolean(editingId)); }, [editingId, onEditingChange]);
   // Esc zooms back out when nothing inside the editor claimed it (the editor stops
@@ -338,7 +339,7 @@ export function MossWorkspace({ projectId, assets, onBoardContext, onEditingChan
   }), []);
   const editorLayer = <AnimatePresence>{editing ? <motion.div key={editing.id} className="board-zoom-layer" aria-label={`${editing.name} editor`} role="group"
     initial={origin ? { x: origin.x, y: origin.y, width: origin.width, height: origin.height, opacity: .4, borderRadius: 22 } : false}
-    animate={{ x: 0, y: 0, width: size.width, height: size.height, opacity: 1, borderRadius: 26 }}
+    animate={measured ? { x: 0, y: 0, width: size.width, height: size.height, opacity: 1, borderRadius: 26 } : { opacity: 1 }} data-fill={measured ? undefined : ""}
     exit={origin ? { x: origin.x, y: origin.y, width: origin.width, height: origin.height, opacity: 0, borderRadius: 22 } : { opacity: 0 }}
     transition={{ type: "spring", stiffness: 260, damping: 32, mass: .9 }} onAnimationComplete={() => setGrown(editing.id)}>
     {/* The editor mounts once the layer is full size, so it measures the real space. */}
