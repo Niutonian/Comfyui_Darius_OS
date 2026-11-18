@@ -407,9 +407,11 @@
 .moss-progress.is-queued span { font-size: 11px; font-weight: 600; letter-spacing: .04em; }
 @keyframes moss-spin { to { transform: rotate(270deg); } }
 .moss-pile { position: absolute; pointer-events: none; }
-.moss-pile-sheet { position: absolute; inset: 6% 4%; border-radius: var(--radius-card); background: var(--surface-raised) center / cover no-repeat; border: 6px solid var(--surface-raised); box-shadow: var(--shadow-soft); }
-.moss-pile-sheet.sheet-0 { transform: translate(14px, -10px) rotate(4deg); }
-.moss-pile-sheet.sheet-1 { transform: translate(-12px, -16px) rotate(-5deg); }
+/* Earlier prints fan out from under the card's bottom edge, so their tops clearly show. */
+.moss-pile-sheet { position: absolute; inset: 0 6% 4%; border-radius: var(--radius-card); background: var(--surface-canvas) center / cover no-repeat; border: 5px solid #f4f1e8; box-shadow: 0 6px 18px rgba(0, 0, 0, .18); transform-origin: 50% 100%; }
+.theme-dark .moss-pile-sheet { border-color: #d9d4c6; box-shadow: 0 6px 18px rgba(0, 0, 0, .45); }
+.moss-pile-sheet.sheet-0 { transform: translate(10px, -14px) rotate(7deg); }
+.moss-pile-sheet.sheet-1 { transform: translate(-10px, -10px) rotate(-6deg); }
 
 /* ---------- Lineage ---------- */
 .dk-stage .moss-edges marker path { fill: color-mix(in srgb, var(--active) 80%, var(--text)); }
