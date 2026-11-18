@@ -79,8 +79,18 @@ const writes = [
   }],
   [/^\/projects\/p\d\/canvas-workspace\/boards\/(\w+)$/, (m, body) => { const found = boards.find(b => b.id === m[1]) ?? boards[0]; return { ...found, revision: (body.revision ?? found.revision) + 1, settings: body.settings ?? found.settings, archived: body.archived ?? found.archived }; }],
   [/^\/projects\/p\d\/canvas-workspace\/boards$/, (m, body) => {
-    const id = `b${Date.now().toString(36)}`, added = board(id, body.name ?? "Untitled board", { settings: body.settings ?? board(id, "").settings, layout: [], regionCount: 0 });
-    return { boardId: id, workspace: { ...workspace, revision: workspace.revision + 1, boards: [...boards, added], placements: [...placements, { boardId: id, x: body.x ?? 0, y: body.y ?? 0, displayWidth: 360, displayHeight: 450, order: placements.length }] } };
+    // Kept in memory like the layout, so a new or duplicated board survives the next save.
+    const id = `b${Date.now().toString(36)}`, source = boards.find(b => b.id === body.duplicateBoardId);
+    const added = source
+      ? { ...structuredClone(source), id, documentId: `doc-${id}`, name: body.name ?? `${source.name} copy`, jobs: [], latest: null, newResult: false }
+      : board(id, body.name ?? "Untitled board", { settings: body.settings ?? board(id, "").settings, layout: [], regionCount: 0 });
+    const near = workspace.placements.find(p => p.boardId === source?.id);
+    boards.push(added);
+    workspace.placements = [...workspace.placements, near
+      ? { ...near, boardId: id, x: near.x + 48, y: near.y + 48, order: workspace.placements.length }
+      : { boardId: id, x: body.x ?? 0, y: body.y ?? 0, displayWidth: 360, displayHeight: 450, order: workspace.placements.length }];
+    workspace.revision += 1;
+    return { boardId: id, workspace };
   }],
 ];
 const readBody = req => new Promise(resolve => { let raw = ""; req.on("data", chunk => { raw += chunk; }); req.on("end", () => { try { resolve(raw ? JSON.parse(raw) : {}); } catch { resolve({}); } }); });

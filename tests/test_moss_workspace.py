@@ -390,3 +390,17 @@ def test_board_reports_recent_completed_results_newest_first(canvas_client):
     second = fake_result(app, project, generate(client, project, board, key="recent-second"))
     view = next(b for b in client.get(root(project)).json()["boards"] if b["id"] == board["id"])
     assert view["recentAssetIds"] == [second, first]
+
+
+def test_duplicated_board_survives_being_moved(canvas_client):
+    client, _, project, _ = canvas_client
+    source = add(client, project, "Mara portrait")
+    result = client.post(root(project) + "/boards", json={"name": "Mara portrait copy", "duplicateBoardId": source["id"]})
+    assert result.status_code == 201, result.text
+    copy_id, workspace = result.json()["boardId"], result.json()["workspace"]
+    moved = [{**p, "x": p["x"] + 200, "y": p["y"] + 100} if p["boardId"] == copy_id else p for p in workspace["placements"]]
+    saved = client.post(root(project) + "/layout", json={"revision": workspace["revision"], "placements": moved})
+    assert saved.status_code == 200, saved.text
+    again = client.get(root(project)).json()
+    assert copy_id in {b["id"] for b in again["boards"]}
+    assert next(p for p in again["placements"] if p["boardId"] == copy_id)["x"] == next(p for p in moved if p["boardId"] == copy_id)["x"]
