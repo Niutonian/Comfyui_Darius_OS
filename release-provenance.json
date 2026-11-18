@@ -156,7 +156,6 @@
     "apps/web/.env.example": "f2ee6a88ffb2156744c5a778ee7e081598156b275c5ddcc07e246f402e98d372",
     "apps/web/.gitignore": "e077923f7b79ea32f9ed787243693ed5e9eb4ebe97803ed8983115ea0c25bfae",
     "apps/web/AGENTS.md": "63f2c50380ed6303237cce215ce27af1d620d094c215e28d1b1538a3c070e3bb",
-    "apps/web/CLAUDE.md": "336cc4fbf19beaada7ccf9986414fa91851a8d7a07dfb3ccbe800a69eed0ab49",
     "apps/web/eslint.config.mjs": "4e71041aba857c74c0555442e3030593eb49af8a497bec56f6e025f36791e0b9",
     "apps/web/next-env.d.ts": "1b59d4c6b83807db275d43f3cf2cc8e9323f465fab764eea091cc5becd5bad37",
     "apps/web/next.config.ts": "7deffdc8da0596581608d217c5a0f8e3ce08013d0ad3a14c62f982776ac475c4",
